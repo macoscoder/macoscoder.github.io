@@ -1,67 +1,166 @@
 <!DOCTYPE html>
-<html lang="zh-cn">
-<title>动态库 | 我的博客</title>
-<meta charset="utf-8">
-<meta name="generator" content="Hugo 0.60.1" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="canonical" href="http://flyblog.tech/posts/dynamic-library/">
-<link rel="alternate" type="application/rss+xml" href="" title="我的博客">
-<link rel="stylesheet" href="http://flyblog.tech/css/theme.css">
-<link rel="stylesheet" href="http://flyblog.tech/css/classes.css">
+<html lang="zh">
 
-<header class="dark">
-  <h2><a href="http://flyblog.tech/">我的博客</a></h2>
-  <nav>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="author" content="fly">
+    <meta name="description" content="我的博客">
+    <meta name="keywords" content="blog,developer,personal">
+
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="动态库"/>
+<meta name="twitter:description" content="动态库 创建动态库 $ ls a.c b.c main.c $ gcc -c -fPIC a.c b.c $ gcc -shared -o libfoo.so.1.0.0 a.o b.o 使用动态库 $ gcc -c -fPIC main.c $ gcc -o main main.o libfoo.so.1.0.0 $ ls main main 运行 $ LD_LIBRARY_PATH=. ./main foo soname 创建动态库时可以指定别名，称作soname
+$ gcc -shared -Wl,-soname,libfoo.so.1 -o libfoo.so.1.0.0 a.o b.o $ ls libfoo.so libfoo.so 上述方法创建的动态库的soname为libfoo.so.1
+查看动态库的soname
+$ readelf -d libfoo.so.1.0.0 | grep SONAME 0x000000000000000e (SONAME) Library soname: [libfoo.so.1] 创建可执行程序"/>
+
+    <meta property="og:title" content="动态库" />
+<meta property="og:description" content="动态库 创建动态库 $ ls a.c b.c main.c $ gcc -c -fPIC a.c b.c $ gcc -shared -o libfoo.so.1.0.0 a.o b.o 使用动态库 $ gcc -c -fPIC main.c $ gcc -o main main.o libfoo.so.1.0.0 $ ls main main 运行 $ LD_LIBRARY_PATH=. ./main foo soname 创建动态库时可以指定别名，称作soname
+$ gcc -shared -Wl,-soname,libfoo.so.1 -o libfoo.so.1.0.0 a.o b.o $ ls libfoo.so libfoo.so 上述方法创建的动态库的soname为libfoo.so.1
+查看动态库的soname
+$ readelf -d libfoo.so.1.0.0 | grep SONAME 0x000000000000000e (SONAME) Library soname: [libfoo.so.1] 创建可执行程序" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://flyblog.tech/posts/dynamic-library/" />
+<meta property="article:published_time" content="2011-12-23T13:05:31+00:00" />
+<meta property="article:modified_time" content="2011-12-23T13:05:31+00:00" />
+
+
     
-  </nav>
-</header>
+      <base href="http://flyblog.tech/posts/dynamic-library/">
+    
+    <title>
+  动态库 · fly
+</title>
 
-<article>
-  <header>
-    <h1>动态库</h1>
-    <p><time datetime="2011-12-23T13:05:31Z">December 23, 2011</time></p>
-  </header>
-  <h1 id="heading">动态库</h1>
+    
+      <link rel="canonical" href="http://flyblog.tech/posts/dynamic-library/">
+    
+
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,700%7CMerriweather:300,700%7CSource+Code+Pro:400,700" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.11.2/css/all.css" integrity="sha384-KA6wR/X5RY4zFAHpv/CnoG2UW1uogYfdnP67Uv7eULvTveboZJg0qUpmJZb5VqzN" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" integrity="sha256-l85OmPOjvil/SOvVt3HnSSjzF1TUMyT9eV0c2BzEGzU=" crossorigin="anonymous" />
+
+    
+      
+      
+      <link rel="stylesheet" href="http://flyblog.tech/css/coder.min.28d751104f30c16da1aa1bb04015cbe662cacfe0d1b01af4f2240ad58580069c.css" integrity="sha256-KNdREE8wwW2hqhuwQBXL5mLKz&#43;DRsBr08iQK1YWABpw=" crossorigin="anonymous" media="screen" />
+    
+
+    
+
+    
+
+    
+      <link rel="stylesheet" href="http://flyblog.tech/css/custom.css" />
+    
+
+    
+    
+    <link rel="icon" type="image/png" href="http://flyblog.tech/img/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="http://flyblog.tech/img/favicon-16x16.png" sizes="16x16">
+
+    <meta name="generator" content="Hugo 0.60.1" />
+  </head>
+
+  
+  
+  <body class="colorscheme-light">
+    <main class="wrapper">
+      <nav class="navigation">
+  <section class="container">
+    <a class="navigation-title" href="http://flyblog.tech/">
+      fly
+    </a>
+    <input type="checkbox" id="menu-toggle" />
+    <label class="menu-button float-right" for="menu-toggle"><i class="fas fa-bars"></i></label>
+    <ul class="navigation-list">
+      
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="http://flyblog.tech/posts/">Blog</a>
+          </li>
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="http://flyblog.tech/about/">About</a>
+          </li>
+        
+      
+      
+    </ul>
+  </section>
+</nav>
+
+
+      <div class="content">
+        
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">动态库</h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fas fa-calendar"></i>
+              <time datetime='2011-12-23T13:05:31Z'>
+                December 23, 2011
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fas fa-clock"></i>
+              
+            </span>
+          </div>
+          
+          
+        </div>
+      </header>
+
+      <div>
+        <h1 id="heading">动态库</h1>
 <h2 id="heading1">创建动态库</h2>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ ls
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ ls
 a.c b.c main.c
 $ gcc -c -fPIC a.c b.c
 $ gcc -shared -o libfoo.so.1.0.0 a.o b.o
 </code></pre></div><h2 id="heading2">使用动态库</h2>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ gcc -c -fPIC main.c
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ gcc -c -fPIC main.c
 $ gcc -o main main.o libfoo.so.1.0.0
 $ ls main
 main
 </code></pre></div><h2 id="heading3">运行</h2>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ LD_LIBRARY_PATH<span style="color:#f92672">=</span>. ./main
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ LD_LIBRARY_PATH=. ./main
 foo
 </code></pre></div><h2 id="soname">soname</h2>
 <p>创建动态库时可以指定别名，称作<code>soname</code></p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ gcc -shared -Wl,-soname,libfoo.so.1 -o libfoo.so.1.0.0 a.o b.o
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ gcc -shared -Wl,-soname,libfoo.so.1 -o libfoo.so.1.0.0 a.o b.o
 $ ls libfoo.so
 libfoo.so
 </code></pre></div><p>上述方法创建的动态库的<code>soname</code>为<code>libfoo.so.1</code></p>
 <p>查看动态库的<code>soname</code></p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ readelf -d libfoo.so.1.0.0 | grep SONAME
-0x000000000000000e <span style="color:#f92672">(</span>SONAME<span style="color:#f92672">)</span>             Library soname: <span style="color:#f92672">[</span>libfoo.so.1<span style="color:#f92672">]</span>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ readelf -d libfoo.so.1.0.0 | grep SONAME
+0x000000000000000e (SONAME)             Library soname: [libfoo.so.1]
 </code></pre></div><p>创建可执行程序</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ gcc -o main main.o libfoo.so.1.0.0
-$ LD_LIBRARY_PATH<span style="color:#f92672">=</span>. ./main
-./main: error <span style="color:#66d9ef">while</span> loading shared libraries: libfoo.so.1: cannot open shared object file: No such file or directory
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ gcc -o main main.o libfoo.so.1.0.0
+$ LD_LIBRARY_PATH=. ./main
+./main: error <span style="font-weight:bold">while</span> loading shared libraries: libfoo.so.1: cannot open shared object file: No such file or directory
 </code></pre></div><p>报错了，找不到<code>libfoo.so.1</code></p>
 <p>这也就是说，如果创建动态库时指定了<code>soname</code>，创建可执行程序时，可执行程序里存的是<code>soname</code><br>
 如果创建动态库时没有指定<code>soname</code>，创建可执行程序时，可执行程序里存的是动态库的文件名，称为<code>realname</code></p>
 <p><code>soname</code>提供了一种间接性，当动态库版本更新时，只要<code>soname</code>不变，那么已有的可执行程序就可以链接到新版本的动态库</p>
 <p>创建符号链接</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ ln -s libfoo.so.1.0.0 libfoo.so.1
-$ LD_LIBRARY_PATH<span style="color:#f92672">=</span>. ./main
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ ln -s libfoo.so.1.0.0 libfoo.so.1
+$ LD_LIBRARY_PATH=. ./main
 $ ./main
 foo
 </code></pre></div><h2 id="linker-name">linker name</h2>
 <p>通常会再创建一个符号链接指向<code>soname</code>，称为<code>linker name</code>，目的是在链接程序时不需要指定版本号</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ ln -s libfoo.so.1 libfoo.so
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ ln -s libfoo.so.1 libfoo.so
 $ gcc -o main main.o -L. -lfoo
-$ LD_LIBRARY_PATH<span style="color:#f92672">=</span>. ./main
+$ LD_LIBRARY_PATH=. ./main
 foo
 </code></pre></div><h2 id="heading4">动态库命名约定</h2>
 <ul>
@@ -110,30 +209,30 @@ foo
 </ul>
 <p><code>ldconfig</code>命令的其中一个功能是维护<code>/etc/ld.so.cache</code>文件，另一个功能是更新<code>soname</code>符号链接</p>
 <p><code>ldconfig -p</code>选项列出<code>/etc/ld.so.cache</code>文件中缓存的所有动态库路径</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ /sbin/ldconfig -p | wc -l
-<span style="color:#ae81ff">1043</span>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ /sbin/ldconfig -p | wc -l
+1043
 </code></pre></div><p><code>ldconfig -n</code>选项创建指定目录的<code>soname</code></p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ ls libdemo*
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ ls libdemo*
 libdemo.so.1.0.0
 $ /sbin/ldconfig -n .
 $ ls libdemo*
 libdemo.so.1  libdemo.so.1.0.0
 </code></pre></div><p>一般当有新库被安装到标准目录，或旧库被删除，或<code>/etc/ld.so.conf</code>文件更新，都需要运行<code>ldconfig</code></p>
 <h2 id="rpath-linker-option">-rpath linker option</h2>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ gcc -Wl,-rpath,<span style="color:#e6db74">&#39;$ORIGIN&#39;</span> -o main main.o libdemo.so
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ gcc -Wl,-rpath,<span style="font-style:italic">&#39;$ORIGIN&#39;</span> -o main main.o libdemo.so
 $ ./main
 foo
 bar
 </code></pre></div><p>查看<code>main</code>的<code>DT_RUNPATH</code>属性</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ readelf -d main | grep PATH
-0x000000000000001d <span style="color:#f92672">(</span>RUNPATH<span style="color:#f92672">)</span>            Library runpath: <span style="color:#f92672">[</span>$ORIGIN<span style="color:#f92672">]</span>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ readelf -d main | grep PATH
+0x000000000000001d (RUNPATH)            Library runpath: [$ORIGIN]
 </code></pre></div><p><code>$ORIGIN</code> 指定运行时搜索当前目录，也就是可执行程序<code>main</code>所在的目录</p>
 <p>这样做的好处是开箱即用，不需要使用<code>LD_LIBRARY_PATH</code>环境变量，也不需要安装动态库到标准目录</p>
 <h2 id="bsymbolic-linker-option">–Bsymbolic linker option</h2>
 <p>默认情况下，主程序通过定义与动态库同名的的全局变量或全局函数，可以实现注入功能<br>
 也就是动态库中本来调用自己定义的全局函数，现在却调用了主程序的版本</p>
 <p>要避免这种情况，可以用链接器选项<code>–Bsymbolic</code>来创建动态库，让动态库调用自己定义的版本</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">gcc -shared -Wl,-Bsymbolic -Wl,-soname,libdemo.so.1 -o libdemo.so.1.0.0 foo.o bar.o
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">gcc -shared -Wl,-Bsymbolic -Wl,-soname,libdemo.so.1 -o libdemo.so.1.0.0 foo.o bar.o
 </code></pre></div><h2 id="heading7">静态链接</h2>
 <p>在链接程序时通过-L和-l指定库，如果同时存在动态库和静态库，那么默认使用动态库</p>
 <p>下列方法可以显式链接静态版本</p>
@@ -142,25 +241,93 @@ bar
 <li>命令行显示指定静态库全路径</li>
 </ul>
 <p>一个简单的<code>hello world</code>程序，链接静态库和动态库的区别</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">// hello.c
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;stdio.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>() {
-    printf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">hello world</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="font-style:italic">// hello.c
+</span><span style="font-style:italic"></span><span style="">#</span><span style="">include</span> <span style="">&lt;stdio.h&gt;</span><span style="">
+</span><span style=""></span><span style="">int</span> main() {
+    printf(<span style="font-style:italic"></span><span style="font-style:italic">&#34;</span><span style="font-style:italic">hello world</span><span style="font-weight:bold;font-style:italic">\n</span><span style="font-style:italic">&#34;</span>);
 }
-</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ cc -o hello.shared hello.c
+</code></pre></div><div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ cc -o hello.shared hello.c
 $ cc -static -o hello.static hello.c
 $ ll -h hello.shared hello.static
--rwxr-xr-x <span style="color:#ae81ff">1</span> fly fly 8.5K Feb <span style="color:#ae81ff">26</span> 22:31 hello.shared
--rwxr-xr-x <span style="color:#ae81ff">1</span> fly fly 792K Feb <span style="color:#ae81ff">26</span> 22:31 hello.static
+-rwxr-xr-x 1 fly fly 8.5K Feb 26 22:31 hello.shared
+-rwxr-xr-x 1 fly fly 792K Feb 26 22:31 hello.static
 $ ldd hello.shared
-    linux-vdso.so.1 <span style="color:#f92672">(</span>0x00007ffe973c6000<span style="color:#f92672">)</span>
-    libc.so.6 <span style="color:#f92672">=</span>&gt; /lib/x86_64-linux-gnu/libc.so.6 <span style="color:#f92672">(</span>0x00007fa4c4a78000<span style="color:#f92672">)</span>
-    /lib64/ld-linux-x86-64.so.2 <span style="color:#f92672">(</span>0x00007fa4c5019000<span style="color:#f92672">)</span>
+    linux-vdso.so.1 (0x00007ffe973c6000)
+    libc.so.6 =&gt; /lib/x86_64-linux-gnu/libc.so.6 (0x00007fa4c4a78000)
+    /lib64/ld-linux-x86-64.so.2 (0x00007fa4c5019000)
 $ ldd hello.static
     not a dynamic executable
 </code></pre></div>
-</article>
+      </div>
+
+      <footer>
+        
 
 
+        <div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "yourdiscussshortname" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+        
+        
+      </footer>
+    </article>
+
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script type="text/javascript" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/startup.js" id="MathJax-script"></script>
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [
+          ['$', '$'], ['\\(', '\\)']
+        ],
+        processEscapes: true,
+        processEnvironments: true
+      },
+      options: {
+        skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+      }
+    };
+  </script>
+  </section>
+
+      </div>
+
+      <footer class="footer">
+  <section class="container">
+    
+      <p>记录点滴生活</p>
+    
+     © 2019
+    
+       · 
+       <a href="https://gohugo.io/">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/">Coder</a>.
+    
+    
+  </section>
+</footer>
+
+    </main>
+
+    
+
+  </body>
 
 </html>

@@ -1,29 +1,128 @@
 <!DOCTYPE html>
-<html lang="zh-cn">
-<title>文件介绍 | 我的博客</title>
-<meta charset="utf-8">
-<meta name="generator" content="Hugo 0.60.1" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="canonical" href="http://flyblog.tech/posts/file/">
-<link rel="alternate" type="application/rss+xml" href="" title="我的博客">
-<link rel="stylesheet" href="http://flyblog.tech/css/theme.css">
-<link rel="stylesheet" href="http://flyblog.tech/css/classes.css">
+<html lang="zh">
 
-<header class="dark">
-  <h2><a href="http://flyblog.tech/">我的博客</a></h2>
-  <nav>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="author" content="fly">
+    <meta name="description" content="我的博客">
+    <meta name="keywords" content="blog,developer,personal">
+
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="文件介绍"/>
+<meta name="twitter:description" content="文件介绍 文件系统结构 文件  文件是由inode&#43;data blocks组成 inode存储在inode table中 inode在inode table中的索引称为inode number 每个文件系统有一张inode table  inode存储文件状态(元)信息
+ file type uid, gid access permisstion last access time, last modify time, last inode change time inode link(ref) count file size data block count data block pointers  注意：inode中并不包含文件名，文件名和inode number存储在directory entry中
+如果用面向对象的思想来描述文件，那么把inode看成对象，inode number就是对象地址， link count就是对象的引用计数，directory entry是对象的引用
+创建文件 #include &lt;sys/types.h&gt;#include &lt;sys/stat.h&gt;#include &lt;fcntl.h&gt;int open(const char *pathname, int flags); int open(const char *pathname, int flags, mode_t mode); open函数创建inode，然后创建一个引用(directory entry)，其中包含inode number和引用名，此时该inode的引用计数为1 pathname为新的引用名"/>
+
+    <meta property="og:title" content="文件介绍" />
+<meta property="og:description" content="文件介绍 文件系统结构 文件  文件是由inode&#43;data blocks组成 inode存储在inode table中 inode在inode table中的索引称为inode number 每个文件系统有一张inode table  inode存储文件状态(元)信息
+ file type uid, gid access permisstion last access time, last modify time, last inode change time inode link(ref) count file size data block count data block pointers  注意：inode中并不包含文件名，文件名和inode number存储在directory entry中
+如果用面向对象的思想来描述文件，那么把inode看成对象，inode number就是对象地址， link count就是对象的引用计数，directory entry是对象的引用
+创建文件 #include &lt;sys/types.h&gt;#include &lt;sys/stat.h&gt;#include &lt;fcntl.h&gt;int open(const char *pathname, int flags); int open(const char *pathname, int flags, mode_t mode); open函数创建inode，然后创建一个引用(directory entry)，其中包含inode number和引用名，此时该inode的引用计数为1 pathname为新的引用名" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://flyblog.tech/posts/file/" />
+<meta property="article:published_time" content="2011-12-23T13:05:31+00:00" />
+<meta property="article:modified_time" content="2011-12-23T13:05:31+00:00" />
+
+
     
-  </nav>
-</header>
+      <base href="http://flyblog.tech/posts/file/">
+    
+    <title>
+  文件介绍 · fly
+</title>
 
-<article>
-  <header>
-    <h1>文件介绍</h1>
-    <p><time datetime="2011-12-23T13:05:31Z">December 23, 2011</time></p>
-  </header>
-  <h1 id="heading">文件介绍</h1>
+    
+      <link rel="canonical" href="http://flyblog.tech/posts/file/">
+    
+
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,700%7CMerriweather:300,700%7CSource+Code+Pro:400,700" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.11.2/css/all.css" integrity="sha384-KA6wR/X5RY4zFAHpv/CnoG2UW1uogYfdnP67Uv7eULvTveboZJg0qUpmJZb5VqzN" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" integrity="sha256-l85OmPOjvil/SOvVt3HnSSjzF1TUMyT9eV0c2BzEGzU=" crossorigin="anonymous" />
+
+    
+      
+      
+      <link rel="stylesheet" href="http://flyblog.tech/css/coder.min.28d751104f30c16da1aa1bb04015cbe662cacfe0d1b01af4f2240ad58580069c.css" integrity="sha256-KNdREE8wwW2hqhuwQBXL5mLKz&#43;DRsBr08iQK1YWABpw=" crossorigin="anonymous" media="screen" />
+    
+
+    
+
+    
+
+    
+      <link rel="stylesheet" href="http://flyblog.tech/css/custom.css" />
+    
+
+    
+    
+    <link rel="icon" type="image/png" href="http://flyblog.tech/img/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="http://flyblog.tech/img/favicon-16x16.png" sizes="16x16">
+
+    <meta name="generator" content="Hugo 0.60.1" />
+  </head>
+
+  
+  
+  <body class="colorscheme-light">
+    <main class="wrapper">
+      <nav class="navigation">
+  <section class="container">
+    <a class="navigation-title" href="http://flyblog.tech/">
+      fly
+    </a>
+    <input type="checkbox" id="menu-toggle" />
+    <label class="menu-button float-right" for="menu-toggle"><i class="fas fa-bars"></i></label>
+    <ul class="navigation-list">
+      
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="http://flyblog.tech/posts/">Blog</a>
+          </li>
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="http://flyblog.tech/about/">About</a>
+          </li>
+        
+      
+      
+    </ul>
+  </section>
+</nav>
+
+
+      <div class="content">
+        
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">文件介绍</h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fas fa-calendar"></i>
+              <time datetime='2011-12-23T13:05:31Z'>
+                December 23, 2011
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fas fa-clock"></i>
+              
+            </span>
+          </div>
+          
+          
+        </div>
+      </header>
+
+      <div>
+        <h1 id="heading">文件介绍</h1>
 <h2 id="heading1">文件系统结构</h2>
-<p><img src="/image/fs.png" alt="file system"></p>
+<p><img src="http://flyblog.tech/image/fs.png" alt="file system"></p>
 <h2 id="heading2">文件</h2>
 <ul>
 <li>文件是由inode+data blocks组成</li>
@@ -46,26 +145,94 @@
 <p>如果用面向对象的思想来描述文件，那么把inode看成对象，inode number就是对象地址，
 link count就是对象的引用计数，directory entry是对象的引用</p>
 <h2 id="heading3">创建文件</h2>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;sys/types.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;sys/stat.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;fcntl.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">open</span>(<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>pathname, <span style="color:#66d9ef">int</span> flags);
-<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">open</span>(<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>pathname, <span style="color:#66d9ef">int</span> flags, mode_t mode);
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="">#</span><span style="">include</span> <span style="">&lt;sys/types.h&gt;</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">include</span> <span style="">&lt;sys/stat.h&gt;</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">include</span> <span style="">&lt;fcntl.h&gt;</span><span style="">
+</span><span style=""></span><span style="">int</span> open(<span style="font-weight:bold">const</span> <span style="">char</span> *pathname, <span style="">int</span> flags);
+<span style="">int</span> open(<span style="font-weight:bold">const</span> <span style="">char</span> *pathname, <span style="">int</span> flags, mode_t mode);
 </code></pre></div><p>open函数创建inode，然后创建一个引用(directory entry)，其中包含inode number和引用名，此时该inode的引用计数为1
 <code>pathname</code>为新的引用名</p>
 <h2 id="heading4">增加引用计数</h2>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;unistd.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">link</span>(<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>oldpath, <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>newpath);
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="">#</span><span style="">include</span> <span style="">&lt;unistd.h&gt;</span><span style="">
+</span><span style=""></span><span style="">int</span> link(<span style="font-weight:bold">const</span> <span style="">char</span> *oldpath, <span style="font-weight:bold">const</span> <span style="">char</span> *newpath);
 </code></pre></div><p>link函数用来增加inode的引用计数，并创建一个新的引用(directory entry)，其中包含inode number和新的引用名
 引用名<code>oldpath</code>指向已有的inode对象，<code>newpath</code>为新建的引用的名称</p>
 <h2 id="heading5">减少引用计数</h2>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;unistd.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">unlink</span>(<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>pathname);
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="">#</span><span style="">include</span> <span style="">&lt;unistd.h&gt;</span><span style="">
+</span><span style=""></span><span style="">int</span> unlink(<span style="font-weight:bold">const</span> <span style="">char</span> *pathname);
 </code></pre></div><p>unlink将引用名<code>pathname</code>指向的inode对象的引用计数减1，如果对象的引用计数减为0，则内核将删除inode和对应的data blocks</p>
 <p><code>rm(1)</code>命令调用<code>unlink</code>函数</p>
 
-</article>
+      </div>
+
+      <footer>
+        
 
 
+        <div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "yourdiscussshortname" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+        
+        
+      </footer>
+    </article>
+
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script type="text/javascript" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/startup.js" id="MathJax-script"></script>
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [
+          ['$', '$'], ['\\(', '\\)']
+        ],
+        processEscapes: true,
+        processEnvironments: true
+      },
+      options: {
+        skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+      }
+    };
+  </script>
+  </section>
+
+      </div>
+
+      <footer class="footer">
+  <section class="container">
+    
+      <p>记录点滴生活</p>
+    
+     © 2019
+    
+       · 
+       <a href="https://gohugo.io/">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/">Coder</a>.
+    
+    
+  </section>
+</footer>
+
+    </main>
+
+    
+
+  </body>
 
 </html>

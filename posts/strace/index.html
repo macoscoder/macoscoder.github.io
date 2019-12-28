@@ -1,29 +1,134 @@
 <!DOCTYPE html>
-<html lang="zh-cn">
-<title>trace system calls and signals | 我的博客</title>
-<meta charset="utf-8">
-<meta name="generator" content="Hugo 0.60.1" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="canonical" href="http://flyblog.tech/posts/strace/">
-<link rel="alternate" type="application/rss+xml" href="" title="我的博客">
-<link rel="stylesheet" href="http://flyblog.tech/css/theme.css">
-<link rel="stylesheet" href="http://flyblog.tech/css/classes.css">
+<html lang="zh">
 
-<header class="dark">
-  <h2><a href="http://flyblog.tech/">我的博客</a></h2>
-  <nav>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="author" content="fly">
+    <meta name="description" content="我的博客">
+    <meta name="keywords" content="blog,developer,personal">
+
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="trace system calls and signals"/>
+<meta name="twitter:description" content="trace system calls and signals 用法 strace [options] command [args] 说明 strace运行命令，追踪命令调用的系统调用和收到的信号，默认输出到stderr
+输出的每行包括
+ system call name arguments return value  例如
+open(&#34;/dev/null&#34;, O_RDONLY) = 3 如果系统调用失败，还会输出errno符号和错误描述信息
+open(&#34;/foo/bar&#34;, O_RDONLY) = -1 ENOENT (No such file or directory) 选项 过滤选项 -e [qualifier=][!]value1[,value2]... -v 输出execve的envp参数以及结构类型的非压缩版本 qualifier可以为
+ trace 追踪指定的系统调用 abbrev 压缩指定的结构类型，默认值为all，如果指定-v选项，则abbrev=none verbose 解引用指定系统调用的结构参数，默认值为all raw 以十六进制输出指定系统调用的参数 signal 追踪指定的信号，默认值为all read dump指定的描述符的读数据 write dump指定的描述符的写数据 fault 使指定的系统调用失败  如果不指定qualifier，则默认为trace，例如:
+strace -e open date等价于strace -e trace=open date"/>
+
+    <meta property="og:title" content="trace system calls and signals" />
+<meta property="og:description" content="trace system calls and signals 用法 strace [options] command [args] 说明 strace运行命令，追踪命令调用的系统调用和收到的信号，默认输出到stderr
+输出的每行包括
+ system call name arguments return value  例如
+open(&#34;/dev/null&#34;, O_RDONLY) = 3 如果系统调用失败，还会输出errno符号和错误描述信息
+open(&#34;/foo/bar&#34;, O_RDONLY) = -1 ENOENT (No such file or directory) 选项 过滤选项 -e [qualifier=][!]value1[,value2]... -v 输出execve的envp参数以及结构类型的非压缩版本 qualifier可以为
+ trace 追踪指定的系统调用 abbrev 压缩指定的结构类型，默认值为all，如果指定-v选项，则abbrev=none verbose 解引用指定系统调用的结构参数，默认值为all raw 以十六进制输出指定系统调用的参数 signal 追踪指定的信号，默认值为all read dump指定的描述符的读数据 write dump指定的描述符的写数据 fault 使指定的系统调用失败  如果不指定qualifier，则默认为trace，例如:
+strace -e open date等价于strace -e trace=open date" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://flyblog.tech/posts/strace/" />
+<meta property="article:published_time" content="2011-12-23T13:05:31+00:00" />
+<meta property="article:modified_time" content="2011-12-23T13:05:31+00:00" />
+
+
     
-  </nav>
-</header>
+      <base href="http://flyblog.tech/posts/strace/">
+    
+    <title>
+  trace system calls and signals · fly
+</title>
 
-<article>
-  <header>
-    <h1>trace system calls and signals</h1>
-    <p><time datetime="2011-12-23T13:05:31Z">December 23, 2011</time></p>
-  </header>
-  <h1 id="trace-system-calls-and-signals">trace system calls and signals</h1>
+    
+      <link rel="canonical" href="http://flyblog.tech/posts/strace/">
+    
+
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,700%7CMerriweather:300,700%7CSource+Code+Pro:400,700" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.11.2/css/all.css" integrity="sha384-KA6wR/X5RY4zFAHpv/CnoG2UW1uogYfdnP67Uv7eULvTveboZJg0qUpmJZb5VqzN" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" integrity="sha256-l85OmPOjvil/SOvVt3HnSSjzF1TUMyT9eV0c2BzEGzU=" crossorigin="anonymous" />
+
+    
+      
+      
+      <link rel="stylesheet" href="http://flyblog.tech/css/coder.min.28d751104f30c16da1aa1bb04015cbe662cacfe0d1b01af4f2240ad58580069c.css" integrity="sha256-KNdREE8wwW2hqhuwQBXL5mLKz&#43;DRsBr08iQK1YWABpw=" crossorigin="anonymous" media="screen" />
+    
+
+    
+
+    
+
+    
+      <link rel="stylesheet" href="http://flyblog.tech/css/custom.css" />
+    
+
+    
+    
+    <link rel="icon" type="image/png" href="http://flyblog.tech/img/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="http://flyblog.tech/img/favicon-16x16.png" sizes="16x16">
+
+    <meta name="generator" content="Hugo 0.60.1" />
+  </head>
+
+  
+  
+  <body class="colorscheme-light">
+    <main class="wrapper">
+      <nav class="navigation">
+  <section class="container">
+    <a class="navigation-title" href="http://flyblog.tech/">
+      fly
+    </a>
+    <input type="checkbox" id="menu-toggle" />
+    <label class="menu-button float-right" for="menu-toggle"><i class="fas fa-bars"></i></label>
+    <ul class="navigation-list">
+      
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="http://flyblog.tech/posts/">Blog</a>
+          </li>
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="http://flyblog.tech/about/">About</a>
+          </li>
+        
+      
+      
+    </ul>
+  </section>
+</nav>
+
+
+      <div class="content">
+        
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">trace system calls and signals</h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fas fa-calendar"></i>
+              <time datetime='2011-12-23T13:05:31Z'>
+                December 23, 2011
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fas fa-clock"></i>
+              
+            </span>
+          </div>
+          
+          
+        </div>
+      </header>
+
+      <div>
+        <h1 id="trace-system-calls-and-signals">trace system calls and signals</h1>
 <h2 id="heading">用法</h2>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">strace <span style="color:#f92672">[</span>options<span style="color:#f92672">]</span> command <span style="color:#f92672">[</span>args<span style="color:#f92672">]</span>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">strace [options] command [args]
 </code></pre></div><h2 id="heading1">说明</h2>
 <p><code>strace</code>运行命令，追踪命令调用的系统调用和收到的信号，默认输出到<code>stderr</code></p>
 <p>输出的每行包括</p>
@@ -33,12 +138,12 @@
 <li>return value</li>
 </ul>
 <p>例如</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">open(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">/dev/null</span><span style="color:#e6db74">&#34;</span>, O_RDONLY) <span style="color:#f92672">=</span> <span style="color:#ae81ff">3</span>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">open(<span style="font-style:italic"></span><span style="font-style:italic">&#34;</span><span style="font-style:italic">/dev/null</span><span style="font-style:italic">&#34;</span>, O_RDONLY) = 3
 </code></pre></div><p>如果系统调用失败，还会输出errno符号和错误描述信息</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">open(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">/foo/bar</span><span style="color:#e6db74">&#34;</span>, O_RDONLY) <span style="color:#f92672">=</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span> ENOENT (No such file or directory)
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">open(<span style="font-style:italic"></span><span style="font-style:italic">&#34;</span><span style="font-style:italic">/foo/bar</span><span style="font-style:italic">&#34;</span>, O_RDONLY) = -1 ENOENT (No such file or directory)
 </code></pre></div><h2 id="heading2">选项</h2>
 <h3 id="heading3">过滤选项</h3>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">-e <span style="color:#f92672">[</span>qualifier<span style="color:#f92672">=</span><span style="color:#f92672">]</span><span style="color:#f92672">[</span>!<span style="color:#f92672">]</span>value1<span style="color:#f92672">[</span>,value2<span style="color:#f92672">]</span>...
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">-e [qualifier=][!]value1[,value2]...
 -v 输出execve的envp参数以及结构类型的非压缩版本
 </code></pre></div><p><code>qualifier</code>可以为</p>
 <ul>
@@ -56,37 +161,37 @@
 <p><code>!</code>的作用是取反，例如:</p>
 <p><code>strace -e trace=!open date</code>是追踪除<code>open</code>以外的系统调用</p>
 <h3 id="heading4">输出选项</h3>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">-o filename 重定向stderr到filename
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">-o filename 重定向stderr到filename
 -s strsize 指定字符串参数的最大输出长度，默认为32
 </code></pre></div><h3 id="heading5">统计选项</h3>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">-c Count time, calls, and errors <span style="color:#66d9ef">for</span> each system call and report a summary on program exit.
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">-c Count time, calls, and errors <span style="font-weight:bold">for</span> each system call and report a summary on program exit.
 </code></pre></div><h3 id="heading6">追踪选项</h3>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">-f 追踪子进程和子线程
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">-f 追踪子进程和子线程
 -ff 追踪子进程和子线程，输出各个进程的追踪信息到filename.pid，需同时使用-o filename选项
 </code></pre></div><h3 id="heading7">启动选项</h3>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">-p pid 追踪pid指定的进程
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">-p pid 追踪pid指定的进程
 </code></pre></div><h2 id="heading8">举例</h2>
 <h3 id="forkclone">查看fork调用clone使用的参数</h3>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">// fork.c
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;stdlib.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;sys/wait.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;unistd.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span>
-<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>() {
-    <span style="color:#66d9ef">switch</span> (fork()) {
-    <span style="color:#66d9ef">case</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span><span style="color:#f92672">:</span>
-        exit(<span style="color:#ae81ff">1</span>);
-    <span style="color:#66d9ef">case</span> <span style="color:#ae81ff">0</span><span style="color:#f92672">:</span>
-        _exit(<span style="color:#ae81ff">0</span>);
-    <span style="color:#66d9ef">default</span><span style="color:#f92672">:</span>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="font-style:italic">// fork.c
+</span><span style="font-style:italic"></span><span style="">#</span><span style="">include</span> <span style="">&lt;stdlib.h&gt;</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">include</span> <span style="">&lt;sys/wait.h&gt;</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">include</span> <span style="">&lt;unistd.h&gt;</span><span style="">
+</span><span style=""></span>
+<span style="">int</span> main() {
+    <span style="font-weight:bold">switch</span> (fork()) {
+    <span style="font-weight:bold">case</span> -1:
+        exit(1);
+    <span style="font-weight:bold">case</span> 0:
+        _exit(0);
+    <span style="font-weight:bold">default</span>:
         wait(NULL);
     }
 }
-</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ cc fork.c
-$ strace -e trace<span style="color:#f92672">=</span>clone ./a.out
-clone<span style="color:#f92672">(</span>child_stack<span style="color:#f92672">=</span>NULL, flags<span style="color:#f92672">=</span>CLONE_CHILD_CLEARTID|CLONE_CHILD_SETTID|SIGCHLD, child_tidptr<span style="color:#f92672">=</span>0x7f5aa2dc29d0<span style="color:#f92672">)</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">8778</span>
---- SIGCHLD <span style="color:#f92672">{</span>si_signo<span style="color:#f92672">=</span>SIGCHLD, si_code<span style="color:#f92672">=</span>CLD_EXITED, si_pid<span style="color:#f92672">=</span>8778, si_uid<span style="color:#f92672">=</span>1000, si_status<span style="color:#f92672">=</span>0, si_utime<span style="color:#f92672">=</span>0, si_stime<span style="color:#f92672">=</span>0<span style="color:#f92672">}</span> ---
-+++ exited with <span style="color:#ae81ff">0</span> +++
+</code></pre></div><div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ cc fork.c
+$ strace -e trace=clone ./a.out
+clone(child_stack=NULL, flags=CLONE_CHILD_CLEARTID|CLONE_CHILD_SETTID|SIGCHLD, child_tidptr=0x7f5aa2dc29d0) = 8778
+--- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=8778, si_uid=1000, si_status=0, si_utime=0, si_stime=0} ---
++++ exited with 0 +++
 $
 </code></pre></div><p>从上面的输出看到</p>
 <p>参数<code>child_stack</code>为<code>NULL</code>，因为子进程有自己独立的虚拟内存空间，这是与线程的一个区别</p>
@@ -100,26 +205,26 @@ $
 <p>以---开头和结尾的行显示了当子进程终止时，父进程收到的信号<code>SIGCHLD</code>，后面花括号里显示了结构<code>siginfo_t</code>的一些信息</p>
 <p>以+++开头和结尾的行显示了进程的终止状态，正常终止或者非正常终止(killed by signal)</p>
 <h3 id="pthreadcreateclone">查看pthread_create调用clone使用的参数</h3>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">// thread.c
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;pthread.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;stdlib.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;sys/wait.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;unistd.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span>
-<span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">thread_func</span>(<span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>arg) {
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="font-style:italic">// thread.c
+</span><span style="font-style:italic"></span><span style="">#</span><span style="">include</span> <span style="">&lt;pthread.h&gt;</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">include</span> <span style="">&lt;stdlib.h&gt;</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">include</span> <span style="">&lt;sys/wait.h&gt;</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">include</span> <span style="">&lt;unistd.h&gt;</span><span style="">
+</span><span style=""></span>
+<span style="font-weight:bold">static</span> <span style="">void</span> *thread_func(<span style="">void</span> *arg) {
     pthread_exit(NULL);
 }
 
-<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>() {
+<span style="">int</span> main() {
     pthread_t t;
-    pthread_create(<span style="color:#f92672">&amp;</span>t, NULL, thread_func, NULL);
+    pthread_create(&amp;t, NULL, thread_func, NULL);
     pthread_join(t, NULL);
 }
 
-</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ cc -pthread thread.c
-$ strace -e trace<span style="color:#f92672">=</span>clone ./a.out
-clone<span style="color:#f92672">(</span>child_stack<span style="color:#f92672">=</span>0x7f2912cdbff0, flags<span style="color:#f92672">=</span>CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, parent_tidptr<span style="color:#f92672">=</span>0x7f2912cdc9d0, tls<span style="color:#f92672">=</span>0x7f2912cdc700, child_tidptr<span style="color:#f92672">=</span>0x7f2912cdc9d0<span style="color:#f92672">)</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">9003</span>
-+++ exited with <span style="color:#ae81ff">0</span> +++
+</code></pre></div><div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ cc -pthread thread.c
+$ strace -e trace=clone ./a.out
+clone(child_stack=0x7f2912cdbff0, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, parent_tidptr=0x7f2912cdc9d0, tls=0x7f2912cdc700, child_tidptr=0x7f2912cdc9d0) = 9003
++++ exited with 0 +++
 $
 </code></pre></div><p>从上面的输出看到</p>
 <p>设置了<code>child_stack</code>参数，因为子进程(线程)共享父进程的虚拟内存空间，需要为子线程分配独立的栈</p>
@@ -140,8 +245,76 @@ $
 <p>注意观察参数<code>parent_tidptr</code>和<code>child_tidptr</code>指向同一个地址<code>0x7f2912cdc9d0</code>，因为子线程与父进程共享虚拟内存</p>
 <p>返回值9003是子进程的id</p>
 
-</article>
+      </div>
+
+      <footer>
+        
 
 
+        <div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "yourdiscussshortname" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+        
+        
+      </footer>
+    </article>
+
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script type="text/javascript" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/startup.js" id="MathJax-script"></script>
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [
+          ['$', '$'], ['\\(', '\\)']
+        ],
+        processEscapes: true,
+        processEnvironments: true
+      },
+      options: {
+        skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+      }
+    };
+  </script>
+  </section>
+
+      </div>
+
+      <footer class="footer">
+  <section class="container">
+    
+      <p>记录点滴生活</p>
+    
+     © 2019
+    
+       · 
+       <a href="https://gohugo.io/">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/">Coder</a>.
+    
+    
+  </section>
+</footer>
+
+    </main>
+
+    
+
+  </body>
 
 </html>

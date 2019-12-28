@@ -1,27 +1,142 @@
 <!DOCTYPE html>
-<html lang="zh-cn">
-<title>进程终止 | 我的博客</title>
-<meta charset="utf-8">
-<meta name="generator" content="Hugo 0.60.1" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="canonical" href="http://flyblog.tech/posts/process-termination/">
-<link rel="alternate" type="application/rss+xml" href="" title="我的博客">
-<link rel="stylesheet" href="http://flyblog.tech/css/theme.css">
-<link rel="stylesheet" href="http://flyblog.tech/css/classes.css">
+<html lang="zh">
 
-<header class="dark">
-  <h2><a href="http://flyblog.tech/">我的博客</a></h2>
-  <nav>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="author" content="fly">
+    <meta name="description" content="我的博客">
+    <meta name="keywords" content="blog,developer,personal">
+
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="进程终止"/>
+<meta name="twitter:description" content="进程终止 终止方式 进程终止的两种方式
+ 正常终止 非正常终止  正常终止 系统调用
+#include &lt;linux/unistd.h&gt;void exit_group(int status); #include &lt;unistd.h&gt;void _exit(int status); 库函数
+#include &lt;stdlib.h&gt;void exit(int status); exit和_exit的区别是exit会额外执行以下动作:
+ Call exit handlers, in reverse order of their registration Flush stdio stream  非正常终止 进程收到信号导致的终止称为非正常终止
+硬件产生的信号
+SIGILL, SIGBUS, SIGFPE, SIGSEGV
+终端驱动产生的信号
+SIGHUP, SIGINT, SIGQUIT
+系统调用
+#include &lt;signal.h&gt;int kill(pid_t pid, int sig); int tkill(int tid, int sig); int tgkill(int tgid, int tid, int sig); 库函数
+#include &lt;signal.h&gt;#include &lt;pthread."/>
+
+    <meta property="og:title" content="进程终止" />
+<meta property="og:description" content="进程终止 终止方式 进程终止的两种方式
+ 正常终止 非正常终止  正常终止 系统调用
+#include &lt;linux/unistd.h&gt;void exit_group(int status); #include &lt;unistd.h&gt;void _exit(int status); 库函数
+#include &lt;stdlib.h&gt;void exit(int status); exit和_exit的区别是exit会额外执行以下动作:
+ Call exit handlers, in reverse order of their registration Flush stdio stream  非正常终止 进程收到信号导致的终止称为非正常终止
+硬件产生的信号
+SIGILL, SIGBUS, SIGFPE, SIGSEGV
+终端驱动产生的信号
+SIGHUP, SIGINT, SIGQUIT
+系统调用
+#include &lt;signal.h&gt;int kill(pid_t pid, int sig); int tkill(int tid, int sig); int tgkill(int tgid, int tid, int sig); 库函数
+#include &lt;signal.h&gt;#include &lt;pthread." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://flyblog.tech/posts/process-termination/" />
+<meta property="article:published_time" content="2011-12-23T13:05:31+00:00" />
+<meta property="article:modified_time" content="2011-12-23T13:05:31+00:00" />
+
+
     
-  </nav>
-</header>
+      <base href="http://flyblog.tech/posts/process-termination/">
+    
+    <title>
+  进程终止 · fly
+</title>
 
-<article>
-  <header>
-    <h1>进程终止</h1>
-    <p><time datetime="2011-12-23T13:05:31Z">December 23, 2011</time></p>
-  </header>
-  <h1 id="heading">进程终止</h1>
+    
+      <link rel="canonical" href="http://flyblog.tech/posts/process-termination/">
+    
+
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,700%7CMerriweather:300,700%7CSource+Code+Pro:400,700" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.11.2/css/all.css" integrity="sha384-KA6wR/X5RY4zFAHpv/CnoG2UW1uogYfdnP67Uv7eULvTveboZJg0qUpmJZb5VqzN" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" integrity="sha256-l85OmPOjvil/SOvVt3HnSSjzF1TUMyT9eV0c2BzEGzU=" crossorigin="anonymous" />
+
+    
+      
+      
+      <link rel="stylesheet" href="http://flyblog.tech/css/coder.min.28d751104f30c16da1aa1bb04015cbe662cacfe0d1b01af4f2240ad58580069c.css" integrity="sha256-KNdREE8wwW2hqhuwQBXL5mLKz&#43;DRsBr08iQK1YWABpw=" crossorigin="anonymous" media="screen" />
+    
+
+    
+
+    
+
+    
+      <link rel="stylesheet" href="http://flyblog.tech/css/custom.css" />
+    
+
+    
+    
+    <link rel="icon" type="image/png" href="http://flyblog.tech/img/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="http://flyblog.tech/img/favicon-16x16.png" sizes="16x16">
+
+    <meta name="generator" content="Hugo 0.60.1" />
+  </head>
+
+  
+  
+  <body class="colorscheme-light">
+    <main class="wrapper">
+      <nav class="navigation">
+  <section class="container">
+    <a class="navigation-title" href="http://flyblog.tech/">
+      fly
+    </a>
+    <input type="checkbox" id="menu-toggle" />
+    <label class="menu-button float-right" for="menu-toggle"><i class="fas fa-bars"></i></label>
+    <ul class="navigation-list">
+      
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="http://flyblog.tech/posts/">Blog</a>
+          </li>
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="http://flyblog.tech/about/">About</a>
+          </li>
+        
+      
+      
+    </ul>
+  </section>
+</nav>
+
+
+      <div class="content">
+        
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">进程终止</h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fas fa-calendar"></i>
+              <time datetime='2011-12-23T13:05:31Z'>
+                December 23, 2011
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fas fa-clock"></i>
+              
+            </span>
+          </div>
+          
+          
+        </div>
+      </header>
+
+      <div>
+        <h1 id="heading">进程终止</h1>
 <h2 id="heading1">终止方式</h2>
 <p>进程终止的两种方式</p>
 <ul>
@@ -30,13 +145,13 @@
 </ul>
 <h3 id="heading2">正常终止</h3>
 <p>系统调用</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;linux/unistd.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">exit_group</span>(<span style="color:#66d9ef">int</span> status);
-</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;unistd.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">_exit</span>(<span style="color:#66d9ef">int</span> status);
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="">#</span><span style="">include</span> <span style="">&lt;linux/unistd.h&gt;</span><span style="">
+</span><span style=""></span><span style="">void</span> exit_group(<span style="">int</span> status);
+</code></pre></div><div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="">#</span><span style="">include</span> <span style="">&lt;unistd.h&gt;</span><span style="">
+</span><span style=""></span><span style="">void</span> _exit(<span style="">int</span> status);
 </code></pre></div><p>库函数</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;stdlib.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">exit</span>(<span style="color:#66d9ef">int</span> status);
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="">#</span><span style="">include</span> <span style="">&lt;stdlib.h&gt;</span><span style="">
+</span><span style=""></span><span style="">void</span> exit(<span style="">int</span> status);
 </code></pre></div><p><code>exit</code>和<code>_exit</code>的区别是<code>exit</code>会额外执行以下动作:</p>
 <ul>
 <li>Call exit handlers, in reverse order of their registration</li>
@@ -49,21 +164,21 @@
 <p>终端驱动产生的信号</p>
 <p><code>SIGHUP</code>, <code>SIGINT</code>, <code>SIGQUIT</code></p>
 <p>系统调用</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;signal.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">kill</span>(pid_t pid, <span style="color:#66d9ef">int</span> sig);
-</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">tkill</span>(<span style="color:#66d9ef">int</span> tid, <span style="color:#66d9ef">int</span> sig);
-<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">tgkill</span>(<span style="color:#66d9ef">int</span> tgid, <span style="color:#66d9ef">int</span> tid, <span style="color:#66d9ef">int</span> sig);
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="">#</span><span style="">include</span> <span style="">&lt;signal.h&gt;</span><span style="">
+</span><span style=""></span><span style="">int</span> kill(pid_t pid, <span style="">int</span> sig);
+</code></pre></div><div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="">int</span> tkill(<span style="">int</span> tid, <span style="">int</span> sig);
+<span style="">int</span> tgkill(<span style="">int</span> tgid, <span style="">int</span> tid, <span style="">int</span> sig);
 </code></pre></div><p>库函数</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;signal.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;pthread.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">pthread_kill</span>(pthread_t <span style="color:#66d9ef">thread</span>, <span style="color:#66d9ef">int</span> sig);
-<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">pthread_sigqueue</span>(pthread_t <span style="color:#66d9ef">thread</span>, <span style="color:#66d9ef">int</span> sig, <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">union</span> sigval value);
-</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;signal.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">raise</span>(<span style="color:#66d9ef">int</span> sig);
-<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">killpg</span>(<span style="color:#66d9ef">int</span> pgrp, <span style="color:#66d9ef">int</span> sig);
-<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">sigqueue</span>(pid_t pid, <span style="color:#66d9ef">int</span> sig, <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">union</span> sigval value);
-</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;stdlib.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">abort</span>(); <span style="color:#75715e">// SIGABRT
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="">#</span><span style="">include</span> <span style="">&lt;signal.h&gt;</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">include</span> <span style="">&lt;pthread.h&gt;</span><span style="">
+</span><span style=""></span><span style="">int</span> pthread_kill(pthread_t <span style="font-weight:bold">thread</span>, <span style="">int</span> sig);
+<span style="">int</span> pthread_sigqueue(pthread_t <span style="font-weight:bold">thread</span>, <span style="">int</span> sig, <span style="font-weight:bold">const</span> <span style="font-weight:bold">union</span> sigval value);
+</code></pre></div><div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="">#</span><span style="">include</span> <span style="">&lt;signal.h&gt;</span><span style="">
+</span><span style=""></span><span style="">int</span> raise(<span style="">int</span> sig);
+<span style="">int</span> killpg(<span style="">int</span> pgrp, <span style="">int</span> sig);
+<span style="">int</span> sigqueue(pid_t pid, <span style="">int</span> sig, <span style="font-weight:bold">const</span> <span style="font-weight:bold">union</span> sigval value);
+</code></pre></div><div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="">#</span><span style="">include</span> <span style="">&lt;stdlib.h&gt;</span><span style="">
+</span><span style=""></span><span style="">void</span> abort(); <span style="font-style:italic">// SIGABRT
 </span></code></pre></div><h3 id="termination-status">终止状态(termination status)</h3>
 <p>进程终止时会产生一个终止状态值[0-255]，这个值会被父进程收集到<br>
 在<code>shell</code>中可以通过<code>shell</code>变量<code>$?</code>来获取<code>shell</code>的子进程的终止状态</p>
@@ -71,32 +186,32 @@
 非正常终止的终止状态为终止该进程的信号值</p>
 <h4 id="exit-status">退出状态(exit status)</h4>
 <p>尽管<code>_exit</code>的<code>status</code>参数类型是<code>int</code>，但是只有低8位有效(status &amp; oxff)，范围为[0-255]</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">// exit.c
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;stdlib.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>() {
-    exit(<span style="color:#ae81ff">256</span>); <span style="color:#75715e">// 256 = 0x100
-</span><span style="color:#75715e"></span>}
-</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ cc exit.c
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="font-style:italic">// exit.c
+</span><span style="font-style:italic"></span><span style="">#</span><span style="">include</span> <span style="">&lt;stdlib.h&gt;</span><span style="">
+</span><span style=""></span><span style="">int</span> main() {
+    exit(256); <span style="font-style:italic">// 256 = 0x100
+</span><span style="font-style:italic"></span>}
+</code></pre></div><div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ cc exit.c
 $ ./a.out
 $ echo $?
-<span style="color:#ae81ff">0</span>
+0
 </code></pre></div><h4 id="heading4">非正常终止的终止状态</h4>
 <p>前面提到: 非正常终止的终止状态为终止该进程的信号值<br>
 由于linux的标准信号的取值范围是[1-31]，实时信号的取值范围是[SIGRTMIN-SIGRTMAX]</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ bash -c <span style="color:#e6db74">&#39;kill -l&#39;</span>
- 1<span style="color:#f92672">)</span> SIGHUP       2<span style="color:#f92672">)</span> SIGINT       3<span style="color:#f92672">)</span> SIGQUIT      4<span style="color:#f92672">)</span> SIGILL       5<span style="color:#f92672">)</span> SIGTRAP
- 6<span style="color:#f92672">)</span> SIGABRT      7<span style="color:#f92672">)</span> SIGBUS       8<span style="color:#f92672">)</span> SIGFPE       9<span style="color:#f92672">)</span> SIGKILL     10<span style="color:#f92672">)</span> SIGUSR1
-11<span style="color:#f92672">)</span> SIGSEGV     12<span style="color:#f92672">)</span> SIGUSR2     13<span style="color:#f92672">)</span> SIGPIPE     14<span style="color:#f92672">)</span> SIGALRM     15<span style="color:#f92672">)</span> SIGTERM
-16<span style="color:#f92672">)</span> SIGSTKFLT   17<span style="color:#f92672">)</span> SIGCHLD     18<span style="color:#f92672">)</span> SIGCONT     19<span style="color:#f92672">)</span> SIGSTOP     20<span style="color:#f92672">)</span> SIGTSTP
-21<span style="color:#f92672">)</span> SIGTTIN     22<span style="color:#f92672">)</span> SIGTTOU     23<span style="color:#f92672">)</span> SIGURG      24<span style="color:#f92672">)</span> SIGXCPU     25<span style="color:#f92672">)</span> SIGXFSZ
-26<span style="color:#f92672">)</span> SIGVTALRM   27<span style="color:#f92672">)</span> SIGPROF     28<span style="color:#f92672">)</span> SIGWINCH    29<span style="color:#f92672">)</span> SIGIO       30<span style="color:#f92672">)</span> SIGPWR
-31<span style="color:#f92672">)</span> SIGSYS      34<span style="color:#f92672">)</span> SIGRTMIN    35<span style="color:#f92672">)</span> SIGRTMIN+1  36<span style="color:#f92672">)</span> SIGRTMIN+2  37<span style="color:#f92672">)</span> SIGRTMIN+3
-38<span style="color:#f92672">)</span> SIGRTMIN+4  39<span style="color:#f92672">)</span> SIGRTMIN+5  40<span style="color:#f92672">)</span> SIGRTMIN+6  41<span style="color:#f92672">)</span> SIGRTMIN+7  42<span style="color:#f92672">)</span> SIGRTMIN+8
-43<span style="color:#f92672">)</span> SIGRTMIN+9  44<span style="color:#f92672">)</span> SIGRTMIN+10 45<span style="color:#f92672">)</span> SIGRTMIN+11 46<span style="color:#f92672">)</span> SIGRTMIN+12 47<span style="color:#f92672">)</span> SIGRTMIN+13
-48<span style="color:#f92672">)</span> SIGRTMIN+14 49<span style="color:#f92672">)</span> SIGRTMIN+15 50<span style="color:#f92672">)</span> SIGRTMAX-14 51<span style="color:#f92672">)</span> SIGRTMAX-13 52<span style="color:#f92672">)</span> SIGRTMAX-12
-53<span style="color:#f92672">)</span> SIGRTMAX-11 54<span style="color:#f92672">)</span> SIGRTMAX-10 55<span style="color:#f92672">)</span> SIGRTMAX-9  56<span style="color:#f92672">)</span> SIGRTMAX-8  57<span style="color:#f92672">)</span> SIGRTMAX-7
-58<span style="color:#f92672">)</span> SIGRTMAX-6  59<span style="color:#f92672">)</span> SIGRTMAX-5  60<span style="color:#f92672">)</span> SIGRTMAX-4  61<span style="color:#f92672">)</span> SIGRTMAX-3  62<span style="color:#f92672">)</span> SIGRTMAX-2
-63<span style="color:#f92672">)</span> SIGRTMAX-1  64<span style="color:#f92672">)</span> SIGRTMAX
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ bash -c <span style="font-style:italic">&#39;kill -l&#39;</span>
+ 1) SIGHUP       2) SIGINT       3) SIGQUIT      4) SIGILL       5) SIGTRAP
+ 6) SIGABRT      7) SIGBUS       8) SIGFPE       9) SIGKILL     10) SIGUSR1
+11) SIGSEGV     12) SIGUSR2     13) SIGPIPE     14) SIGALRM     15) SIGTERM
+16) SIGSTKFLT   17) SIGCHLD     18) SIGCONT     19) SIGSTOP     20) SIGTSTP
+21) SIGTTIN     22) SIGTTOU     23) SIGURG      24) SIGXCPU     25) SIGXFSZ
+26) SIGVTALRM   27) SIGPROF     28) SIGWINCH    29) SIGIO       30) SIGPWR
+31) SIGSYS      34) SIGRTMIN    35) SIGRTMIN+1  36) SIGRTMIN+2  37) SIGRTMIN+3
+38) SIGRTMIN+4  39) SIGRTMIN+5  40) SIGRTMIN+6  41) SIGRTMIN+7  42) SIGRTMIN+8
+43) SIGRTMIN+9  44) SIGRTMIN+10 45) SIGRTMIN+11 46) SIGRTMIN+12 47) SIGRTMIN+13
+48) SIGRTMIN+14 49) SIGRTMIN+15 50) SIGRTMAX-14 51) SIGRTMAX-13 52) SIGRTMAX-12
+53) SIGRTMAX-11 54) SIGRTMAX-10 55) SIGRTMAX-9  56) SIGRTMAX-8  57) SIGRTMAX-7
+58) SIGRTMAX-6  59) SIGRTMAX-5  60) SIGRTMAX-4  61) SIGRTMAX-3  62) SIGRTMAX-2
+63) SIGRTMAX-1  64) SIGRTMAX
 </code></pre></div><p>我们假设<code>shell</code>变量<code>$?</code>的值为2，那么我们无法区分是正常终止(<code>exit(2)</code>)，还是非正常终止(^C, send <code>SIGINT</code>)<br>
 <code>shell</code>的办法是，如果进程是被信号终止的，那么设置<code>$?</code>的值为<strong>128+signo</strong></p>
 <p>另外</p>
@@ -104,20 +219,88 @@ $ echo $?
 <code>exit</code>使用<code>128</code>表示参数无效</p>
 <p>基于这个原因，进程正常终止时我们可以使用的<code>exit status</code>范围缩小为**[0-125]**</p>
 <p>示例:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">// pause.c
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;unistd.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>() {
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="font-style:italic">// pause.c
+</span><span style="font-style:italic"></span><span style="">#</span><span style="">include</span> <span style="">&lt;unistd.h&gt;</span><span style="">
+</span><span style=""></span><span style="">int</span> main() {
     pause();
 }
-</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ cc pause.c
+</code></pre></div><div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ cc pause.c
 $ ./a.out
-^C           <span style="color:#75715e"># send SIGINT (2)</span>
+^C           <span style="font-style:italic"># send SIGINT (2)</span>
 $ echo $?
-<span style="color:#ae81ff">130</span>          <span style="color:#75715e"># 128 + 2</span>
+130          <span style="font-style:italic"># 128 + 2</span>
 </code></pre></div><p><code>shell</code>是如何区分子进程是正常终止还是非正常终止的？答案是通过系统调用<code>wait</code>的结果参数<strong>wait status</strong>，具体参考<code>wait(2)</code>手册</p>
 
-</article>
+      </div>
+
+      <footer>
+        
 
 
+        <div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "yourdiscussshortname" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+        
+        
+      </footer>
+    </article>
+
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script type="text/javascript" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/startup.js" id="MathJax-script"></script>
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [
+          ['$', '$'], ['\\(', '\\)']
+        ],
+        processEscapes: true,
+        processEnvironments: true
+      },
+      options: {
+        skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+      }
+    };
+  </script>
+  </section>
+
+      </div>
+
+      <footer class="footer">
+  <section class="container">
+    
+      <p>记录点滴生活</p>
+    
+     © 2019
+    
+       · 
+       <a href="https://gohugo.io/">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/">Coder</a>.
+    
+    
+  </section>
+</footer>
+
+    </main>
+
+    
+
+  </body>
 
 </html>

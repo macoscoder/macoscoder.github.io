@@ -1,31 +1,128 @@
 <!DOCTYPE html>
-<html lang="zh-cn">
-<title>C&#43;&#43; notes | 我的博客</title>
-<meta charset="utf-8">
-<meta name="generator" content="Hugo 0.60.1" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="canonical" href="http://flyblog.tech/posts/c&#43;&#43;-notes/">
-<link rel="alternate" type="application/rss+xml" href="" title="我的博客">
-<link rel="stylesheet" href="http://flyblog.tech/css/theme.css">
-<link rel="stylesheet" href="http://flyblog.tech/css/classes.css">
+<html lang="zh">
 
-<header class="dark">
-  <h2><a href="http://flyblog.tech/">我的博客</a></h2>
-  <nav>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="author" content="fly">
+    <meta name="description" content="我的博客">
+    <meta name="keywords" content="blog,developer,personal">
+
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="C&#43;&#43; notes"/>
+<meta name="twitter:description" content="C&#43;&#43; notes 输出预处理宏 cpp -dM /dev/null 输出头文件标准搜索路径 cpp -v -o /dev/null /dev/null 整型大小 在32位机器上
+ int 4 long 4 long long 8  在64位机器上
+ int 4 long 8 long long 8  literal character literal  auto c0 = &lsquo;A&rsquo;; // char auto c1 = L&#39;A&rsquo;; // wchar_t auto c2 = u&#39;A&rsquo;; // char16_t auto c3 = U&#39;A&rsquo;; // char32_t  string literal  auto s0 = &ldquo;hello&rdquo;; // const char * auto s1 = L&quot;hello&rdquo;; // const wchar_t * auto s2 = u&quot;hello&rdquo;; // const char16_t *, encoded as UTF-16 auto s3 = U&quot;hello&rdquo;; // const char32_t *, encoded as UTF-32 auto s4 = u8&quot;hello&rdquo;; // const char *, encoded as UTF-8  integer literal  auto i0 = 1; // int auto i1 = 1L; // long auto i2 = 1LL; // long long auto i3 = 1U; // unsigned int auto i4 = 1UL; // unsigned long auto i5 = 1ULL; // unsigned long long  floating point literal  auto f0 = 1."/>
+
+    <meta property="og:title" content="C&#43;&#43; notes" />
+<meta property="og:description" content="C&#43;&#43; notes 输出预处理宏 cpp -dM /dev/null 输出头文件标准搜索路径 cpp -v -o /dev/null /dev/null 整型大小 在32位机器上
+ int 4 long 4 long long 8  在64位机器上
+ int 4 long 8 long long 8  literal character literal  auto c0 = &lsquo;A&rsquo;; // char auto c1 = L&#39;A&rsquo;; // wchar_t auto c2 = u&#39;A&rsquo;; // char16_t auto c3 = U&#39;A&rsquo;; // char32_t  string literal  auto s0 = &ldquo;hello&rdquo;; // const char * auto s1 = L&quot;hello&rdquo;; // const wchar_t * auto s2 = u&quot;hello&rdquo;; // const char16_t *, encoded as UTF-16 auto s3 = U&quot;hello&rdquo;; // const char32_t *, encoded as UTF-32 auto s4 = u8&quot;hello&rdquo;; // const char *, encoded as UTF-8  integer literal  auto i0 = 1; // int auto i1 = 1L; // long auto i2 = 1LL; // long long auto i3 = 1U; // unsigned int auto i4 = 1UL; // unsigned long auto i5 = 1ULL; // unsigned long long  floating point literal  auto f0 = 1." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://flyblog.tech/posts/c&#43;&#43;-notes/" />
+<meta property="article:published_time" content="2011-12-23T13:05:31+00:00" />
+<meta property="article:modified_time" content="2011-12-23T13:05:31+00:00" />
+
+
     
-  </nav>
-</header>
+      <base href="http://flyblog.tech/posts/c&#43;&#43;-notes/">
+    
+    <title>
+  C&#43;&#43; notes · fly
+</title>
 
-<article>
-  <header>
-    <h1>C&#43;&#43; notes</h1>
-    <p><time datetime="2011-12-23T13:05:31Z">December 23, 2011</time></p>
-  </header>
-  <h1 id="c-notes">C++ notes</h1>
+    
+      <link rel="canonical" href="http://flyblog.tech/posts/c&#43;&#43;-notes/">
+    
+
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,700%7CMerriweather:300,700%7CSource+Code+Pro:400,700" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.11.2/css/all.css" integrity="sha384-KA6wR/X5RY4zFAHpv/CnoG2UW1uogYfdnP67Uv7eULvTveboZJg0qUpmJZb5VqzN" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" integrity="sha256-l85OmPOjvil/SOvVt3HnSSjzF1TUMyT9eV0c2BzEGzU=" crossorigin="anonymous" />
+
+    
+      
+      
+      <link rel="stylesheet" href="http://flyblog.tech/css/coder.min.28d751104f30c16da1aa1bb04015cbe662cacfe0d1b01af4f2240ad58580069c.css" integrity="sha256-KNdREE8wwW2hqhuwQBXL5mLKz&#43;DRsBr08iQK1YWABpw=" crossorigin="anonymous" media="screen" />
+    
+
+    
+
+    
+
+    
+      <link rel="stylesheet" href="http://flyblog.tech/css/custom.css" />
+    
+
+    
+    
+    <link rel="icon" type="image/png" href="http://flyblog.tech/img/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="http://flyblog.tech/img/favicon-16x16.png" sizes="16x16">
+
+    <meta name="generator" content="Hugo 0.60.1" />
+  </head>
+
+  
+  
+  <body class="colorscheme-light">
+    <main class="wrapper">
+      <nav class="navigation">
+  <section class="container">
+    <a class="navigation-title" href="http://flyblog.tech/">
+      fly
+    </a>
+    <input type="checkbox" id="menu-toggle" />
+    <label class="menu-button float-right" for="menu-toggle"><i class="fas fa-bars"></i></label>
+    <ul class="navigation-list">
+      
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="http://flyblog.tech/posts/">Blog</a>
+          </li>
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="http://flyblog.tech/about/">About</a>
+          </li>
+        
+      
+      
+    </ul>
+  </section>
+</nav>
+
+
+      <div class="content">
+        
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">C&#43;&#43; notes</h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fas fa-calendar"></i>
+              <time datetime='2011-12-23T13:05:31Z'>
+                December 23, 2011
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fas fa-clock"></i>
+              
+            </span>
+          </div>
+          
+          
+        </div>
+      </header>
+
+      <div>
+        <h1 id="c-notes">C++ notes</h1>
 <h2 id="heading">输出预处理宏</h2>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">cpp -dM /dev/null
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">cpp -dM /dev/null
 </code></pre></div><h2 id="heading1">输出头文件标准搜索路径</h2>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">cpp -v -o /dev/null /dev/null
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">cpp -v -o /dev/null /dev/null
 </code></pre></div><h2 id="heading2">整型大小</h2>
 <p>在32位机器上</p>
 <ul>
@@ -72,38 +169,38 @@
 </ul>
 <h2 id="const--constexpr">const &amp; constexpr</h2>
 <h3 id="const">const</h3>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp"><span style="color:#75715e">// const.h
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">const</span> <span style="color:#66d9ef">int</span> BUF_SIZE <span style="color:#f92672">=</span> <span style="color:#ae81ff">1024</span>;
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp"><span style="font-style:italic">// const.h
+</span><span style="font-style:italic"></span><span style="font-weight:bold">const</span> <span style="">int</span> BUF_SIZE = 1024;
 </code></pre></div><p><code>const</code>默认是<code>static</code>的，所以也可以在<code>const</code>前写<code>static</code></p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp"><span style="color:#75715e">// const.h
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">int</span> BUF_SIZE <span style="color:#f92672">=</span> <span style="color:#ae81ff">1024</span>;
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp"><span style="font-style:italic">// const.h
+</span><span style="font-style:italic"></span><span style="font-weight:bold">static</span> <span style="font-weight:bold">const</span> <span style="">int</span> BUF_SIZE = 1024;
 </code></pre></div><p>因为是<code>static</code>所以每个引用的源文件都拥有自己独立的<code>const</code>变量，不会产生多重定义的错误</p>
 <p>如果我们想多个源文件共享同一个<code>const</code>定义，则需要在头文件中用<code>extern</code>显式声明，并在实现文件中定义</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp"><span style="color:#75715e">// const.h
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">extern</span> <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">int</span> BUF_SIZE;
-</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp"><span style="color:#75715e">// const.cpp
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&#34;const.h&#34; // 这里要包含对BUF_SIZE的声明</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">const</span> <span style="color:#66d9ef">int</span> BUF_SIZE <span style="color:#f92672">=</span> <span style="color:#ae81ff">1024</span>;
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp"><span style="font-style:italic">// const.h
+</span><span style="font-style:italic"></span><span style="font-weight:bold">extern</span> <span style="font-weight:bold">const</span> <span style="">int</span> BUF_SIZE;
+</code></pre></div><div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp"><span style="font-style:italic">// const.cpp
+</span><span style="font-style:italic"></span><span style="">#</span><span style="">include</span> <span style="">&#34;const.h&#34; // 这里要包含对BUF_SIZE的声明</span><span style="">
+</span><span style=""></span><span style="font-weight:bold">const</span> <span style="">int</span> BUF_SIZE = 1024;
 </code></pre></div><h3 id="top-level-const">top level const</h3>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp"><span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>;
-<span style="color:#66d9ef">int</span> <span style="color:#f92672">*</span><span style="color:#66d9ef">const</span> p <span style="color:#f92672">=</span> <span style="color:#f92672">&amp;</span>i;
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp"><span style="">int</span> i = 1;
+<span style="">int</span> *<span style="font-weight:bold">const</span> p = &amp;i;
 </code></pre></div><p><code>p</code>本身是常量，<code>p</code>指向的对象是变量</p>
 <h3 id="low-level-const">low level const</h3>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp"><span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>;
-<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">int</span> <span style="color:#f92672">*</span>p <span style="color:#f92672">=</span> <span style="color:#f92672">&amp;</span>i;
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp"><span style="">int</span> i = 1;
+<span style="font-weight:bold">const</span> <span style="">int</span> *p = &amp;i;
 </code></pre></div><p><code>p</code>本身是变量，<code>p</code>指向的对象是变量，但是不能通过<code>p</code>修改指向的变量</p>
 <h3 id="constexpr">constexpr</h3>
 <p>在编译时求值的表达式称为常量表达式</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp"><span style="color:#66d9ef">constexpr</span> <span style="color:#66d9ef">int</span> BUF_SIZE <span style="color:#f92672">=</span> <span style="color:#ae81ff">1024</span>;
-</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp"><span style="color:#66d9ef">const</span> <span style="color:#66d9ef">int</span> <span style="color:#f92672">*</span>p <span style="color:#f92672">=</span> <span style="color:#66d9ef">nullptr</span>;         <span style="color:#75715e">// p is a pointer to a const int
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">constexpr</span> <span style="color:#66d9ef">int</span> <span style="color:#f92672">*</span>q <span style="color:#f92672">=</span> <span style="color:#66d9ef">nullptr</span>;     <span style="color:#75715e">// q is a const pointer to int
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp"><span style="font-weight:bold">constexpr</span> <span style="">int</span> BUF_SIZE = 1024;
+</code></pre></div><div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp"><span style="font-weight:bold">const</span> <span style="">int</span> *p = <span style="font-weight:bold">nullptr</span>;         <span style="font-style:italic">// p is a pointer to a const int
+</span><span style="font-style:italic"></span><span style="font-weight:bold">constexpr</span> <span style="">int</span> *q = <span style="font-weight:bold">nullptr</span>;     <span style="font-style:italic">// q is a const pointer to int
 </span></code></pre></div><p>constexpr 隐含 <code>top lever const</code></p>
 <p>在这里，<code>p</code>是变量，<code>q</code>是常量</p>
 <h2 id="heading3">类型别名</h2>
 <p>方法一</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp"><span style="color:#66d9ef">typedef</span> <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>CString;
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp"><span style="font-weight:bold">typedef</span> <span style="font-weight:bold">const</span> <span style="">char</span> *CString;
 </code></pre></div><p>方法二</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp"><span style="color:#66d9ef">using</span> CString <span style="color:#f92672">=</span> <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp"><span style="font-weight:bold">using</span> CString = <span style="font-weight:bold">const</span> <span style="">char</span> *
 </code></pre></div><h2 id="decltype">decltype</h2>
 <p><code>decltype(expr)</code> 返回表达式的类型</p>
 <p>如果表达式是个简单变量，那么返回变量的类型<br>
@@ -113,35 +210,35 @@
 <li>右值，返回右值类型</li>
 </ul>
 <p>举例</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp"><span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">42</span>;
-<span style="color:#66d9ef">int</span> <span style="color:#f92672">*</span>p <span style="color:#f92672">=</span> <span style="color:#f92672">&amp;</span>i;
-<span style="color:#66d9ef">int</span> <span style="color:#f92672">&amp;</span>r <span style="color:#f92672">=</span> i;
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp"><span style="">int</span> i = 42;
+<span style="">int</span> *p = &amp;i;
+<span style="">int</span> &amp;r = i;
 
-declexpr(i) a;          <span style="color:#75715e">// 表达式是简单变量，a是int类型
-</span><span style="color:#75715e"></span>declexpr(<span style="color:#f92672">*</span>p) b;         <span style="color:#75715e">// 表达式是左值，b是int &amp;类型
-</span><span style="color:#75715e"></span>declexpr(r<span style="color:#f92672">+</span><span style="color:#ae81ff">1</span>) c;        <span style="color:#75715e">// 表达式是右值，c是int类型
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">decltype</span>(i<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>) d;        <span style="color:#75715e">// 表达式是左值，d是int &amp;类型
-</span><span style="color:#75715e"></span>declexpr((i)) e;        <span style="color:#75715e">// 表达式是左值，e是int &amp;类型
+declexpr(i) a;          <span style="font-style:italic">// 表达式是简单变量，a是int类型
+</span><span style="font-style:italic"></span>declexpr(*p) b;         <span style="font-style:italic">// 表达式是左值，b是int &amp;类型
+</span><span style="font-style:italic"></span>declexpr(r+1) c;        <span style="font-style:italic">// 表达式是右值，c是int类型
+</span><span style="font-style:italic"></span><span style="font-weight:bold">decltype</span>(i=1) d;        <span style="font-style:italic">// 表达式是左值，d是int &amp;类型
+</span><span style="font-style:italic"></span>declexpr((i)) e;        <span style="font-style:italic">// 表达式是左值，e是int &amp;类型
 </span></code></pre></div><p>注意最后一个例子，<code>(i)</code>不算简单变量，并且是左值，所以<code>e</code>是<code>int &amp;</code>类型</p>
 <h2 id="inclass-initializer">in-class initializer</h2>
 <p>类内初始化有一点需要注意的</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp"><span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">foo</span> {
-        <span style="color:#66d9ef">int</span> a <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>;      <span style="color:#75715e">// ok
-</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">int</span> b{<span style="color:#ae81ff">1</span>};       <span style="color:#75715e">// ok
-</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">int</span> c <span style="color:#f92672">=</span> {<span style="color:#ae81ff">1</span>};    <span style="color:#75715e">// ok
-</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">int</span> <span style="color:#a6e22e">e</span>(<span style="color:#ae81ff">1</span>);       <span style="color:#75715e">// error, can not use direct initialization
-</span><span style="color:#75715e"></span>};
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp"><span style="font-weight:bold">struct</span> <span style="font-weight:bold">foo</span> {
+        <span style="">int</span> a = 1;      <span style="font-style:italic">// ok
+</span><span style="font-style:italic"></span>        <span style="">int</span> b{1};       <span style="font-style:italic">// ok
+</span><span style="font-style:italic"></span>        <span style="">int</span> c = {1};    <span style="font-style:italic">// ok
+</span><span style="font-style:italic"></span>        <span style="">int</span> e(1);       <span style="font-style:italic">// error, can not use direct initialization
+</span><span style="font-style:italic"></span>};
 </code></pre></div><p>作为对比，列出类外变量初始化</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp"><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>() {
-        <span style="color:#66d9ef">int</span> a <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>;      <span style="color:#75715e">// ok
-</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">int</span> b{<span style="color:#ae81ff">1</span>};       <span style="color:#75715e">// ok
-</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">int</span> c <span style="color:#f92672">=</span> {<span style="color:#ae81ff">1</span>};    <span style="color:#75715e">// ok
-</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">int</span> e(<span style="color:#ae81ff">1</span>);       <span style="color:#75715e">// ok
-</span><span style="color:#75715e"></span>}
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp"><span style="">int</span> main() {
+        <span style="">int</span> a = 1;      <span style="font-style:italic">// ok
+</span><span style="font-style:italic"></span>        <span style="">int</span> b{1};       <span style="font-style:italic">// ok
+</span><span style="font-style:italic"></span>        <span style="">int</span> c = {1};    <span style="font-style:italic">// ok
+</span><span style="font-style:italic"></span>        <span style="">int</span> e(1);       <span style="font-style:italic">// ok
+</span><span style="font-style:italic"></span>}
 </code></pre></div><p>区别只有最后一种情况，为了统一，最好在任何情况下都避免最后一种写法</p>
 <h2 id="direct-and-copy-initialization">direct and copy initialization</h2>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp">string s1 <span style="color:#f92672">=</span> <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">hello</span><span style="color:#e6db74">&#34;</span>; <span style="color:#75715e">// copy initialization
-</span><span style="color:#75715e"></span>string <span style="color:#a6e22e">s2</span>(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">hello</span><span style="color:#e6db74">&#34;</span>);  <span style="color:#75715e">// direct initialization
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp">string s1 = <span style="font-style:italic"></span><span style="font-style:italic">&#34;</span><span style="font-style:italic">hello</span><span style="font-style:italic">&#34;</span>; <span style="font-style:italic">// copy initialization
+</span><span style="font-style:italic"></span>string s2(<span style="font-style:italic"></span><span style="font-style:italic">&#34;</span><span style="font-style:italic">hello</span><span style="font-style:italic">&#34;</span>);  <span style="font-style:italic">// direct initialization
 </span></code></pre></div><p><code>copy initialization</code> 只能有一个初值</p>
 <h2 id="default-zero-and-valueinitialization">default-, zero- and value-initialization</h2>
 <ul>
@@ -179,8 +276,8 @@ If list initialization isn’t possible, the compiler looks for other ways to in
 <li>,</li>
 </ul>
 <h2 id="-toplever-const-">不要定义 top-lever const 形参</h2>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp"><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">func</span>(<span style="color:#66d9ef">int</span> i) {}
-<span style="color:#66d9ef">void</span> <span style="color:#a6e22e">func</span>(<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">int</span> i) {} <span style="color:#75715e">// error: redefine
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp"><span style="">void</span> func(<span style="">int</span> i) {}
+<span style="">void</span> func(<span style="font-weight:bold">const</span> <span style="">int</span> i) {} <span style="font-style:italic">// error: redefine
 </span></code></pre></div><h2 id="use-reference-to-const-when-possible">Use Reference to const When Possible</h2>
 <h2 id="heading4">管理指针参数的三种技术</h2>
 <ol>
@@ -194,8 +291,76 @@ If list initialization isn’t possible, the compiler looks for other ways to in
 <h2 id="heading5">避免使用函数默认参数</h2>
 <h2 id="put-inline-and-constexpr-functions-in-header-files">Put inline and constexpr Functions in Header Files</h2>
 
-</article>
+      </div>
+
+      <footer>
+        
 
 
+        <div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "yourdiscussshortname" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+        
+        
+      </footer>
+    </article>
+
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script type="text/javascript" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/startup.js" id="MathJax-script"></script>
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [
+          ['$', '$'], ['\\(', '\\)']
+        ],
+        processEscapes: true,
+        processEnvironments: true
+      },
+      options: {
+        skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+      }
+    };
+  </script>
+  </section>
+
+      </div>
+
+      <footer class="footer">
+  <section class="container">
+    
+      <p>记录点滴生活</p>
+    
+     © 2019
+    
+       · 
+       <a href="https://gohugo.io/">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/">Coder</a>.
+    
+    
+  </section>
+</footer>
+
+    </main>
+
+    
+
+  </body>
 
 </html>

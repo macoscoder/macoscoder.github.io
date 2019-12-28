@@ -1,262 +1,423 @@
 <!DOCTYPE html>
-<html lang="zh-cn">
-<title>github.com/gorilla/websocket包的使用 | 我的博客</title>
-<meta charset="utf-8">
-<meta name="generator" content="Hugo 0.60.1" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="canonical" href="http://flyblog.tech/posts/golang-websocket/">
-<link rel="alternate" type="application/rss+xml" href="" title="我的博客">
-<link rel="stylesheet" href="http://flyblog.tech/css/theme.css">
-<link rel="stylesheet" href="http://flyblog.tech/css/classes.css">
+<html lang="zh">
 
-<header class="dark">
-  <h2><a href="http://flyblog.tech/">我的博客</a></h2>
-  <nav>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="author" content="fly">
+    <meta name="description" content="我的博客">
+    <meta name="keywords" content="blog,developer,personal">
+
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="github.com/gorilla/websocket包的使用"/>
+<meta name="twitter:description" content="github.com/gorilla/websocket包的使用 Server 定义请求消息格式(以下代码在ws包中定义) // Request websocket 请求消息 type Request struct { Action string `json:&#34;action&#34;` Data json.RawMessage `json:&#34;data&#34;` } 定义Server结构，实现http.Handler接口，维护活跃的连接 // Handler 消息处理器接口 type Handler interface { ServeWS(r *Request, hr *http.Request) } // HandlerFunc 处理器函数 type HandlerFunc func(r *Request, hr *http.Request) // ServeWS 实现Handler接口 func (f HandlerFunc) ServeWS(r *Request, hr *http.Request) { f(r, hr) } // Server websocket server type Server struct { activeConns map[string]*websocket.Conn mutex sync.Mutex hander Handler } // NewServer 用这个方法来创建server func NewServer(h Handler) *Server { return &amp;Server{activeConns: make(map[string]*websocket."/>
+
+    <meta property="og:title" content="github.com/gorilla/websocket包的使用" />
+<meta property="og:description" content="github.com/gorilla/websocket包的使用 Server 定义请求消息格式(以下代码在ws包中定义) // Request websocket 请求消息 type Request struct { Action string `json:&#34;action&#34;` Data json.RawMessage `json:&#34;data&#34;` } 定义Server结构，实现http.Handler接口，维护活跃的连接 // Handler 消息处理器接口 type Handler interface { ServeWS(r *Request, hr *http.Request) } // HandlerFunc 处理器函数 type HandlerFunc func(r *Request, hr *http.Request) // ServeWS 实现Handler接口 func (f HandlerFunc) ServeWS(r *Request, hr *http.Request) { f(r, hr) } // Server websocket server type Server struct { activeConns map[string]*websocket.Conn mutex sync.Mutex hander Handler } // NewServer 用这个方法来创建server func NewServer(h Handler) *Server { return &amp;Server{activeConns: make(map[string]*websocket." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://flyblog.tech/posts/golang-websocket/" />
+<meta property="article:published_time" content="2011-12-23T13:05:31+00:00" />
+<meta property="article:modified_time" content="2011-12-23T13:05:31+00:00" />
+
+
     
-  </nav>
-</header>
+      <base href="http://flyblog.tech/posts/golang-websocket/">
+    
+    <title>
+  github.com/gorilla/websocket包的使用 · fly
+</title>
 
-<article>
-  <header>
-    <h1>github.com/gorilla/websocket包的使用</h1>
-    <p><time datetime="2011-12-23T13:05:31Z">December 23, 2011</time></p>
-  </header>
-  <h1 id="githubcomgorillawebsocket">github.com/gorilla/websocket包的使用</h1>
+    
+      <link rel="canonical" href="http://flyblog.tech/posts/golang-websocket/">
+    
+
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,700%7CMerriweather:300,700%7CSource+Code+Pro:400,700" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.11.2/css/all.css" integrity="sha384-KA6wR/X5RY4zFAHpv/CnoG2UW1uogYfdnP67Uv7eULvTveboZJg0qUpmJZb5VqzN" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" integrity="sha256-l85OmPOjvil/SOvVt3HnSSjzF1TUMyT9eV0c2BzEGzU=" crossorigin="anonymous" />
+
+    
+      
+      
+      <link rel="stylesheet" href="http://flyblog.tech/css/coder.min.28d751104f30c16da1aa1bb04015cbe662cacfe0d1b01af4f2240ad58580069c.css" integrity="sha256-KNdREE8wwW2hqhuwQBXL5mLKz&#43;DRsBr08iQK1YWABpw=" crossorigin="anonymous" media="screen" />
+    
+
+    
+
+    
+
+    
+      <link rel="stylesheet" href="http://flyblog.tech/css/custom.css" />
+    
+
+    
+    
+    <link rel="icon" type="image/png" href="http://flyblog.tech/img/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="http://flyblog.tech/img/favicon-16x16.png" sizes="16x16">
+
+    <meta name="generator" content="Hugo 0.60.1" />
+  </head>
+
+  
+  
+  <body class="colorscheme-light">
+    <main class="wrapper">
+      <nav class="navigation">
+  <section class="container">
+    <a class="navigation-title" href="http://flyblog.tech/">
+      fly
+    </a>
+    <input type="checkbox" id="menu-toggle" />
+    <label class="menu-button float-right" for="menu-toggle"><i class="fas fa-bars"></i></label>
+    <ul class="navigation-list">
+      
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="http://flyblog.tech/posts/">Blog</a>
+          </li>
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="http://flyblog.tech/about/">About</a>
+          </li>
+        
+      
+      
+    </ul>
+  </section>
+</nav>
+
+
+      <div class="content">
+        
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">github.com/gorilla/websocket包的使用</h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fas fa-calendar"></i>
+              <time datetime='2011-12-23T13:05:31Z'>
+                December 23, 2011
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fas fa-clock"></i>
+              
+            </span>
+          </div>
+          
+          
+        </div>
+      </header>
+
+      <div>
+        <h1 id="githubcomgorillawebsocket">github.com/gorilla/websocket包的使用</h1>
 <h2 id="server">Server</h2>
 <h3 id="ws">定义请求消息格式(以下代码在ws包中定义)</h3>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#75715e">// Request websocket 请求消息
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">Request</span> <span style="color:#66d9ef">struct</span> {
-    <span style="color:#a6e22e">Action</span> <span style="color:#66d9ef">string</span>          <span style="color:#e6db74">`</span><span style="color:#e6db74">json:&#34;action&#34;</span><span style="color:#e6db74">`</span>
-    <span style="color:#a6e22e">Data</span>   <span style="color:#a6e22e">json</span>.<span style="color:#a6e22e">RawMessage</span> <span style="color:#e6db74">`</span><span style="color:#e6db74">json:&#34;data&#34;</span><span style="color:#e6db74">`</span>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-style:italic">// Request websocket 请求消息
+</span><span style="font-style:italic"></span><span style="font-weight:bold">type</span> Request <span style="font-weight:bold">struct</span> {
+    Action <span style="">string</span>          <span style="font-style:italic">`</span><span style="font-style:italic">json:&#34;action&#34;</span><span style="font-style:italic">`</span>
+    Data   json.RawMessage <span style="font-style:italic">`</span><span style="font-style:italic">json:&#34;data&#34;</span><span style="font-style:italic">`</span>
 }
 </code></pre></div><h3 id="serverhttphandler">定义Server结构，实现http.Handler接口，维护活跃的连接</h3>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#75715e">// Handler 消息处理器接口
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">Handler</span> <span style="color:#66d9ef">interface</span> {
-    <span style="color:#a6e22e">ServeWS</span>(<span style="color:#a6e22e">r</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">Request</span>, <span style="color:#a6e22e">hr</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">http</span>.<span style="color:#a6e22e">Request</span>)
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-style:italic">// Handler 消息处理器接口
+</span><span style="font-style:italic"></span><span style="font-weight:bold">type</span> Handler <span style="font-weight:bold">interface</span> {
+    ServeWS(r *Request, hr *http.Request)
 }
 
-<span style="color:#75715e">// HandlerFunc 处理器函数
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">HandlerFunc</span> <span style="color:#66d9ef">func</span>(<span style="color:#a6e22e">r</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">Request</span>, <span style="color:#a6e22e">hr</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">http</span>.<span style="color:#a6e22e">Request</span>)
+<span style="font-style:italic">// HandlerFunc 处理器函数
+</span><span style="font-style:italic"></span><span style="font-weight:bold">type</span> HandlerFunc <span style="font-weight:bold">func</span>(r *Request, hr *http.Request)
 
-<span style="color:#75715e">// ServeWS 实现Handler接口
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">func</span> (<span style="color:#a6e22e">f</span> <span style="color:#a6e22e">HandlerFunc</span>) <span style="color:#a6e22e">ServeWS</span>(<span style="color:#a6e22e">r</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">Request</span>, <span style="color:#a6e22e">hr</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">http</span>.<span style="color:#a6e22e">Request</span>) {
-    <span style="color:#a6e22e">f</span>(<span style="color:#a6e22e">r</span>, <span style="color:#a6e22e">hr</span>)
+<span style="font-style:italic">// ServeWS 实现Handler接口
+</span><span style="font-style:italic"></span><span style="font-weight:bold">func</span> (f HandlerFunc) ServeWS(r *Request, hr *http.Request) {
+    f(r, hr)
 }
 
-<span style="color:#75715e">// Server websocket server
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">Server</span> <span style="color:#66d9ef">struct</span> {
-    <span style="color:#a6e22e">activeConns</span> <span style="color:#66d9ef">map</span>[<span style="color:#66d9ef">string</span>]<span style="color:#f92672">*</span><span style="color:#a6e22e">websocket</span>.<span style="color:#a6e22e">Conn</span>
-    <span style="color:#a6e22e">mutex</span>       <span style="color:#a6e22e">sync</span>.<span style="color:#a6e22e">Mutex</span>
-    <span style="color:#a6e22e">hander</span>      <span style="color:#a6e22e">Handler</span>
+<span style="font-style:italic">// Server websocket server
+</span><span style="font-style:italic"></span><span style="font-weight:bold">type</span> Server <span style="font-weight:bold">struct</span> {
+    activeConns <span style="font-weight:bold">map</span>[<span style="">string</span>]*websocket.Conn
+    mutex       sync.Mutex
+    hander      Handler
 }
 
-<span style="color:#75715e">// NewServer 用这个方法来创建server
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">NewServer</span>(<span style="color:#a6e22e">h</span> <span style="color:#a6e22e">Handler</span>) <span style="color:#f92672">*</span><span style="color:#a6e22e">Server</span> {
-    <span style="color:#66d9ef">return</span> <span style="color:#f92672">&amp;</span><span style="color:#a6e22e">Server</span>{<span style="color:#a6e22e">activeConns</span>: make(<span style="color:#66d9ef">map</span>[<span style="color:#66d9ef">string</span>]<span style="color:#f92672">*</span><span style="color:#a6e22e">websocket</span>.<span style="color:#a6e22e">Conn</span>), <span style="color:#a6e22e">hander</span>: <span style="color:#a6e22e">h</span>}
+<span style="font-style:italic">// NewServer 用这个方法来创建server
+</span><span style="font-style:italic"></span><span style="font-weight:bold">func</span> NewServer(h Handler) *Server {
+    <span style="font-weight:bold">return</span> &amp;Server{activeConns: make(<span style="font-weight:bold">map</span>[<span style="">string</span>]*websocket.Conn), hander: h}
 }
 
-<span style="color:#75715e">// ServeHTTP 实现http.Handler接口，接受连接
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">func</span> (<span style="color:#a6e22e">s</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">Server</span>) <span style="color:#a6e22e">ServeHTTP</span>(<span style="color:#a6e22e">w</span> <span style="color:#a6e22e">http</span>.<span style="color:#a6e22e">ResponseWriter</span>, <span style="color:#a6e22e">r</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">http</span>.<span style="color:#a6e22e">Request</span>) {
-    <span style="color:#a6e22e">up</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">websocket</span>.<span style="color:#a6e22e">Upgrader</span>{
-        <span style="color:#a6e22e">CheckOrigin</span>: <span style="color:#66d9ef">func</span>(<span style="color:#a6e22e">r</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">http</span>.<span style="color:#a6e22e">Request</span>) <span style="color:#66d9ef">bool</span> {
-            <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">true</span> <span style="color:#75715e">// for debug
-</span><span style="color:#75715e"></span>        },
+<span style="font-style:italic">// ServeHTTP 实现http.Handler接口，接受连接
+</span><span style="font-style:italic"></span><span style="font-weight:bold">func</span> (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+    up := websocket.Upgrader{
+        CheckOrigin: <span style="font-weight:bold">func</span>(r *http.Request) <span style="">bool</span> {
+            <span style="font-weight:bold">return</span> <span style="font-weight:bold">true</span> <span style="font-style:italic">// for debug
+</span><span style="font-style:italic"></span>        },
     }
-    <span style="color:#a6e22e">conn</span>, <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">up</span>.<span style="color:#a6e22e">Upgrade</span>(<span style="color:#a6e22e">w</span>, <span style="color:#a6e22e">r</span>, <span style="color:#66d9ef">nil</span>)
-    <span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
-        <span style="color:#a6e22e">log</span>.<span style="color:#a6e22e">Print</span>(<span style="color:#a6e22e">err</span>)
-        <span style="color:#66d9ef">return</span>
+    conn, err := up.Upgrade(w, r, <span style="font-weight:bold">nil</span>)
+    <span style="font-weight:bold">if</span> err != <span style="font-weight:bold">nil</span> {
+        log.Print(err)
+        <span style="font-weight:bold">return</span>
     }
-    <span style="color:#75715e">// 这里要求客户端传一个设备id
-</span><span style="color:#75715e"></span>    <span style="color:#a6e22e">deviceID</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">r</span>.<span style="color:#a6e22e">FormValue</span>(<span style="color:#e6db74">&#34;device_id&#34;</span>)
+    <span style="font-style:italic">// 这里要求客户端传一个设备id
+</span><span style="font-style:italic"></span>    deviceID := r.FormValue(<span style="font-style:italic">&#34;device_id&#34;</span>)
 
-    <span style="color:#a6e22e">s</span>.<span style="color:#a6e22e">mutex</span>.<span style="color:#a6e22e">Lock</span>()
-    <span style="color:#a6e22e">s</span>.<span style="color:#a6e22e">activeConns</span>[<span style="color:#a6e22e">deviceID</span>] = <span style="color:#a6e22e">conn</span>
-    <span style="color:#a6e22e">s</span>.<span style="color:#a6e22e">mutex</span>.<span style="color:#a6e22e">Unlock</span>()
+    s.mutex.Lock()
+    s.activeConns[deviceID] = conn
+    s.mutex.Unlock()
 
-    <span style="color:#75715e">// 启动一个goroutine服务连接
-</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">go</span> <span style="color:#a6e22e">s</span>.<span style="color:#a6e22e">serve</span>(<span style="color:#a6e22e">r</span>, <span style="color:#a6e22e">conn</span>)
+    <span style="font-style:italic">// 启动一个goroutine服务连接
+</span><span style="font-style:italic"></span>    <span style="font-weight:bold">go</span> s.serve(r, conn)
 }
-</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#75715e">// 这个函数的生命周期就是连接的生命周期
-</span><span style="color:#75715e"></span><span style="color:#75715e">// 这个函数循环读取请求消息，如果发生错误，则关闭连接
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">func</span> (<span style="color:#a6e22e">s</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">Server</span>) <span style="color:#a6e22e">serve</span>(<span style="color:#a6e22e">hr</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">http</span>.<span style="color:#a6e22e">Request</span>, <span style="color:#a6e22e">conn</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">websocket</span>.<span style="color:#a6e22e">Conn</span>) {
-    <span style="color:#66d9ef">defer</span> <span style="color:#66d9ef">func</span>() {
-        <span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> recover(); <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
-            <span style="color:#a6e22e">log</span>.<span style="color:#a6e22e">Print</span>(<span style="color:#a6e22e">err</span>)
+</code></pre></div><div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-style:italic">// 这个函数的生命周期就是连接的生命周期
+</span><span style="font-style:italic"></span><span style="font-style:italic">// 这个函数循环读取请求消息，如果发生错误，则关闭连接
+</span><span style="font-style:italic"></span><span style="font-weight:bold">func</span> (s *Server) serve(hr *http.Request, conn *websocket.Conn) {
+    <span style="font-weight:bold">defer</span> <span style="font-weight:bold">func</span>() {
+        <span style="font-weight:bold">if</span> err := recover(); err != <span style="font-weight:bold">nil</span> {
+            log.Print(err)
         }
-        <span style="color:#a6e22e">conn</span>.<span style="color:#a6e22e">Close</span>()
-        <span style="color:#a6e22e">s</span>.<span style="color:#a6e22e">mutex</span>.<span style="color:#a6e22e">Lock</span>()
-        delete(<span style="color:#a6e22e">s</span>.<span style="color:#a6e22e">activeConns</span>, <span style="color:#a6e22e">hr</span>.<span style="color:#a6e22e">FormValue</span>(<span style="color:#e6db74">&#34;device_id&#34;</span>))
-        <span style="color:#a6e22e">s</span>.<span style="color:#a6e22e">mutex</span>.<span style="color:#a6e22e">Unlock</span>()
+        conn.Close()
+        s.mutex.Lock()
+        delete(s.activeConns, hr.FormValue(<span style="font-style:italic">&#34;device_id&#34;</span>))
+        s.mutex.Unlock()
     }()
-    <span style="color:#66d9ef">for</span> {
-        <span style="color:#a6e22e">r</span>, <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">doRead</span>(<span style="color:#a6e22e">conn</span>)
-        <span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
-            <span style="color:#a6e22e">log</span>.<span style="color:#a6e22e">Print</span>(<span style="color:#a6e22e">err</span>)
-            <span style="color:#66d9ef">return</span>
+    <span style="font-weight:bold">for</span> {
+        r, err := doRead(conn)
+        <span style="font-weight:bold">if</span> err != <span style="font-weight:bold">nil</span> {
+            log.Print(err)
+            <span style="font-weight:bold">return</span>
         }
-        <span style="color:#a6e22e">s</span>.<span style="color:#a6e22e">hander</span>.<span style="color:#a6e22e">ServeWS</span>(<span style="color:#a6e22e">r</span>, <span style="color:#a6e22e">hr</span>)
+        s.hander.ServeWS(r, hr)
     }
 }
 
-<span style="color:#75715e">// 读取下一个请求消息
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">doRead</span>(<span style="color:#a6e22e">conn</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">websocket</span>.<span style="color:#a6e22e">Conn</span>) (<span style="color:#f92672">*</span><span style="color:#a6e22e">Request</span>, <span style="color:#66d9ef">error</span>) {
-    <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">conn</span>.<span style="color:#a6e22e">SetReadDeadline</span>(<span style="color:#a6e22e">time</span>.<span style="color:#a6e22e">Now</span>().<span style="color:#a6e22e">Add</span>(<span style="color:#a6e22e">time</span>.<span style="color:#a6e22e">Second</span> <span style="color:#f92672">*</span> <span style="color:#ae81ff">60</span>))
-    <span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
-        <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">nil</span>, <span style="color:#a6e22e">err</span>
+<span style="font-style:italic">// 读取下一个请求消息
+</span><span style="font-style:italic"></span><span style="font-weight:bold">func</span> doRead(conn *websocket.Conn) (*Request, <span style="">error</span>) {
+    err := conn.SetReadDeadline(time.Now().Add(time.Second * 60))
+    <span style="font-weight:bold">if</span> err != <span style="font-weight:bold">nil</span> {
+        <span style="font-weight:bold">return</span> <span style="font-weight:bold">nil</span>, err
     }
-    <span style="color:#a6e22e">_</span>, <span style="color:#a6e22e">msg</span>, <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">conn</span>.<span style="color:#a6e22e">ReadMessage</span>()
-    <span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
-        <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">nil</span>, <span style="color:#a6e22e">err</span>
+    _, msg, err := conn.ReadMessage()
+    <span style="font-weight:bold">if</span> err != <span style="font-weight:bold">nil</span> {
+        <span style="font-weight:bold">return</span> <span style="font-weight:bold">nil</span>, err
     }
-    <span style="color:#a6e22e">r</span> <span style="color:#f92672">:=</span> <span style="color:#f92672">&amp;</span><span style="color:#a6e22e">Request</span>{}
-    <span style="color:#a6e22e">err</span> = <span style="color:#a6e22e">json</span>.<span style="color:#a6e22e">Unmarshal</span>(<span style="color:#a6e22e">msg</span>, <span style="color:#a6e22e">r</span>)
-    <span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
-        <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">nil</span>, <span style="color:#a6e22e">err</span>
+    r := &amp;Request{}
+    err = json.Unmarshal(msg, r)
+    <span style="font-weight:bold">if</span> err != <span style="font-weight:bold">nil</span> {
+        <span style="font-weight:bold">return</span> <span style="font-weight:bold">nil</span>, err
     }
-    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">r</span>, <span style="color:#66d9ef">nil</span>
+    <span style="font-weight:bold">return</span> r, <span style="font-weight:bold">nil</span>
 }
-</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go">
+</code></pre></div><div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go">
 </code></pre></div><h3 id="main">使用方法(以下代码在main包中)</h3>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">var</span> <span style="color:#a6e22e">wsServer</span> = <span style="color:#a6e22e">ws</span>.<span style="color:#a6e22e">NewServer</span>(<span style="color:#a6e22e">ws</span>.<span style="color:#a6e22e">HandlerFunc</span>(<span style="color:#a6e22e">handleRequest</span>))
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">var</span> wsServer = ws.NewServer(ws.HandlerFunc(handleRequest))
 
-<span style="color:#66d9ef">func</span> <span style="color:#a6e22e">main</span>() {
-    <span style="color:#a6e22e">http</span>.<span style="color:#a6e22e">Handle</span>(<span style="color:#e6db74">&#34;/ws&#34;</span>, <span style="color:#a6e22e">wsServer</span>)
-    <span style="color:#a6e22e">http</span>.<span style="color:#a6e22e">ListenAndServe</span>(<span style="color:#e6db74">&#34;:8081&#34;</span>, <span style="color:#66d9ef">nil</span>)
+<span style="font-weight:bold">func</span> main() {
+    http.Handle(<span style="font-style:italic">&#34;/ws&#34;</span>, wsServer)
+    http.ListenAndServe(<span style="font-style:italic">&#34;:8081&#34;</span>, <span style="font-weight:bold">nil</span>)
 }
 
-<span style="color:#66d9ef">func</span> <span style="color:#a6e22e">handleRequest</span>(<span style="color:#a6e22e">r</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">ws</span>.<span style="color:#a6e22e">Request</span>, <span style="color:#a6e22e">hr</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">http</span>.<span style="color:#a6e22e">Request</span>) {
-    <span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Println</span>(<span style="color:#a6e22e">r</span>.<span style="color:#a6e22e">Action</span>)
+<span style="font-weight:bold">func</span> handleRequest(r *ws.Request, hr *http.Request) {
+    fmt.Println(r.Action)
 }
 </code></pre></div><h3 id="muxhandlerws">多路器Mux，实现Handler接口(以下代码在ws包中定义)</h3>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#75715e">// Mux 多路器
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">Mux</span> <span style="color:#66d9ef">struct</span> {
-    <span style="color:#a6e22e">handlers</span> <span style="color:#66d9ef">map</span>[<span style="color:#66d9ef">string</span>]<span style="color:#a6e22e">Handler</span>
-    <span style="color:#a6e22e">mutex</span>    <span style="color:#a6e22e">sync</span>.<span style="color:#a6e22e">Mutex</span>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-style:italic">// Mux 多路器
+</span><span style="font-style:italic"></span><span style="font-weight:bold">type</span> Mux <span style="font-weight:bold">struct</span> {
+    handlers <span style="font-weight:bold">map</span>[<span style="">string</span>]Handler
+    mutex    sync.Mutex
 }
 
-<span style="color:#75715e">// NewMux 创建多路器
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">NewMux</span>() <span style="color:#f92672">*</span><span style="color:#a6e22e">Mux</span> {
-    <span style="color:#66d9ef">return</span> <span style="color:#f92672">&amp;</span><span style="color:#a6e22e">Mux</span>{<span style="color:#a6e22e">handlers</span>: make(<span style="color:#66d9ef">map</span>[<span style="color:#66d9ef">string</span>]<span style="color:#a6e22e">Handler</span>)}
+<span style="font-style:italic">// NewMux 创建多路器
+</span><span style="font-style:italic"></span><span style="font-weight:bold">func</span> NewMux() *Mux {
+    <span style="font-weight:bold">return</span> &amp;Mux{handlers: make(<span style="font-weight:bold">map</span>[<span style="">string</span>]Handler)}
 }
 
-<span style="color:#75715e">// Handle 注册处理器
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">func</span> (<span style="color:#a6e22e">mux</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">Mux</span>) <span style="color:#a6e22e">Handle</span>(<span style="color:#a6e22e">pattern</span> <span style="color:#66d9ef">string</span>, <span style="color:#a6e22e">h</span> <span style="color:#a6e22e">Handler</span>) {
-    <span style="color:#a6e22e">mux</span>.<span style="color:#a6e22e">mutex</span>.<span style="color:#a6e22e">Lock</span>()
-    <span style="color:#a6e22e">mux</span>.<span style="color:#a6e22e">handlers</span>[<span style="color:#a6e22e">pattern</span>] = <span style="color:#a6e22e">h</span>
-    <span style="color:#a6e22e">mux</span>.<span style="color:#a6e22e">mutex</span>.<span style="color:#a6e22e">Unlock</span>()
+<span style="font-style:italic">// Handle 注册处理器
+</span><span style="font-style:italic"></span><span style="font-weight:bold">func</span> (mux *Mux) Handle(pattern <span style="">string</span>, h Handler) {
+    mux.mutex.Lock()
+    mux.handlers[pattern] = h
+    mux.mutex.Unlock()
 }
 
-<span style="color:#75715e">// HandleFunc 注册处理器函数
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">func</span> (<span style="color:#a6e22e">mux</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">Mux</span>) <span style="color:#a6e22e">HandleFunc</span>(<span style="color:#a6e22e">pattern</span> <span style="color:#66d9ef">string</span>, <span style="color:#a6e22e">f</span> <span style="color:#a6e22e">HandlerFunc</span>) {
-    <span style="color:#a6e22e">mux</span>.<span style="color:#a6e22e">Handle</span>(<span style="color:#a6e22e">pattern</span>, <span style="color:#a6e22e">f</span>)
+<span style="font-style:italic">// HandleFunc 注册处理器函数
+</span><span style="font-style:italic"></span><span style="font-weight:bold">func</span> (mux *Mux) HandleFunc(pattern <span style="">string</span>, f HandlerFunc) {
+    mux.Handle(pattern, f)
 }
 
-<span style="color:#75715e">// ServeWS 实现Handler接口
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">func</span> (<span style="color:#a6e22e">mux</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">Mux</span>) <span style="color:#a6e22e">ServeWS</span>(<span style="color:#a6e22e">r</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">Request</span>, <span style="color:#a6e22e">hr</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">http</span>.<span style="color:#a6e22e">Request</span>) {
-    <span style="color:#a6e22e">mux</span>.<span style="color:#a6e22e">mutex</span>.<span style="color:#a6e22e">Lock</span>()
-    <span style="color:#a6e22e">h</span>, <span style="color:#a6e22e">ok</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">mux</span>.<span style="color:#a6e22e">handlers</span>[<span style="color:#a6e22e">r</span>.<span style="color:#a6e22e">Action</span>]
-    <span style="color:#a6e22e">mux</span>.<span style="color:#a6e22e">mutex</span>.<span style="color:#a6e22e">Unlock</span>()
-    <span style="color:#66d9ef">if</span> !<span style="color:#a6e22e">ok</span> {
-        <span style="color:#a6e22e">log</span>.<span style="color:#a6e22e">Print</span>(<span style="color:#e6db74">&#34;动作不存在: &#34;</span>, <span style="color:#a6e22e">r</span>.<span style="color:#a6e22e">Action</span>)
-        <span style="color:#66d9ef">return</span>
+<span style="font-style:italic">// ServeWS 实现Handler接口
+</span><span style="font-style:italic"></span><span style="font-weight:bold">func</span> (mux *Mux) ServeWS(r *Request, hr *http.Request) {
+    mux.mutex.Lock()
+    h, ok := mux.handlers[r.Action]
+    mux.mutex.Unlock()
+    <span style="font-weight:bold">if</span> !ok {
+        log.Print(<span style="font-style:italic">&#34;动作不存在: &#34;</span>, r.Action)
+        <span style="font-weight:bold">return</span>
     }
-    <span style="color:#a6e22e">h</span>.<span style="color:#a6e22e">ServeWS</span>(<span style="color:#a6e22e">r</span>, <span style="color:#a6e22e">hr</span>)
+    h.ServeWS(r, hr)
 }
 </code></pre></div><h3 id="heading">多路器使用方法</h3>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">var</span> (
-    <span style="color:#a6e22e">mux</span>      = <span style="color:#a6e22e">ws</span>.<span style="color:#a6e22e">NewMux</span>()
-    <span style="color:#a6e22e">wsServer</span> = <span style="color:#a6e22e">ws</span>.<span style="color:#a6e22e">NewServer</span>(<span style="color:#a6e22e">mux</span>)
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">var</span> (
+    mux      = ws.NewMux()
+    wsServer = ws.NewServer(mux)
 )
 
-<span style="color:#66d9ef">func</span> <span style="color:#a6e22e">main</span>() {
-    <span style="color:#a6e22e">mux</span>.<span style="color:#a6e22e">HandleFunc</span>(<span style="color:#e6db74">&#34;ping&#34;</span>, <span style="color:#a6e22e">ping</span>)
-    <span style="color:#a6e22e">mux</span>.<span style="color:#a6e22e">HandleFunc</span>(<span style="color:#e6db74">&#34;echo&#34;</span>, <span style="color:#a6e22e">echo</span>)
-    <span style="color:#a6e22e">http</span>.<span style="color:#a6e22e">Handle</span>(<span style="color:#e6db74">&#34;/ws&#34;</span>, <span style="color:#a6e22e">wsServer</span>)
-    <span style="color:#a6e22e">http</span>.<span style="color:#a6e22e">ListenAndServe</span>(<span style="color:#e6db74">&#34;:8081&#34;</span>, <span style="color:#66d9ef">nil</span>)
+<span style="font-weight:bold">func</span> main() {
+    mux.HandleFunc(<span style="font-style:italic">&#34;ping&#34;</span>, ping)
+    mux.HandleFunc(<span style="font-style:italic">&#34;echo&#34;</span>, echo)
+    http.Handle(<span style="font-style:italic">&#34;/ws&#34;</span>, wsServer)
+    http.ListenAndServe(<span style="font-style:italic">&#34;:8081&#34;</span>, <span style="font-weight:bold">nil</span>)
 }
 
-<span style="color:#66d9ef">func</span> <span style="color:#a6e22e">ping</span>(<span style="color:#a6e22e">r</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">ws</span>.<span style="color:#a6e22e">Request</span>, <span style="color:#a6e22e">hr</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">http</span>.<span style="color:#a6e22e">Request</span>) {
-    <span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Println</span>(<span style="color:#a6e22e">r</span>.<span style="color:#a6e22e">Action</span>)
+<span style="font-weight:bold">func</span> ping(r *ws.Request, hr *http.Request) {
+    fmt.Println(r.Action)
 }
 
-<span style="color:#66d9ef">func</span> <span style="color:#a6e22e">echo</span>(<span style="color:#a6e22e">r</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">ws</span>.<span style="color:#a6e22e">Request</span>, <span style="color:#a6e22e">hr</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">http</span>.<span style="color:#a6e22e">Request</span>) {
-    <span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Println</span>(<span style="color:#a6e22e">r</span>.<span style="color:#a6e22e">Action</span>)
+<span style="font-weight:bold">func</span> echo(r *ws.Request, hr *http.Request) {
+    fmt.Println(r.Action)
 }
 </code></pre></div><h3 id="heading1">广播</h3>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#75715e">// BCMessage 广播消息
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">BCMessage</span> <span style="color:#66d9ef">struct</span> {
-    <span style="color:#a6e22e">Action</span> <span style="color:#66d9ef">string</span>      <span style="color:#e6db74">`</span><span style="color:#e6db74">json:&#34;action&#34;</span><span style="color:#e6db74">`</span>
-    <span style="color:#a6e22e">Data</span>   <span style="color:#66d9ef">interface</span>{} <span style="color:#e6db74">`</span><span style="color:#e6db74">json:&#34;data&#34;</span><span style="color:#e6db74">`</span>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-style:italic">// BCMessage 广播消息
+</span><span style="font-style:italic"></span><span style="font-weight:bold">type</span> BCMessage <span style="font-weight:bold">struct</span> {
+    Action <span style="">string</span>      <span style="font-style:italic">`</span><span style="font-style:italic">json:&#34;action&#34;</span><span style="font-style:italic">`</span>
+    Data   <span style="font-weight:bold">interface</span>{} <span style="font-style:italic">`</span><span style="font-style:italic">json:&#34;data&#34;</span><span style="font-style:italic">`</span>
 }
 
-<span style="color:#75715e">// Broadcast 广播
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">func</span> (<span style="color:#a6e22e">s</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">Server</span>) <span style="color:#a6e22e">Broadcast</span>(<span style="color:#a6e22e">msg</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">BCMessage</span>, <span style="color:#a6e22e">deviceIDs</span> <span style="color:#f92672">...</span><span style="color:#66d9ef">string</span>) {
-    <span style="color:#a6e22e">bytes</span>, <span style="color:#a6e22e">_</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">json</span>.<span style="color:#a6e22e">Marshal</span>(<span style="color:#a6e22e">msg</span>)
-    <span style="color:#a6e22e">s</span>.<span style="color:#a6e22e">mutex</span>.<span style="color:#a6e22e">Lock</span>()
-    <span style="color:#66d9ef">defer</span> <span style="color:#a6e22e">s</span>.<span style="color:#a6e22e">mutex</span>.<span style="color:#a6e22e">Unlock</span>()
-    <span style="color:#66d9ef">if</span> len(<span style="color:#a6e22e">deviceIDs</span>) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span> {
-        <span style="color:#66d9ef">for</span> <span style="color:#a6e22e">_</span>, <span style="color:#a6e22e">conn</span> <span style="color:#f92672">:=</span> <span style="color:#66d9ef">range</span> <span style="color:#a6e22e">s</span>.<span style="color:#a6e22e">activeConns</span> {
-            <span style="color:#66d9ef">go</span> <span style="color:#a6e22e">doWrite</span>(<span style="color:#a6e22e">conn</span>, <span style="color:#a6e22e">bytes</span>)
+<span style="font-style:italic">// Broadcast 广播
+</span><span style="font-style:italic"></span><span style="font-weight:bold">func</span> (s *Server) Broadcast(msg *BCMessage, deviceIDs ...<span style="">string</span>) {
+    bytes, _ := json.Marshal(msg)
+    s.mutex.Lock()
+    <span style="font-weight:bold">defer</span> s.mutex.Unlock()
+    <span style="font-weight:bold">if</span> len(deviceIDs) == 0 {
+        <span style="font-weight:bold">for</span> _, conn := <span style="font-weight:bold">range</span> s.activeConns {
+            <span style="font-weight:bold">go</span> doWrite(conn, bytes)
         }
-    } <span style="color:#66d9ef">else</span> {
-        <span style="color:#66d9ef">for</span> <span style="color:#a6e22e">_</span>, <span style="color:#a6e22e">id</span> <span style="color:#f92672">:=</span> <span style="color:#66d9ef">range</span> <span style="color:#a6e22e">deviceIDs</span> {
-            <span style="color:#a6e22e">conn</span>, <span style="color:#a6e22e">ok</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">s</span>.<span style="color:#a6e22e">activeConns</span>[<span style="color:#a6e22e">id</span>]
-            <span style="color:#66d9ef">if</span> !<span style="color:#a6e22e">ok</span> {
-                <span style="color:#a6e22e">log</span>.<span style="color:#a6e22e">Printf</span>(<span style="color:#e6db74">&#34;id: %q, no conn&#34;</span>, <span style="color:#a6e22e">id</span>)
-                <span style="color:#66d9ef">continue</span>
+    } <span style="font-weight:bold">else</span> {
+        <span style="font-weight:bold">for</span> _, id := <span style="font-weight:bold">range</span> deviceIDs {
+            conn, ok := s.activeConns[id]
+            <span style="font-weight:bold">if</span> !ok {
+                log.Printf(<span style="font-style:italic">&#34;id: %q, no conn&#34;</span>, id)
+                <span style="font-weight:bold">continue</span>
             }
-            <span style="color:#66d9ef">go</span> <span style="color:#a6e22e">doWrite</span>(<span style="color:#a6e22e">conn</span>, <span style="color:#a6e22e">bytes</span>)
+            <span style="font-weight:bold">go</span> doWrite(conn, bytes)
         }
     }
 }
 
-<span style="color:#66d9ef">func</span> <span style="color:#a6e22e">doWrite</span>(<span style="color:#a6e22e">conn</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">websocket</span>.<span style="color:#a6e22e">Conn</span>, <span style="color:#a6e22e">msg</span> []<span style="color:#66d9ef">byte</span>) <span style="color:#66d9ef">error</span> {
-    <span style="color:#a6e22e">_</span> = <span style="color:#a6e22e">conn</span>.<span style="color:#a6e22e">SetWriteDeadline</span>(<span style="color:#a6e22e">time</span>.<span style="color:#a6e22e">Now</span>().<span style="color:#a6e22e">Add</span>(<span style="color:#a6e22e">time</span>.<span style="color:#a6e22e">Second</span> <span style="color:#f92672">*</span> <span style="color:#ae81ff">60</span>))
-    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">conn</span>.<span style="color:#a6e22e">WriteMessage</span>(<span style="color:#a6e22e">websocket</span>.<span style="color:#a6e22e">TextMessage</span>, <span style="color:#a6e22e">msg</span>)
+<span style="font-weight:bold">func</span> doWrite(conn *websocket.Conn, msg []<span style="">byte</span>) <span style="">error</span> {
+    _ = conn.SetWriteDeadline(time.Now().Add(time.Second * 60))
+    <span style="font-weight:bold">return</span> conn.WriteMessage(websocket.TextMessage, msg)
 }
 </code></pre></div><h3 id="heading2">广播的使用</h3>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">var</span> (
-    <span style="color:#a6e22e">mux</span>      = <span style="color:#a6e22e">ws</span>.<span style="color:#a6e22e">NewMux</span>()
-    <span style="color:#a6e22e">wsServer</span> = <span style="color:#a6e22e">ws</span>.<span style="color:#a6e22e">NewServer</span>(<span style="color:#a6e22e">mux</span>)
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">var</span> (
+    mux      = ws.NewMux()
+    wsServer = ws.NewServer(mux)
 )
 
-<span style="color:#66d9ef">func</span> <span style="color:#a6e22e">main</span>() {
-    <span style="color:#a6e22e">mux</span>.<span style="color:#a6e22e">HandleFunc</span>(<span style="color:#e6db74">&#34;ping&#34;</span>, <span style="color:#a6e22e">ping</span>)
-    <span style="color:#a6e22e">http</span>.<span style="color:#a6e22e">Handle</span>(<span style="color:#e6db74">&#34;/ws&#34;</span>, <span style="color:#a6e22e">wsServer</span>)
-    <span style="color:#a6e22e">http</span>.<span style="color:#a6e22e">ListenAndServe</span>(<span style="color:#e6db74">&#34;:8081&#34;</span>, <span style="color:#66d9ef">nil</span>)
+<span style="font-weight:bold">func</span> main() {
+    mux.HandleFunc(<span style="font-style:italic">&#34;ping&#34;</span>, ping)
+    http.Handle(<span style="font-style:italic">&#34;/ws&#34;</span>, wsServer)
+    http.ListenAndServe(<span style="font-style:italic">&#34;:8081&#34;</span>, <span style="font-weight:bold">nil</span>)
 }
 
-<span style="color:#66d9ef">func</span> <span style="color:#a6e22e">ping</span>(<span style="color:#a6e22e">r</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">ws</span>.<span style="color:#a6e22e">Request</span>, <span style="color:#a6e22e">hr</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">http</span>.<span style="color:#a6e22e">Request</span>) {
-    <span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Println</span>(<span style="color:#a6e22e">r</span>.<span style="color:#a6e22e">Action</span>)
-    <span style="color:#a6e22e">msg</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">ws</span>.<span style="color:#a6e22e">BCMessage</span>{
-        <span style="color:#a6e22e">Action</span>: <span style="color:#e6db74">&#34;pong&#34;</span>,
-        <span style="color:#a6e22e">Data</span>:   <span style="color:#e6db74">&#34;&#34;</span>,
+<span style="font-weight:bold">func</span> ping(r *ws.Request, hr *http.Request) {
+    fmt.Println(r.Action)
+    msg := ws.BCMessage{
+        Action: <span style="font-style:italic">&#34;pong&#34;</span>,
+        Data:   <span style="font-style:italic">&#34;&#34;</span>,
     }
-    <span style="color:#a6e22e">deviceID</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">hr</span>.<span style="color:#a6e22e">FormValue</span>(<span style="color:#e6db74">&#34;device_id&#34;</span>)
-    <span style="color:#a6e22e">wsServer</span>.<span style="color:#a6e22e">Broadcast</span>(<span style="color:#f92672">&amp;</span><span style="color:#a6e22e">msg</span>, <span style="color:#a6e22e">deviceID</span>)
+    deviceID := hr.FormValue(<span style="font-style:italic">&#34;device_id&#34;</span>)
+    wsServer.Broadcast(&amp;msg, deviceID)
 }
 </code></pre></div><h3 id="heading3">对指定用户的推送</h3>
 <p>对指定用户的推送需要维护一张设备用户关联表，通过用户ID查询对应的设备ID，通过Broadcast接口实现推送</p>
 <h3 id="heading4">测试工具</h3>
 <p><a href="https://chrome.google.com/webstore/detail/smart-websocket-client/omalebghpgejjiaoknljcfmglgbpocdp">Smart Websocket Client</a></p>
 <p>用例:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json"><span style="color:#960050;background-color:#1e0010">u</span><span style="color:#960050;background-color:#1e0010">r</span><span style="color:#960050;background-color:#1e0010">l</span><span style="color:#960050;background-color:#1e0010">:</span>
-<span style="color:#960050;background-color:#1e0010">w</span><span style="color:#960050;background-color:#1e0010">s</span><span style="color:#960050;background-color:#1e0010">:</span><span style="color:#960050;background-color:#1e0010">/</span><span style="color:#960050;background-color:#1e0010">/</span><span style="color:#960050;background-color:#1e0010">l</span><span style="color:#960050;background-color:#1e0010">o</span><span style="color:#960050;background-color:#1e0010">c</span><span style="color:#960050;background-color:#1e0010">a</span><span style="color:#960050;background-color:#1e0010">l</span><span style="color:#960050;background-color:#1e0010">h</span><span style="color:#960050;background-color:#1e0010">o</span><span style="color:#960050;background-color:#1e0010">s</span><span style="color:#960050;background-color:#1e0010">t</span><span style="color:#960050;background-color:#1e0010">:</span><span style="color:#ae81ff">8081</span><span style="color:#960050;background-color:#1e0010">/</span><span style="color:#960050;background-color:#1e0010">w</span><span style="color:#960050;background-color:#1e0010">s</span><span style="color:#960050;background-color:#1e0010">?</span><span style="color:#960050;background-color:#1e0010">d</span><span style="color:#960050;background-color:#1e0010">e</span><span style="color:#960050;background-color:#1e0010">v</span><span style="color:#960050;background-color:#1e0010">i</span><span style="color:#960050;background-color:#1e0010">c</span><span style="color:#960050;background-color:#1e0010">e</span><span style="color:#960050;background-color:#1e0010">_</span><span style="color:#960050;background-color:#1e0010">i</span><span style="color:#960050;background-color:#1e0010">d</span><span style="color:#960050;background-color:#1e0010">=</span><span style="color:#960050;background-color:#1e0010">x</span><span style="color:#960050;background-color:#1e0010">x</span><span style="color:#960050;background-color:#1e0010">x</span><span style="color:#960050;background-color:#1e0010">x</span><span style="color:#960050;background-color:#1e0010">x</span><span style="color:#960050;background-color:#1e0010">x</span><span style="color:#960050;background-color:#1e0010">x</span><span style="color:#960050;background-color:#1e0010">x</span>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json"><span style="">u</span><span style="">r</span><span style="">l</span><span style="">:</span>
+<span style="">w</span><span style="">s</span><span style="">:</span><span style="">/</span><span style="">/</span><span style="">l</span><span style="">o</span><span style="">c</span><span style="">a</span><span style="">l</span><span style="">h</span><span style="">o</span><span style="">s</span><span style="">t</span><span style="">:</span>8081<span style="">/</span><span style="">w</span><span style="">s</span><span style="">?</span><span style="">d</span><span style="">e</span><span style="">v</span><span style="">i</span><span style="">c</span><span style="">e</span><span style="">_</span><span style="">i</span><span style="">d</span><span style="">=</span><span style="">x</span><span style="">x</span><span style="">x</span><span style="">x</span><span style="">x</span><span style="">x</span><span style="">x</span><span style="">x</span>
 
-<span style="color:#960050;background-color:#1e0010">r</span><span style="color:#960050;background-color:#1e0010">e</span><span style="color:#960050;background-color:#1e0010">q</span><span style="color:#960050;background-color:#1e0010">u</span><span style="color:#960050;background-color:#1e0010">e</span><span style="color:#960050;background-color:#1e0010">s</span><span style="color:#960050;background-color:#1e0010">t</span><span style="color:#960050;background-color:#1e0010">:</span>
+<span style="">r</span><span style="">e</span><span style="">q</span><span style="">u</span><span style="">e</span><span style="">s</span><span style="">t</span><span style="">:</span>
 {
-  <span style="color:#f92672">&#34;action&#34;</span>:<span style="color:#e6db74">&#34;ping&#34;</span>
+  <span style="font-weight:bold">&#34;action&#34;</span>:<span style="font-style:italic">&#34;ping&#34;</span>
 }
 
-<span style="color:#960050;background-color:#1e0010">r</span><span style="color:#960050;background-color:#1e0010">e</span><span style="color:#960050;background-color:#1e0010">s</span><span style="color:#960050;background-color:#1e0010">p</span><span style="color:#960050;background-color:#1e0010">o</span><span style="color:#960050;background-color:#1e0010">n</span><span style="color:#960050;background-color:#1e0010">s</span><span style="color:#960050;background-color:#1e0010">e</span><span style="color:#960050;background-color:#1e0010">:</span>
+<span style="">r</span><span style="">e</span><span style="">s</span><span style="">p</span><span style="">o</span><span style="">n</span><span style="">s</span><span style="">e</span><span style="">:</span>
 {
-  <span style="color:#f92672">&#34;action&#34;</span>: <span style="color:#e6db74">&#34;pong&#34;</span>,
-  <span style="color:#f92672">&#34;data&#34;</span>: <span style="color:#e6db74">&#34;&#34;</span>
+  <span style="font-weight:bold">&#34;action&#34;</span>: <span style="font-style:italic">&#34;pong&#34;</span>,
+  <span style="font-weight:bold">&#34;data&#34;</span>: <span style="font-style:italic">&#34;&#34;</span>
 }
 </code></pre></div>
-</article>
+      </div>
+
+      <footer>
+        
 
 
+        <div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "yourdiscussshortname" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+        
+        
+      </footer>
+    </article>
+
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script type="text/javascript" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/startup.js" id="MathJax-script"></script>
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [
+          ['$', '$'], ['\\(', '\\)']
+        ],
+        processEscapes: true,
+        processEnvironments: true
+      },
+      options: {
+        skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+      }
+    };
+  </script>
+  </section>
+
+      </div>
+
+      <footer class="footer">
+  <section class="container">
+    
+      <p>记录点滴生活</p>
+    
+     © 2019
+    
+       · 
+       <a href="https://gohugo.io/">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/">Coder</a>.
+    
+    
+  </section>
+</footer>
+
+    </main>
+
+    
+
+  </body>
 
 </html>

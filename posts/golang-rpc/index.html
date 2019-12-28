@@ -1,215 +1,376 @@
 <!DOCTYPE html>
-<html lang="zh-cn">
-<title>封装net.Server | 我的博客</title>
-<meta charset="utf-8">
-<meta name="generator" content="Hugo 0.60.1" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="canonical" href="http://flyblog.tech/posts/golang-rpc/">
-<link rel="alternate" type="application/rss+xml" href="" title="我的博客">
-<link rel="stylesheet" href="http://flyblog.tech/css/theme.css">
-<link rel="stylesheet" href="http://flyblog.tech/css/classes.css">
+<html lang="zh">
 
-<header class="dark">
-  <h2><a href="http://flyblog.tech/">我的博客</a></h2>
-  <nav>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="author" content="fly">
+    <meta name="description" content="我的博客">
+    <meta name="keywords" content="blog,developer,personal">
+
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="封装net.Server"/>
+<meta name="twitter:description" content="封装net.Server 定义demo/server包 // Package server socket级别的server // // 使用方法： // srv := New(HandlerFunc(handleConn)) // err := srv.ListenAndServe(&#34;tcp&#34;, &#34;:8888&#34;) // if err != nil { // // 处理错误 // } // // func handleConn(rw io.ReadWriter) { // // 执行io操作 // } package server import ( &#34;io&#34; &#34;log&#34; &#34;net&#34; ) // Handler 连接处理器 type Handler interface { ServeConn(rw io.ReadWriter) } // HandlerFunc 连接处理函数 type HandlerFunc func(rw io.ReadWriter) // ServeConn 实现Handler接口 func (f HandlerFunc) ServeConn(rw io."/>
+
+    <meta property="og:title" content="封装net.Server" />
+<meta property="og:description" content="封装net.Server 定义demo/server包 // Package server socket级别的server // // 使用方法： // srv := New(HandlerFunc(handleConn)) // err := srv.ListenAndServe(&#34;tcp&#34;, &#34;:8888&#34;) // if err != nil { // // 处理错误 // } // // func handleConn(rw io.ReadWriter) { // // 执行io操作 // } package server import ( &#34;io&#34; &#34;log&#34; &#34;net&#34; ) // Handler 连接处理器 type Handler interface { ServeConn(rw io.ReadWriter) } // HandlerFunc 连接处理函数 type HandlerFunc func(rw io.ReadWriter) // ServeConn 实现Handler接口 func (f HandlerFunc) ServeConn(rw io." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://flyblog.tech/posts/golang-rpc/" />
+<meta property="article:published_time" content="2011-12-23T13:05:31+00:00" />
+<meta property="article:modified_time" content="2011-12-23T13:05:31+00:00" />
+
+
     
-  </nav>
-</header>
+      <base href="http://flyblog.tech/posts/golang-rpc/">
+    
+    <title>
+  封装net.Server · fly
+</title>
 
-<article>
-  <header>
-    <h1>封装net.Server</h1>
-    <p><time datetime="2011-12-23T13:05:31Z">December 23, 2011</time></p>
-  </header>
-  <h1 id="netserver">封装net.Server</h1>
+    
+      <link rel="canonical" href="http://flyblog.tech/posts/golang-rpc/">
+    
+
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,700%7CMerriweather:300,700%7CSource+Code+Pro:400,700" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.11.2/css/all.css" integrity="sha384-KA6wR/X5RY4zFAHpv/CnoG2UW1uogYfdnP67Uv7eULvTveboZJg0qUpmJZb5VqzN" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" integrity="sha256-l85OmPOjvil/SOvVt3HnSSjzF1TUMyT9eV0c2BzEGzU=" crossorigin="anonymous" />
+
+    
+      
+      
+      <link rel="stylesheet" href="http://flyblog.tech/css/coder.min.28d751104f30c16da1aa1bb04015cbe662cacfe0d1b01af4f2240ad58580069c.css" integrity="sha256-KNdREE8wwW2hqhuwQBXL5mLKz&#43;DRsBr08iQK1YWABpw=" crossorigin="anonymous" media="screen" />
+    
+
+    
+
+    
+
+    
+      <link rel="stylesheet" href="http://flyblog.tech/css/custom.css" />
+    
+
+    
+    
+    <link rel="icon" type="image/png" href="http://flyblog.tech/img/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="http://flyblog.tech/img/favicon-16x16.png" sizes="16x16">
+
+    <meta name="generator" content="Hugo 0.60.1" />
+  </head>
+
+  
+  
+  <body class="colorscheme-light">
+    <main class="wrapper">
+      <nav class="navigation">
+  <section class="container">
+    <a class="navigation-title" href="http://flyblog.tech/">
+      fly
+    </a>
+    <input type="checkbox" id="menu-toggle" />
+    <label class="menu-button float-right" for="menu-toggle"><i class="fas fa-bars"></i></label>
+    <ul class="navigation-list">
+      
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="http://flyblog.tech/posts/">Blog</a>
+          </li>
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="http://flyblog.tech/about/">About</a>
+          </li>
+        
+      
+      
+    </ul>
+  </section>
+</nav>
+
+
+      <div class="content">
+        
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">封装net.Server</h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fas fa-calendar"></i>
+              <time datetime='2011-12-23T13:05:31Z'>
+                December 23, 2011
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fas fa-clock"></i>
+              
+            </span>
+          </div>
+          
+          
+        </div>
+      </header>
+
+      <div>
+        <h1 id="netserver">封装net.Server</h1>
 <h2 id="demoserver">定义demo/server包</h2>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#75715e">// Package server socket级别的server
-</span><span style="color:#75715e"></span><span style="color:#75715e">//
-</span><span style="color:#75715e"></span><span style="color:#75715e">// 使用方法：
-</span><span style="color:#75715e"></span><span style="color:#75715e">// srv := New(HandlerFunc(handleConn))
-</span><span style="color:#75715e"></span><span style="color:#75715e">// err := srv.ListenAndServe(&#34;tcp&#34;, &#34;:8888&#34;)
-</span><span style="color:#75715e"></span><span style="color:#75715e">// if err != nil {
-</span><span style="color:#75715e"></span><span style="color:#75715e">//     // 处理错误
-</span><span style="color:#75715e"></span><span style="color:#75715e">// }
-</span><span style="color:#75715e"></span><span style="color:#75715e">//
-</span><span style="color:#75715e"></span><span style="color:#75715e">// func handleConn(rw io.ReadWriter) {
-</span><span style="color:#75715e"></span><span style="color:#75715e">//     // 执行io操作
-</span><span style="color:#75715e"></span><span style="color:#75715e">// }
-</span><span style="color:#75715e"></span><span style="color:#f92672">package</span> <span style="color:#a6e22e">server</span>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-style:italic">// Package server socket级别的server
+</span><span style="font-style:italic"></span><span style="font-style:italic">//
+</span><span style="font-style:italic"></span><span style="font-style:italic">// 使用方法：
+</span><span style="font-style:italic"></span><span style="font-style:italic">// srv := New(HandlerFunc(handleConn))
+</span><span style="font-style:italic"></span><span style="font-style:italic">// err := srv.ListenAndServe(&#34;tcp&#34;, &#34;:8888&#34;)
+</span><span style="font-style:italic"></span><span style="font-style:italic">// if err != nil {
+</span><span style="font-style:italic"></span><span style="font-style:italic">//     // 处理错误
+</span><span style="font-style:italic"></span><span style="font-style:italic">// }
+</span><span style="font-style:italic"></span><span style="font-style:italic">//
+</span><span style="font-style:italic"></span><span style="font-style:italic">// func handleConn(rw io.ReadWriter) {
+</span><span style="font-style:italic"></span><span style="font-style:italic">//     // 执行io操作
+</span><span style="font-style:italic"></span><span style="font-style:italic">// }
+</span><span style="font-style:italic"></span><span style="font-weight:bold">package</span> server
 
-<span style="color:#f92672">import</span> (
-    <span style="color:#e6db74">&#34;io&#34;</span>
-    <span style="color:#e6db74">&#34;log&#34;</span>
-    <span style="color:#e6db74">&#34;net&#34;</span>
+<span style="font-weight:bold">import</span> (
+    <span style="font-style:italic">&#34;io&#34;</span>
+    <span style="font-style:italic">&#34;log&#34;</span>
+    <span style="font-style:italic">&#34;net&#34;</span>
 )
 
-<span style="color:#75715e">// Handler 连接处理器
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">Handler</span> <span style="color:#66d9ef">interface</span> {
-    <span style="color:#a6e22e">ServeConn</span>(<span style="color:#a6e22e">rw</span> <span style="color:#a6e22e">io</span>.<span style="color:#a6e22e">ReadWriter</span>)
+<span style="font-style:italic">// Handler 连接处理器
+</span><span style="font-style:italic"></span><span style="font-weight:bold">type</span> Handler <span style="font-weight:bold">interface</span> {
+    ServeConn(rw io.ReadWriter)
 }
 
-<span style="color:#75715e">// HandlerFunc 连接处理函数
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">HandlerFunc</span> <span style="color:#66d9ef">func</span>(<span style="color:#a6e22e">rw</span> <span style="color:#a6e22e">io</span>.<span style="color:#a6e22e">ReadWriter</span>)
+<span style="font-style:italic">// HandlerFunc 连接处理函数
+</span><span style="font-style:italic"></span><span style="font-weight:bold">type</span> HandlerFunc <span style="font-weight:bold">func</span>(rw io.ReadWriter)
 
-<span style="color:#75715e">// ServeConn 实现Handler接口
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">func</span> (<span style="color:#a6e22e">f</span> <span style="color:#a6e22e">HandlerFunc</span>) <span style="color:#a6e22e">ServeConn</span>(<span style="color:#a6e22e">rw</span> <span style="color:#a6e22e">io</span>.<span style="color:#a6e22e">ReadWriter</span>) {
-    <span style="color:#a6e22e">f</span>(<span style="color:#a6e22e">rw</span>)
+<span style="font-style:italic">// ServeConn 实现Handler接口
+</span><span style="font-style:italic"></span><span style="font-weight:bold">func</span> (f HandlerFunc) ServeConn(rw io.ReadWriter) {
+    f(rw)
 }
 
-<span style="color:#75715e">// Server 服务器
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">Server</span> <span style="color:#66d9ef">struct</span> {
-    <span style="color:#a6e22e">Handler</span> <span style="color:#a6e22e">Handler</span>
+<span style="font-style:italic">// Server 服务器
+</span><span style="font-style:italic"></span><span style="font-weight:bold">type</span> Server <span style="font-weight:bold">struct</span> {
+    Handler Handler
 }
 
-<span style="color:#75715e">// ListenAndServe 监听并服务
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">func</span> (<span style="color:#a6e22e">s</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">Server</span>) <span style="color:#a6e22e">ListenAndServe</span>(<span style="color:#a6e22e">network</span>, <span style="color:#a6e22e">address</span> <span style="color:#66d9ef">string</span>) <span style="color:#66d9ef">error</span> {
-    <span style="color:#a6e22e">ln</span>, <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">net</span>.<span style="color:#a6e22e">Listen</span>(<span style="color:#a6e22e">network</span>, <span style="color:#a6e22e">address</span>)
-    <span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
-        <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">err</span>
+<span style="font-style:italic">// ListenAndServe 监听并服务
+</span><span style="font-style:italic"></span><span style="font-weight:bold">func</span> (s *Server) ListenAndServe(network, address <span style="">string</span>) <span style="">error</span> {
+    ln, err := net.Listen(network, address)
+    <span style="font-weight:bold">if</span> err != <span style="font-weight:bold">nil</span> {
+        <span style="font-weight:bold">return</span> err
     }
-    <span style="color:#66d9ef">defer</span> <span style="color:#a6e22e">ln</span>.<span style="color:#a6e22e">Close</span>()
-    <span style="color:#66d9ef">for</span> {
-        <span style="color:#a6e22e">conn</span>, <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">ln</span>.<span style="color:#a6e22e">Accept</span>()
-        <span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
-            <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">err</span>
+    <span style="font-weight:bold">defer</span> ln.Close()
+    <span style="font-weight:bold">for</span> {
+        conn, err := ln.Accept()
+        <span style="font-weight:bold">if</span> err != <span style="font-weight:bold">nil</span> {
+            <span style="font-weight:bold">return</span> err
         }
-        <span style="color:#66d9ef">go</span> <span style="color:#a6e22e">s</span>.<span style="color:#a6e22e">serve</span>(<span style="color:#a6e22e">conn</span>)
+        <span style="font-weight:bold">go</span> s.serve(conn)
     }
 }
 
-<span style="color:#66d9ef">func</span> (<span style="color:#a6e22e">s</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">Server</span>) <span style="color:#a6e22e">serve</span>(<span style="color:#a6e22e">conn</span> <span style="color:#a6e22e">net</span>.<span style="color:#a6e22e">Conn</span>) {
-    <span style="color:#66d9ef">defer</span> <span style="color:#66d9ef">func</span>() {
-        <span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> recover(); <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
-            <span style="color:#a6e22e">log</span>.<span style="color:#a6e22e">Print</span>(<span style="color:#e6db74">&#34;panic: &#34;</span>, <span style="color:#a6e22e">err</span>)
+<span style="font-weight:bold">func</span> (s *Server) serve(conn net.Conn) {
+    <span style="font-weight:bold">defer</span> <span style="font-weight:bold">func</span>() {
+        <span style="font-weight:bold">if</span> err := recover(); err != <span style="font-weight:bold">nil</span> {
+            log.Print(<span style="font-style:italic">&#34;panic: &#34;</span>, err)
         }
-        <span style="color:#a6e22e">conn</span>.<span style="color:#a6e22e">Close</span>()
+        conn.Close()
     }()
-    <span style="color:#a6e22e">s</span>.<span style="color:#a6e22e">Handler</span>.<span style="color:#a6e22e">ServeConn</span>(<span style="color:#a6e22e">conn</span>)
+    s.Handler.ServeConn(conn)
 }
 
-<span style="color:#75715e">// New 创建服务器
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">New</span>(<span style="color:#a6e22e">h</span> <span style="color:#a6e22e">Handler</span>) <span style="color:#f92672">*</span><span style="color:#a6e22e">Server</span> {
-    <span style="color:#66d9ef">return</span> <span style="color:#f92672">&amp;</span><span style="color:#a6e22e">Server</span>{
-        <span style="color:#a6e22e">Handler</span>: <span style="color:#a6e22e">h</span>,
+<span style="font-style:italic">// New 创建服务器
+</span><span style="font-style:italic"></span><span style="font-weight:bold">func</span> New(h Handler) *Server {
+    <span style="font-weight:bold">return</span> &amp;Server{
+        Handler: h,
     }
 }
 </code></pre></div><h2 id="demorpcserver">定义demo/rpcserver包</h2>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#75715e">// Package rpcserver 简单封装rpc server
-</span><span style="color:#75715e"></span><span style="color:#75715e">//
-</span><span style="color:#75715e"></span><span style="color:#75715e">// 使用方法：
-</span><span style="color:#75715e"></span><span style="color:#75715e">// srv := New()
-</span><span style="color:#75715e"></span><span style="color:#75715e">// srv.Register(&amp;Service1{})
-</span><span style="color:#75715e"></span><span style="color:#75715e">// srv.Register(&amp;Service2{})
-</span><span style="color:#75715e"></span><span style="color:#75715e">// err := srv.ListenAndServe(&#34;tcp&#34;, &#34;:8888&#34;)
-</span><span style="color:#75715e"></span><span style="color:#75715e">// if err != nil {
-</span><span style="color:#75715e"></span><span style="color:#75715e">//     // 处理错误
-</span><span style="color:#75715e"></span><span style="color:#75715e">// }
-</span><span style="color:#75715e"></span><span style="color:#75715e">//
-</span><span style="color:#75715e"></span><span style="color:#75715e">// type Service1 struct {}
-</span><span style="color:#75715e"></span><span style="color:#75715e">// func (*Service1) S1F1(arg *int, reply *int) error {}
-</span><span style="color:#75715e"></span><span style="color:#75715e">// func (*Service1) S1F2(arg *int, reply *int) error {}
-</span><span style="color:#75715e"></span><span style="color:#75715e">//
-</span><span style="color:#75715e"></span><span style="color:#75715e">// type Service2 struct {}
-</span><span style="color:#75715e"></span><span style="color:#75715e">// func (*Service2) S2F1(arg *int, reply *int) error {}
-</span><span style="color:#75715e"></span><span style="color:#75715e">// func (*Service2) S2F2(arg *int, reply *int) error {}
-</span><span style="color:#75715e"></span><span style="color:#f92672">package</span> <span style="color:#a6e22e">rpcserver</span>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-style:italic">// Package rpcserver 简单封装rpc server
+</span><span style="font-style:italic"></span><span style="font-style:italic">//
+</span><span style="font-style:italic"></span><span style="font-style:italic">// 使用方法：
+</span><span style="font-style:italic"></span><span style="font-style:italic">// srv := New()
+</span><span style="font-style:italic"></span><span style="font-style:italic">// srv.Register(&amp;Service1{})
+</span><span style="font-style:italic"></span><span style="font-style:italic">// srv.Register(&amp;Service2{})
+</span><span style="font-style:italic"></span><span style="font-style:italic">// err := srv.ListenAndServe(&#34;tcp&#34;, &#34;:8888&#34;)
+</span><span style="font-style:italic"></span><span style="font-style:italic">// if err != nil {
+</span><span style="font-style:italic"></span><span style="font-style:italic">//     // 处理错误
+</span><span style="font-style:italic"></span><span style="font-style:italic">// }
+</span><span style="font-style:italic"></span><span style="font-style:italic">//
+</span><span style="font-style:italic"></span><span style="font-style:italic">// type Service1 struct {}
+</span><span style="font-style:italic"></span><span style="font-style:italic">// func (*Service1) S1F1(arg *int, reply *int) error {}
+</span><span style="font-style:italic"></span><span style="font-style:italic">// func (*Service1) S1F2(arg *int, reply *int) error {}
+</span><span style="font-style:italic"></span><span style="font-style:italic">//
+</span><span style="font-style:italic"></span><span style="font-style:italic">// type Service2 struct {}
+</span><span style="font-style:italic"></span><span style="font-style:italic">// func (*Service2) S2F1(arg *int, reply *int) error {}
+</span><span style="font-style:italic"></span><span style="font-style:italic">// func (*Service2) S2F2(arg *int, reply *int) error {}
+</span><span style="font-style:italic"></span><span style="font-weight:bold">package</span> rpcserver
 
-<span style="color:#f92672">import</span> (
-    <span style="color:#e6db74">&#34;io&#34;</span>
-    <span style="color:#e6db74">&#34;net/rpc&#34;</span>
+<span style="font-weight:bold">import</span> (
+    <span style="font-style:italic">&#34;io&#34;</span>
+    <span style="font-style:italic">&#34;net/rpc&#34;</span>
 
-    <span style="color:#e6db74">&#34;demo/server&#34;</span>
+    <span style="font-style:italic">&#34;demo/server&#34;</span>
 )
 
-<span style="color:#66d9ef">type</span> <span style="color:#a6e22e">nopCloser</span> <span style="color:#66d9ef">struct</span> {
-    <span style="color:#a6e22e">io</span>.<span style="color:#a6e22e">ReadWriter</span>
+<span style="font-weight:bold">type</span> nopCloser <span style="font-weight:bold">struct</span> {
+    io.ReadWriter
 }
 
-<span style="color:#66d9ef">func</span> (<span style="color:#a6e22e">nopCloser</span>) <span style="color:#a6e22e">Close</span>() <span style="color:#66d9ef">error</span> {
-    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">nil</span>
+<span style="font-weight:bold">func</span> (nopCloser) Close() <span style="">error</span> {
+    <span style="font-weight:bold">return</span> <span style="font-weight:bold">nil</span>
 }
 
-<span style="color:#75715e">// RPCServer wrap *rpc.Server
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">RPCServer</span> <span style="color:#66d9ef">struct</span> {
-    <span style="color:#a6e22e">rpcServer</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">rpc</span>.<span style="color:#a6e22e">Server</span>
+<span style="font-style:italic">// RPCServer wrap *rpc.Server
+</span><span style="font-style:italic"></span><span style="font-weight:bold">type</span> RPCServer <span style="font-weight:bold">struct</span> {
+    rpcServer *rpc.Server
 }
 
-<span style="color:#75715e">// ServeConn 实现server.Handler接口
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">func</span> (<span style="color:#a6e22e">s</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">RPCServer</span>) <span style="color:#a6e22e">ServeConn</span>(<span style="color:#a6e22e">rw</span> <span style="color:#a6e22e">io</span>.<span style="color:#a6e22e">ReadWriter</span>) {
-    <span style="color:#a6e22e">s</span>.<span style="color:#a6e22e">rpcServer</span>.<span style="color:#a6e22e">ServeConn</span>(<span style="color:#a6e22e">nopCloser</span>{<span style="color:#a6e22e">rw</span>})
+<span style="font-style:italic">// ServeConn 实现server.Handler接口
+</span><span style="font-style:italic"></span><span style="font-weight:bold">func</span> (s *RPCServer) ServeConn(rw io.ReadWriter) {
+    s.rpcServer.ServeConn(nopCloser{rw})
 }
 
-<span style="color:#75715e">// Register 注册服务
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">func</span> (<span style="color:#a6e22e">s</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">RPCServer</span>) <span style="color:#a6e22e">Register</span>(<span style="color:#a6e22e">rcvr</span> <span style="color:#66d9ef">interface</span>{}) <span style="color:#66d9ef">error</span> {
-    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">s</span>.<span style="color:#a6e22e">rpcServer</span>.<span style="color:#a6e22e">Register</span>(<span style="color:#a6e22e">rcvr</span>)
+<span style="font-style:italic">// Register 注册服务
+</span><span style="font-style:italic"></span><span style="font-weight:bold">func</span> (s *RPCServer) Register(rcvr <span style="font-weight:bold">interface</span>{}) <span style="">error</span> {
+    <span style="font-weight:bold">return</span> s.rpcServer.Register(rcvr)
 }
 
-<span style="color:#75715e">// ListenAndServe 监听并服务
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">func</span> (<span style="color:#a6e22e">s</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">RPCServer</span>) <span style="color:#a6e22e">ListenAndServe</span>(<span style="color:#a6e22e">network</span>, <span style="color:#a6e22e">address</span> <span style="color:#66d9ef">string</span>) <span style="color:#66d9ef">error</span> {
-    <span style="color:#a6e22e">srv</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">server</span>.<span style="color:#a6e22e">New</span>(<span style="color:#a6e22e">s</span>)
-    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">srv</span>.<span style="color:#a6e22e">ListenAndServe</span>(<span style="color:#a6e22e">network</span>, <span style="color:#a6e22e">address</span>)
+<span style="font-style:italic">// ListenAndServe 监听并服务
+</span><span style="font-style:italic"></span><span style="font-weight:bold">func</span> (s *RPCServer) ListenAndServe(network, address <span style="">string</span>) <span style="">error</span> {
+    srv := server.New(s)
+    <span style="font-weight:bold">return</span> srv.ListenAndServe(network, address)
 }
 
-<span style="color:#75715e">// New 创建rpc server
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">New</span>() <span style="color:#f92672">*</span><span style="color:#a6e22e">RPCServer</span> {
-    <span style="color:#66d9ef">return</span> <span style="color:#f92672">&amp;</span><span style="color:#a6e22e">RPCServer</span>{
-        <span style="color:#a6e22e">rpcServer</span>: <span style="color:#a6e22e">rpc</span>.<span style="color:#a6e22e">NewServer</span>(),
+<span style="font-style:italic">// New 创建rpc server
+</span><span style="font-style:italic"></span><span style="font-weight:bold">func</span> New() *RPCServer {
+    <span style="font-weight:bold">return</span> &amp;RPCServer{
+        rpcServer: rpc.NewServer(),
     }
 }
 </code></pre></div><h2 id="heading">示例</h2>
 <h3 id="democmdrpcsrv">demo/cmd/rpcsrv</h3>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#f92672">package</span> <span style="color:#a6e22e">main</span>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">package</span> main
 
-<span style="color:#f92672">import</span> (
-    <span style="color:#e6db74">&#34;fmt&#34;</span>
-    <span style="color:#e6db74">&#34;log&#34;</span>
+<span style="font-weight:bold">import</span> (
+    <span style="font-style:italic">&#34;fmt&#34;</span>
+    <span style="font-style:italic">&#34;log&#34;</span>
 
-    <span style="color:#e6db74">&#34;demo/rpcserver&#34;</span>
+    <span style="font-style:italic">&#34;demo/rpcserver&#34;</span>
 )
 
-<span style="color:#75715e">// RPC rpc服务
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">RPC</span> <span style="color:#66d9ef">struct</span> {
+<span style="font-style:italic">// RPC rpc服务
+</span><span style="font-style:italic"></span><span style="font-weight:bold">type</span> RPC <span style="font-weight:bold">struct</span> {
 }
 
-<span style="color:#75715e">// Ping ping
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">func</span> (<span style="color:#f92672">*</span><span style="color:#a6e22e">RPC</span>) <span style="color:#a6e22e">Ping</span>(<span style="color:#a6e22e">arg</span> <span style="color:#66d9ef">string</span>, <span style="color:#a6e22e">reply</span> <span style="color:#f92672">*</span><span style="color:#66d9ef">string</span>) <span style="color:#66d9ef">error</span> {
-    <span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Println</span>(<span style="color:#a6e22e">arg</span>)
-    <span style="color:#f92672">*</span><span style="color:#a6e22e">reply</span> = <span style="color:#e6db74">&#34;pong&#34;</span>
-    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">nil</span>
+<span style="font-style:italic">// Ping ping
+</span><span style="font-style:italic"></span><span style="font-weight:bold">func</span> (*RPC) Ping(arg <span style="">string</span>, reply *<span style="">string</span>) <span style="">error</span> {
+    fmt.Println(arg)
+    *reply = <span style="font-style:italic">&#34;pong&#34;</span>
+    <span style="font-weight:bold">return</span> <span style="font-weight:bold">nil</span>
 }
 
-<span style="color:#66d9ef">func</span> <span style="color:#a6e22e">main</span>() {
-    <span style="color:#a6e22e">server</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">rpcserver</span>.<span style="color:#a6e22e">New</span>()
-    <span style="color:#a6e22e">server</span>.<span style="color:#a6e22e">Register</span>(<span style="color:#f92672">&amp;</span><span style="color:#a6e22e">RPC</span>{})
-    <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">server</span>.<span style="color:#a6e22e">ListenAndServe</span>(<span style="color:#e6db74">&#34;tcp&#34;</span>, <span style="color:#e6db74">&#34;:8888&#34;</span>)
-    <span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
-        <span style="color:#a6e22e">log</span>.<span style="color:#a6e22e">Fatal</span>(<span style="color:#a6e22e">err</span>)
+<span style="font-weight:bold">func</span> main() {
+    server := rpcserver.New()
+    server.Register(&amp;RPC{})
+    err := server.ListenAndServe(<span style="font-style:italic">&#34;tcp&#34;</span>, <span style="font-style:italic">&#34;:8888&#34;</span>)
+    <span style="font-weight:bold">if</span> err != <span style="font-weight:bold">nil</span> {
+        log.Fatal(err)
     }
 }
 </code></pre></div><h3 id="democmdrpccli">demo/cmd/rpccli</h3>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#f92672">package</span> <span style="color:#a6e22e">main</span>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">package</span> main
 
-<span style="color:#f92672">import</span> (
-    <span style="color:#e6db74">&#34;fmt&#34;</span>
-    <span style="color:#e6db74">&#34;log&#34;</span>
-    <span style="color:#e6db74">&#34;net/rpc&#34;</span>
+<span style="font-weight:bold">import</span> (
+    <span style="font-style:italic">&#34;fmt&#34;</span>
+    <span style="font-style:italic">&#34;log&#34;</span>
+    <span style="font-style:italic">&#34;net/rpc&#34;</span>
 )
 
-<span style="color:#66d9ef">func</span> <span style="color:#a6e22e">main</span>() {
-    <span style="color:#a6e22e">cli</span>, <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">rpc</span>.<span style="color:#a6e22e">Dial</span>(<span style="color:#e6db74">&#34;tcp&#34;</span>, <span style="color:#e6db74">&#34;:8888&#34;</span>)
-    <span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
-        <span style="color:#a6e22e">log</span>.<span style="color:#a6e22e">Fatal</span>(<span style="color:#a6e22e">err</span>)
+<span style="font-weight:bold">func</span> main() {
+    cli, err := rpc.Dial(<span style="font-style:italic">&#34;tcp&#34;</span>, <span style="font-style:italic">&#34;:8888&#34;</span>)
+    <span style="font-weight:bold">if</span> err != <span style="font-weight:bold">nil</span> {
+        log.Fatal(err)
     }
-    <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">reply</span> <span style="color:#66d9ef">string</span>
-    <span style="color:#a6e22e">err</span> = <span style="color:#a6e22e">cli</span>.<span style="color:#a6e22e">Call</span>(<span style="color:#e6db74">&#34;RPC.Ping&#34;</span>, <span style="color:#e6db74">&#34;ping&#34;</span>, <span style="color:#f92672">&amp;</span><span style="color:#a6e22e">reply</span>)
-    <span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
-        <span style="color:#a6e22e">log</span>.<span style="color:#a6e22e">Fatal</span>(<span style="color:#a6e22e">err</span>)
+    <span style="font-weight:bold">var</span> reply <span style="">string</span>
+    err = cli.Call(<span style="font-style:italic">&#34;RPC.Ping&#34;</span>, <span style="font-style:italic">&#34;ping&#34;</span>, &amp;reply)
+    <span style="font-weight:bold">if</span> err != <span style="font-weight:bold">nil</span> {
+        log.Fatal(err)
     }
-    <span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Println</span>(<span style="color:#a6e22e">reply</span>)
+    fmt.Println(reply)
 }
 </code></pre></div>
-</article>
+      </div>
+
+      <footer>
+        
 
 
+        <div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "yourdiscussshortname" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+        
+        
+      </footer>
+    </article>
+
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script type="text/javascript" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/startup.js" id="MathJax-script"></script>
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [
+          ['$', '$'], ['\\(', '\\)']
+        ],
+        processEscapes: true,
+        processEnvironments: true
+      },
+      options: {
+        skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+      }
+    };
+  </script>
+  </section>
+
+      </div>
+
+      <footer class="footer">
+  <section class="container">
+    
+      <p>记录点滴生活</p>
+    
+     © 2019
+    
+       · 
+       <a href="https://gohugo.io/">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/">Coder</a>.
+    
+    
+  </section>
+</footer>
+
+    </main>
+
+    
+
+  </body>
 
 </html>

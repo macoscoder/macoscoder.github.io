@@ -1,66 +1,161 @@
 <!DOCTYPE html>
-<html lang="zh-cn">
-<title>linux standard signals | 我的博客</title>
-<meta charset="utf-8">
-<meta name="generator" content="Hugo 0.60.1" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="canonical" href="http://flyblog.tech/posts/linux-standard-signals/">
-<link rel="alternate" type="application/rss+xml" href="" title="我的博客">
-<link rel="stylesheet" href="http://flyblog.tech/css/theme.css">
-<link rel="stylesheet" href="http://flyblog.tech/css/classes.css">
+<html lang="zh">
 
-<header class="dark">
-  <h2><a href="http://flyblog.tech/">我的博客</a></h2>
-  <nav>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="author" content="fly">
+    <meta name="description" content="我的博客">
+    <meta name="keywords" content="blog,developer,personal">
+
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="linux standard signals"/>
+<meta name="twitter:description" content="linux standard signals 信号应该算是linux编程中比较复杂的东西了，这里是学习神书(TLPI)中关于linux标准信号的一些记录
+信号值定义 /usr/include/x86_64-linux-gnu/bits/signum-generic.h /usr/include/x86_64-linux-gnu/bits/signum.h #define SIGHUP 1 /* Hangup. */#define SIGINT 2 /* Interactive attention signal. */#define SIGQUIT 3 /* Quit. */#define SIGILL 4 /* Illegal instruction. */#define SIGTRAP 5 /* Trace/breakpoint trap. */#define SIGABRT 6 /* Abnormal termination. */#define SIGBUS 7 /* Bus error. */#define SIGFPE 8 /* Erroneous arithmetic operation. */#define SIGKILL 9 /* Killed. */#define SIGUSR1 10 /* User-defined signal 1. */#define SIGSEGV 11 /* Invalid access to storage."/>
+
+    <meta property="og:title" content="linux standard signals" />
+<meta property="og:description" content="linux standard signals 信号应该算是linux编程中比较复杂的东西了，这里是学习神书(TLPI)中关于linux标准信号的一些记录
+信号值定义 /usr/include/x86_64-linux-gnu/bits/signum-generic.h /usr/include/x86_64-linux-gnu/bits/signum.h #define SIGHUP 1 /* Hangup. */#define SIGINT 2 /* Interactive attention signal. */#define SIGQUIT 3 /* Quit. */#define SIGILL 4 /* Illegal instruction. */#define SIGTRAP 5 /* Trace/breakpoint trap. */#define SIGABRT 6 /* Abnormal termination. */#define SIGBUS 7 /* Bus error. */#define SIGFPE 8 /* Erroneous arithmetic operation. */#define SIGKILL 9 /* Killed. */#define SIGUSR1 10 /* User-defined signal 1. */#define SIGSEGV 11 /* Invalid access to storage." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://flyblog.tech/posts/linux-standard-signals/" />
+<meta property="article:published_time" content="2011-12-23T13:05:31+00:00" />
+<meta property="article:modified_time" content="2011-12-23T13:05:31+00:00" />
+
+
     
-  </nav>
-</header>
+      <base href="http://flyblog.tech/posts/linux-standard-signals/">
+    
+    <title>
+  linux standard signals · fly
+</title>
 
-<article>
-  <header>
-    <h1>linux standard signals</h1>
-    <p><time datetime="2011-12-23T13:05:31Z">December 23, 2011</time></p>
-  </header>
-  <h1 id="linux-standard-signals">linux standard signals</h1>
+    
+      <link rel="canonical" href="http://flyblog.tech/posts/linux-standard-signals/">
+    
+
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,700%7CMerriweather:300,700%7CSource+Code+Pro:400,700" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.11.2/css/all.css" integrity="sha384-KA6wR/X5RY4zFAHpv/CnoG2UW1uogYfdnP67Uv7eULvTveboZJg0qUpmJZb5VqzN" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" integrity="sha256-l85OmPOjvil/SOvVt3HnSSjzF1TUMyT9eV0c2BzEGzU=" crossorigin="anonymous" />
+
+    
+      
+      
+      <link rel="stylesheet" href="http://flyblog.tech/css/coder.min.28d751104f30c16da1aa1bb04015cbe662cacfe0d1b01af4f2240ad58580069c.css" integrity="sha256-KNdREE8wwW2hqhuwQBXL5mLKz&#43;DRsBr08iQK1YWABpw=" crossorigin="anonymous" media="screen" />
+    
+
+    
+
+    
+
+    
+      <link rel="stylesheet" href="http://flyblog.tech/css/custom.css" />
+    
+
+    
+    
+    <link rel="icon" type="image/png" href="http://flyblog.tech/img/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="http://flyblog.tech/img/favicon-16x16.png" sizes="16x16">
+
+    <meta name="generator" content="Hugo 0.60.1" />
+  </head>
+
+  
+  
+  <body class="colorscheme-light">
+    <main class="wrapper">
+      <nav class="navigation">
+  <section class="container">
+    <a class="navigation-title" href="http://flyblog.tech/">
+      fly
+    </a>
+    <input type="checkbox" id="menu-toggle" />
+    <label class="menu-button float-right" for="menu-toggle"><i class="fas fa-bars"></i></label>
+    <ul class="navigation-list">
+      
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="http://flyblog.tech/posts/">Blog</a>
+          </li>
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="http://flyblog.tech/about/">About</a>
+          </li>
+        
+      
+      
+    </ul>
+  </section>
+</nav>
+
+
+      <div class="content">
+        
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">linux standard signals</h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fas fa-calendar"></i>
+              <time datetime='2011-12-23T13:05:31Z'>
+                December 23, 2011
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fas fa-clock"></i>
+              
+            </span>
+          </div>
+          
+          
+        </div>
+      </header>
+
+      <div>
+        <h1 id="linux-standard-signals">linux standard signals</h1>
 <p>信号应该算是linux编程中比较复杂的东西了，这里是学习神书(TLPI)中关于linux标准信号的一些记录</p>
 <h2 id="heading">信号值定义</h2>
 <pre><code class="language-path" data-lang="path">/usr/include/x86_64-linux-gnu/bits/signum-generic.h
 /usr/include/x86_64-linux-gnu/bits/signum.h
-</code></pre><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">define SIGHUP    1  </span><span style="color:#75715e">/* Hangup. */</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">define SIGINT    2  </span><span style="color:#75715e">/* Interactive attention signal. */</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">define SIGQUIT   3  </span><span style="color:#75715e">/* Quit. */</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">define SIGILL    4  </span><span style="color:#75715e">/* Illegal instruction. */</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">define SIGTRAP   5  </span><span style="color:#75715e">/* Trace/breakpoint trap. */</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">define SIGABRT   6  </span><span style="color:#75715e">/* Abnormal termination. */</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">define SIGBUS    7  </span><span style="color:#75715e">/* Bus error. */</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">define SIGFPE    8  </span><span style="color:#75715e">/* Erroneous arithmetic operation. */</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">define SIGKILL   9  </span><span style="color:#75715e">/* Killed. */</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">define SIGUSR1   10 </span><span style="color:#75715e">/* User-defined signal 1. */</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">define SIGSEGV   11 </span><span style="color:#75715e">/* Invalid access to storage. */</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">define SIGUSR2   12 </span><span style="color:#75715e">/* User-defined signal 2. */</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">define SIGPIPE   13 </span><span style="color:#75715e">/* Broken pipe. */</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">define SIGALRM   14 </span><span style="color:#75715e">/* Alarm clock. */</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">define SIGTERM   15 </span><span style="color:#75715e">/* Termination request. */</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">define SIGSTKFLT 16 </span><span style="color:#75715e">/* Stack fault (obsolete). */</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">define SIGCHLD   17 </span><span style="color:#75715e">/* Child terminated or stopped. */</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">define SIGCONT   18 </span><span style="color:#75715e">/* Continue. */</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">define SIGSTOP   19 </span><span style="color:#75715e">/* Stop, unblockable. */</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">define SIGTSTP   20 </span><span style="color:#75715e">/* Keyboard stop. */</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">define SIGTTIN   21 </span><span style="color:#75715e">/* Background read from control terminal. */</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">define SIGTTOU   22 </span><span style="color:#75715e">/* Background write to control terminal. */</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">define SIGURG    23 </span><span style="color:#75715e">/* Urgent data is available at a socket. */</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">define SIGXCPU   24 </span><span style="color:#75715e">/* CPU time limit exceeded. */</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">define SIGXFSZ   25 </span><span style="color:#75715e">/* File size limit exceeded. */</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">define SIGVTALRM 26 </span><span style="color:#75715e">/* Virtual timer expired. */</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">define SIGPROF   27 </span><span style="color:#75715e">/* Profiling timer expired. */</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">define SIGWINCH  28 </span><span style="color:#75715e">/* Window size change (4.3 BSD, Sun). */</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">define SIGPOLL   29 </span><span style="color:#75715e">/* Pollable event occurred (System V). */</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">define SIGPWR    30 </span><span style="color:#75715e">/* Power failure imminent. */</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">define SIGSYS    31 </span><span style="color:#75715e">/* Bad system call. */</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span>
-<span style="color:#75715e">#</span><span style="color:#75715e">define SIGIO  SIGPOLL </span><span style="color:#75715e">/* I/O now possible (4.2 BSD). */</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">define SIGIOT SIGABRT </span><span style="color:#75715e">/* IOT instruction, abort() on a PDP-11. */</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">define SIGCLD SIGCHLD </span><span style="color:#75715e">/* Old System V name */</span><span style="color:#75715e">
+</code></pre><div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="">#</span><span style="">define SIGHUP    1  </span><span style="font-style:italic">/* Hangup. */</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">define SIGINT    2  </span><span style="font-style:italic">/* Interactive attention signal. */</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">define SIGQUIT   3  </span><span style="font-style:italic">/* Quit. */</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">define SIGILL    4  </span><span style="font-style:italic">/* Illegal instruction. */</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">define SIGTRAP   5  </span><span style="font-style:italic">/* Trace/breakpoint trap. */</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">define SIGABRT   6  </span><span style="font-style:italic">/* Abnormal termination. */</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">define SIGBUS    7  </span><span style="font-style:italic">/* Bus error. */</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">define SIGFPE    8  </span><span style="font-style:italic">/* Erroneous arithmetic operation. */</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">define SIGKILL   9  </span><span style="font-style:italic">/* Killed. */</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">define SIGUSR1   10 </span><span style="font-style:italic">/* User-defined signal 1. */</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">define SIGSEGV   11 </span><span style="font-style:italic">/* Invalid access to storage. */</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">define SIGUSR2   12 </span><span style="font-style:italic">/* User-defined signal 2. */</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">define SIGPIPE   13 </span><span style="font-style:italic">/* Broken pipe. */</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">define SIGALRM   14 </span><span style="font-style:italic">/* Alarm clock. */</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">define SIGTERM   15 </span><span style="font-style:italic">/* Termination request. */</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">define SIGSTKFLT 16 </span><span style="font-style:italic">/* Stack fault (obsolete). */</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">define SIGCHLD   17 </span><span style="font-style:italic">/* Child terminated or stopped. */</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">define SIGCONT   18 </span><span style="font-style:italic">/* Continue. */</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">define SIGSTOP   19 </span><span style="font-style:italic">/* Stop, unblockable. */</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">define SIGTSTP   20 </span><span style="font-style:italic">/* Keyboard stop. */</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">define SIGTTIN   21 </span><span style="font-style:italic">/* Background read from control terminal. */</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">define SIGTTOU   22 </span><span style="font-style:italic">/* Background write to control terminal. */</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">define SIGURG    23 </span><span style="font-style:italic">/* Urgent data is available at a socket. */</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">define SIGXCPU   24 </span><span style="font-style:italic">/* CPU time limit exceeded. */</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">define SIGXFSZ   25 </span><span style="font-style:italic">/* File size limit exceeded. */</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">define SIGVTALRM 26 </span><span style="font-style:italic">/* Virtual timer expired. */</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">define SIGPROF   27 </span><span style="font-style:italic">/* Profiling timer expired. */</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">define SIGWINCH  28 </span><span style="font-style:italic">/* Window size change (4.3 BSD, Sun). */</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">define SIGPOLL   29 </span><span style="font-style:italic">/* Pollable event occurred (System V). */</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">define SIGPWR    30 </span><span style="font-style:italic">/* Power failure imminent. */</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">define SIGSYS    31 </span><span style="font-style:italic">/* Bad system call. */</span><span style="">
+</span><span style=""></span>
+<span style="">#</span><span style="">define SIGIO  SIGPOLL </span><span style="font-style:italic">/* I/O now possible (4.2 BSD). */</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">define SIGIOT SIGABRT </span><span style="font-style:italic">/* IOT instruction, abort() on a PDP-11. */</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">define SIGCLD SIGCHLD </span><span style="font-style:italic">/* Old System V name */</span><span style="">
 </span></code></pre></div><h2 id="heading1">信号默认动作</h2>
 <table>
 <thead>
@@ -268,50 +363,50 @@
 <li>保护和恢复现场(e.g.: errno)</li>
 </ul>
 <h3 id="heading4">安装信号处理器</h3>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;errno.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;signal.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;stddef.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;stdio.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;stdlib.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;unistd.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span>
-<span style="color:#66d9ef">static</span> <span style="color:#66d9ef">volatile</span> sig_atomic_t sig_val;
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="">#</span><span style="">include</span> <span style="">&lt;errno.h&gt;</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">include</span> <span style="">&lt;signal.h&gt;</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">include</span> <span style="">&lt;stddef.h&gt;</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">include</span> <span style="">&lt;stdio.h&gt;</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">include</span> <span style="">&lt;stdlib.h&gt;</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">include</span> <span style="">&lt;unistd.h&gt;</span><span style="">
+</span><span style=""></span>
+<span style="font-weight:bold">static</span> <span style="font-weight:bold">volatile</span> sig_atomic_t sig_val;
 
-<span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">handler</span>(<span style="color:#66d9ef">int</span> sig) {
-    sig_val <span style="color:#f92672">=</span> sig;
+<span style="font-weight:bold">static</span> <span style="">void</span> handler(<span style="">int</span> sig) {
+    sig_val = sig;
 }
 
-<span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">install_sig_handler</span>(<span style="color:#66d9ef">int</span> sig) {
-    <span style="color:#66d9ef">struct</span> sigaction sa;
-    sa.sa_handler <span style="color:#f92672">=</span> handler;
-    sa.sa_flags <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
-    sigfillset(<span style="color:#f92672">&amp;</span>sa.sa_mask); <span style="color:#75715e">// 屏蔽所有信号
-</span><span style="color:#75715e"></span>    sigaction(sig, <span style="color:#f92672">&amp;</span>sa, NULL);
+<span style="font-weight:bold">static</span> <span style="">void</span> install_sig_handler(<span style="">int</span> sig) {
+    <span style="font-weight:bold">struct</span> sigaction sa;
+    sa.sa_handler = handler;
+    sa.sa_flags = 0;
+    sigfillset(&amp;sa.sa_mask); <span style="font-style:italic">// 屏蔽所有信号
+</span><span style="font-style:italic"></span>    sigaction(sig, &amp;sa, NULL);
 }
 
-<span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">handle_sig</span>() {
-    <span style="color:#66d9ef">switch</span> (sig_val) {
-    <span style="color:#66d9ef">case</span> SIGTERM:
-    <span style="color:#66d9ef">case</span> SIGQUIT:
-    <span style="color:#66d9ef">case</span> SIGINT:
-        <span style="color:#75715e">// 做一些清理工作
-</span><span style="color:#75715e"></span>        <span style="color:#75715e">// ...
-</span><span style="color:#75715e"></span>        exit(sig_val);
-    <span style="color:#66d9ef">default</span><span style="color:#f92672">:</span>
-        <span style="color:#66d9ef">break</span>;
+<span style="font-weight:bold">static</span> <span style="">void</span> handle_sig() {
+    <span style="font-weight:bold">switch</span> (sig_val) {
+    <span style="font-weight:bold">case</span> SIGTERM:
+    <span style="font-weight:bold">case</span> SIGQUIT:
+    <span style="font-weight:bold">case</span> SIGINT:
+        <span style="font-style:italic">// 做一些清理工作
+</span><span style="font-style:italic"></span>        <span style="font-style:italic">// ...
+</span><span style="font-style:italic"></span>        exit(sig_val);
+    <span style="font-weight:bold">default</span>:
+        <span style="font-weight:bold">break</span>;
     }
 }
 
-<span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">do_task</span>() {
-    sleep(<span style="color:#ae81ff">1</span>);
+<span style="font-weight:bold">static</span> <span style="">void</span> do_task() {
+    sleep(1);
 }
 
-<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>() {
+<span style="">int</span> main() {
     install_sig_handler(SIGTERM);
     install_sig_handler(SIGQUIT);
     install_sig_handler(SIGINT);
 
-    <span style="color:#66d9ef">while</span> (<span style="color:#ae81ff">1</span>) {
+    <span style="font-weight:bold">while</span> (1) {
         handle_sig();
         do_task();
     }
@@ -320,109 +415,109 @@
 <p>默认情况下，信号处理器是使用进程的栈空间，当进程因为某些原因(e.g:无穷递归)耗尽了进程的栈空间时，内核会产生一个<code>SIGSEGV</code>信号<br>
 此时由于进程栈空间已经耗尽，无法再执行<code>SIGSEGV</code>的信号处理器，解决这个问题的办法是为信号处理器提供预分配的专用栈</p>
 <h3 id="heading5">建立专用栈</h3>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;signal.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">sigaltstack</span>(<span style="color:#66d9ef">const</span> stack_t <span style="color:#f92672">*</span>ss, stack_t <span style="color:#f92672">*</span>old_ss);
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="">#</span><span style="">include</span> <span style="">&lt;signal.h&gt;</span><span style="">
+</span><span style=""></span><span style="">int</span> sigaltstack(<span style="font-weight:bold">const</span> stack_t *ss, stack_t *old_ss);
 
-<span style="color:#66d9ef">typedef</span> <span style="color:#66d9ef">struct</span> {
-    <span style="color:#66d9ef">void</span>  <span style="color:#f92672">*</span>ss_sp;     <span style="color:#75715e">/* Base address of stack */</span>
-    <span style="color:#66d9ef">int</span>    ss_flags;  <span style="color:#75715e">/* Flags */</span>
-    size_t ss_size;   <span style="color:#75715e">/* Number of bytes in stack */</span>
+<span style="font-weight:bold">typedef</span> <span style="font-weight:bold">struct</span> {
+    <span style="">void</span>  *ss_sp;     <span style="font-style:italic">/* Base address of stack */</span>
+    <span style="">int</span>    ss_flags;  <span style="font-style:italic">/* Flags */</span>
+    size_t ss_size;   <span style="font-style:italic">/* Number of bytes in stack */</span>
 } stack_t;
 </code></pre></div><h4 id="heading6">示例</h4>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;signal.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;stddef.h&gt; // Get NULL</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;stdio.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;stdlib.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;string.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span>
-<span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">segv_handler</span>(<span style="color:#66d9ef">int</span> sig) {
-    printf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">sig: %d, %s</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, sig, strsignal(sig)); <span style="color:#75715e">// UNSAFE
-</span><span style="color:#75715e"></span>    abort();
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="">#</span><span style="">include</span> <span style="">&lt;signal.h&gt;</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">include</span> <span style="">&lt;stddef.h&gt; // Get NULL</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">include</span> <span style="">&lt;stdio.h&gt;</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">include</span> <span style="">&lt;stdlib.h&gt;</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">include</span> <span style="">&lt;string.h&gt;</span><span style="">
+</span><span style=""></span>
+<span style="font-weight:bold">static</span> <span style="">void</span> segv_handler(<span style="">int</span> sig) {
+    printf(<span style="font-style:italic"></span><span style="font-style:italic">&#34;</span><span style="font-style:italic">sig: %d, %s</span><span style="font-weight:bold;font-style:italic">\n</span><span style="font-style:italic">&#34;</span>, sig, strsignal(sig)); <span style="font-style:italic">// UNSAFE
+</span><span style="font-style:italic"></span>    abort();
 }
 
-<span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">overflow</span>() {
-    <span style="color:#66d9ef">char</span> a[<span style="color:#ae81ff">100000</span>];
+<span style="font-weight:bold">static</span> <span style="">void</span> overflow() {
+    <span style="">char</span> a[100000];
     overflow();
 }
 
-<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>() {
+<span style="">int</span> main() {
     stack_t ss;
-    ss.ss_sp <span style="color:#f92672">=</span> malloc(SIGSTKSZ);
-    ss.ss_size <span style="color:#f92672">=</span> SIGSTKSZ;
-    ss.ss_flags <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
-    sigaltstack(<span style="color:#f92672">&amp;</span>ss, NULL);
+    ss.ss_sp = malloc(SIGSTKSZ);
+    ss.ss_size = SIGSTKSZ;
+    ss.ss_flags = 0;
+    sigaltstack(&amp;ss, NULL);
 
-    <span style="color:#66d9ef">struct</span> sigaction sa;
-    sa.sa_handler <span style="color:#f92672">=</span> segv_handler;
-    sa.sa_flags <span style="color:#f92672">=</span> SA_ONSTACK; <span style="color:#75715e">// 使用专用栈
-</span><span style="color:#75715e"></span>    sigfillset(<span style="color:#f92672">&amp;</span>sa.sa_mask);
-    sigaction(SIGSEGV, <span style="color:#f92672">&amp;</span>sa, NULL);
+    <span style="font-weight:bold">struct</span> sigaction sa;
+    sa.sa_handler = segv_handler;
+    sa.sa_flags = SA_ONSTACK; <span style="font-style:italic">// 使用专用栈
+</span><span style="font-style:italic"></span>    sigfillset(&amp;sa.sa_mask);
+    sigaction(SIGSEGV, &amp;sa, NULL);
 
     overflow();
 }
 </code></pre></div><p>输出:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">sig: 11, Segmentation fault
-<span style="color:#f92672">[</span>1<span style="color:#f92672">]</span>    <span style="color:#ae81ff">3918</span> abort      ./a.out
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">sig: 11, Segmentation fault
+[1]    3918 abort      ./a.out
 </code></pre></div><h3 id="heading7">三参数版本的信号处理器</h3>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">handler</span>(<span style="color:#66d9ef">int</span> sig, siginfo_t <span style="color:#f92672">*</span>info, ucontext_t <span style="color:#f92672">*</span>ucontext);
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="">void</span> handler(<span style="">int</span> sig, siginfo_t *info, ucontext_t *ucontext);
 </code></pre></div><p>在建立信号处理器时，如果sigaction.sa_flags设置了SA_SIGINFO，那么使用三参数版本的信号处理器</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;signal.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;stddef.h&gt; // Get NULL</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;stdio.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;unistd.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;ucontext.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span>
-<span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">quit_handler</span>(<span style="color:#66d9ef">int</span> sig, siginfo_t <span style="color:#f92672">*</span>info, <span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>uctx) {
-    <span style="color:#75715e">// UNSAFE
-</span><span style="color:#75715e"></span>    printf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">si_signo: %d</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">si_code: %d</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, info<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>si_signo, info<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>si_code);
-    psiginfo(info, <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">siginfo</span><span style="color:#e6db74">&#34;</span>);
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="">#</span><span style="">include</span> <span style="">&lt;signal.h&gt;</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">include</span> <span style="">&lt;stddef.h&gt; // Get NULL</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">include</span> <span style="">&lt;stdio.h&gt;</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">include</span> <span style="">&lt;unistd.h&gt;</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">include</span> <span style="">&lt;ucontext.h&gt;</span><span style="">
+</span><span style=""></span>
+<span style="font-weight:bold">static</span> <span style="">void</span> quit_handler(<span style="">int</span> sig, siginfo_t *info, <span style="">void</span> *uctx) {
+    <span style="font-style:italic">// UNSAFE
+</span><span style="font-style:italic"></span>    printf(<span style="font-style:italic"></span><span style="font-style:italic">&#34;</span><span style="font-style:italic">si_signo: %d</span><span style="font-weight:bold;font-style:italic">\n</span><span style="font-style:italic">si_code: %d</span><span style="font-weight:bold;font-style:italic">\n</span><span style="font-style:italic">&#34;</span>, info-&gt;si_signo, info-&gt;si_code);
+    psiginfo(info, <span style="font-style:italic"></span><span style="font-style:italic">&#34;</span><span style="font-style:italic">siginfo</span><span style="font-style:italic">&#34;</span>);
 }
 
-<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>() {
-    <span style="color:#66d9ef">struct</span> sigaction sa;
-    sa.sa_sigaction <span style="color:#f92672">=</span> quit_handler;
-    sa.sa_flags <span style="color:#f92672">=</span> SA_SIGINFO; <span style="color:#75715e">// 使用三参数版本的信号处理器
-</span><span style="color:#75715e"></span>    sigfillset(<span style="color:#f92672">&amp;</span>sa.sa_mask);
-    sigaction(SIGQUIT, <span style="color:#f92672">&amp;</span>sa, NULL);
+<span style="">int</span> main() {
+    <span style="font-weight:bold">struct</span> sigaction sa;
+    sa.sa_sigaction = quit_handler;
+    sa.sa_flags = SA_SIGINFO; <span style="font-style:italic">// 使用三参数版本的信号处理器
+</span><span style="font-style:italic"></span>    sigfillset(&amp;sa.sa_mask);
+    sigaction(SIGQUIT, &amp;sa, NULL);
 
-    sleep(<span style="color:#ae81ff">100</span>);
+    sleep(100);
 }
-</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#960050;background-color:#1e0010">$</span> .<span style="color:#f92672">/</span>a.out
-<span style="color:#f92672">^</span><span style="color:#960050;background-color:#1e0010">\</span>si_signo: <span style="color:#ae81ff">3</span>
-si_code: <span style="color:#ae81ff">128</span>
-siginfo: Quit (Signal sent by the kernel <span style="color:#ae81ff">0</span> <span style="color:#ae81ff">0</span>)
+</code></pre></div><div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="">$</span> ./a.out
+^<span style="">\</span>si_signo: 3
+si_code: 128
+siginfo: Quit (Signal sent by the kernel 0 0)
 
-<span style="color:#960050;background-color:#1e0010">$</span> grep <span style="color:#f92672">-</span>Rw <span style="color:#960050;background-color:#1e0010">&#39;</span>SI_KERNEL<span style="color:#960050;background-color:#1e0010">&#39;</span> <span style="color:#f92672">/</span>usr<span style="color:#f92672">/</span>include
-<span style="color:#f92672">/</span>usr<span style="color:#f92672">/</span>include<span style="color:#f92672">/</span><span style="color:#66d9ef">asm</span><span style="color:#f92672">-</span>generic<span style="color:#f92672">/</span>siginfo.h:<span style="color:#960050;background-color:#1e0010">#</span>define SI_KERNEL    <span style="color:#ae81ff">0x80</span>            <span style="color:#75715e">/* sent by the kernel from somewhere */</span>
-<span style="color:#f92672">/</span>usr<span style="color:#f92672">/</span>include<span style="color:#f92672">/</span>x86_64<span style="color:#f92672">-</span>linux<span style="color:#f92672">-</span>gnu<span style="color:#f92672">/</span>bits<span style="color:#f92672">/</span>siginfo<span style="color:#f92672">-</span>consts.h:  SI_KERNEL <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x80</span>          <span style="color:#75715e">/* Send by kernel.  */</span>
-<span style="color:#f92672">/</span>usr<span style="color:#f92672">/</span>include<span style="color:#f92672">/</span>x86_64<span style="color:#f92672">-</span>linux<span style="color:#f92672">-</span>gnu<span style="color:#f92672">/</span>bits<span style="color:#f92672">/</span>siginfo<span style="color:#f92672">-</span>consts.h:<span style="color:#960050;background-color:#1e0010">#</span>define SI_KERNEL   SI_KERNEL
+<span style="">$</span> grep -Rw <span style="">&#39;</span>SI_KERNEL<span style="">&#39;</span> /usr/include
+/usr/include/<span style="font-weight:bold">asm</span>-generic/siginfo.h:<span style="">#</span>define SI_KERNEL    0x80            <span style="font-style:italic">/* sent by the kernel from somewhere */</span>
+/usr/include/x86_64-linux-gnu/bits/siginfo-consts.h:  SI_KERNEL = 0x80          <span style="font-style:italic">/* Send by kernel.  */</span>
+/usr/include/x86_64-linux-gnu/bits/siginfo-consts.h:<span style="">#</span>define SI_KERNEL   SI_KERNEL
 </code></pre></div><p><code>SIGQUIT</code>信号是终端驱动发射的，所以这里<code>si_code</code>的值为<code>SI_KERNEL</code></p>
 <h4 id="siginfot-">siginfo_t 结构</h4>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">typedef</span> <span style="color:#66d9ef">struct</span> {
-    <span style="color:#66d9ef">int</span>      si_signo;     <span style="color:#75715e">/* Signal number */</span>
-    <span style="color:#66d9ef">int</span>      si_errno;     <span style="color:#75715e">/* An errno value */</span>
-    <span style="color:#66d9ef">int</span>      si_code;      <span style="color:#75715e">/* Signal code */</span>
-    <span style="color:#66d9ef">int</span>      si_trapno;    <span style="color:#75715e">/* Trap number for hardware-generated signal (unused on most architectures) */</span>
-    pid_t    si_pid;       <span style="color:#75715e">/* Sending process ID */</span>
-    uid_t    si_uid;       <span style="color:#75715e">/* Real user ID of sending process */</span>
-    <span style="color:#66d9ef">int</span>      si_status;    <span style="color:#75715e">/* Exit value or signal */</span>
-    clock_t  si_utime;     <span style="color:#75715e">/* User time consumed */</span>
-    clock_t  si_stime;     <span style="color:#75715e">/* System time consumed */</span>
-    sigval_t si_value;     <span style="color:#75715e">/* Signal value */</span>
-    <span style="color:#66d9ef">int</span>      si_int;       <span style="color:#75715e">/* POSIX.1b signal */</span>
-    <span style="color:#66d9ef">void</span>    <span style="color:#f92672">*</span>si_ptr;       <span style="color:#75715e">/* POSIX.1b signal */</span>
-    <span style="color:#66d9ef">int</span>      si_overrun;   <span style="color:#75715e">/* Timer overrun count; POSIX.1b timers */</span>
-    <span style="color:#66d9ef">int</span>      si_timerid;   <span style="color:#75715e">/* Timer ID; POSIX.1b timers */</span>
-    <span style="color:#66d9ef">void</span>    <span style="color:#f92672">*</span>si_addr;      <span style="color:#75715e">/* Memory location which caused fault */</span>
-    <span style="color:#66d9ef">long</span>     si_band;      <span style="color:#75715e">/* Band event (was int in glibc 2.3.2 and earlier) */</span>
-    <span style="color:#66d9ef">int</span>      si_fd;        <span style="color:#75715e">/* File descriptor */</span>
-    <span style="color:#66d9ef">short</span>    si_addr_lsb;  <span style="color:#75715e">/* Least significant bit of address (since Linux 2.6.32) */</span>
-    <span style="color:#66d9ef">void</span>    <span style="color:#f92672">*</span>si_lower;     <span style="color:#75715e">/* Lower bound when address violation occurred (since Linux 3.19) */</span>
-    <span style="color:#66d9ef">void</span>    <span style="color:#f92672">*</span>si_upper;     <span style="color:#75715e">/* Upper bound when address violation occurred (since Linux 3.19) */</span>
-    <span style="color:#66d9ef">int</span>      si_pkey;      <span style="color:#75715e">/* Protection key on PTE that caused fault (since Linux 4.6) */</span>
-    <span style="color:#66d9ef">void</span>    <span style="color:#f92672">*</span>si_call_addr; <span style="color:#75715e">/* Address of system call instruction (since Linux 3.5) */</span>
-    <span style="color:#66d9ef">int</span>      si_syscall;   <span style="color:#75715e">/* Number of attempted system call (since Linux 3.5) */</span>
-    <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">int</span> si_arch;  <span style="color:#75715e">/* Architecture of attempted system call (since Linux 3.5) */</span>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="font-weight:bold">typedef</span> <span style="font-weight:bold">struct</span> {
+    <span style="">int</span>      si_signo;     <span style="font-style:italic">/* Signal number */</span>
+    <span style="">int</span>      si_errno;     <span style="font-style:italic">/* An errno value */</span>
+    <span style="">int</span>      si_code;      <span style="font-style:italic">/* Signal code */</span>
+    <span style="">int</span>      si_trapno;    <span style="font-style:italic">/* Trap number for hardware-generated signal (unused on most architectures) */</span>
+    pid_t    si_pid;       <span style="font-style:italic">/* Sending process ID */</span>
+    uid_t    si_uid;       <span style="font-style:italic">/* Real user ID of sending process */</span>
+    <span style="">int</span>      si_status;    <span style="font-style:italic">/* Exit value or signal */</span>
+    clock_t  si_utime;     <span style="font-style:italic">/* User time consumed */</span>
+    clock_t  si_stime;     <span style="font-style:italic">/* System time consumed */</span>
+    sigval_t si_value;     <span style="font-style:italic">/* Signal value */</span>
+    <span style="">int</span>      si_int;       <span style="font-style:italic">/* POSIX.1b signal */</span>
+    <span style="">void</span>    *si_ptr;       <span style="font-style:italic">/* POSIX.1b signal */</span>
+    <span style="">int</span>      si_overrun;   <span style="font-style:italic">/* Timer overrun count; POSIX.1b timers */</span>
+    <span style="">int</span>      si_timerid;   <span style="font-style:italic">/* Timer ID; POSIX.1b timers */</span>
+    <span style="">void</span>    *si_addr;      <span style="font-style:italic">/* Memory location which caused fault */</span>
+    <span style="">long</span>     si_band;      <span style="font-style:italic">/* Band event (was int in glibc 2.3.2 and earlier) */</span>
+    <span style="">int</span>      si_fd;        <span style="font-style:italic">/* File descriptor */</span>
+    <span style="">short</span>    si_addr_lsb;  <span style="font-style:italic">/* Least significant bit of address (since Linux 2.6.32) */</span>
+    <span style="">void</span>    *si_lower;     <span style="font-style:italic">/* Lower bound when address violation occurred (since Linux 3.19) */</span>
+    <span style="">void</span>    *si_upper;     <span style="font-style:italic">/* Upper bound when address violation occurred (since Linux 3.19) */</span>
+    <span style="">int</span>      si_pkey;      <span style="font-style:italic">/* Protection key on PTE that caused fault (since Linux 4.6) */</span>
+    <span style="">void</span>    *si_call_addr; <span style="font-style:italic">/* Address of system call instruction (since Linux 3.5) */</span>
+    <span style="">int</span>      si_syscall;   <span style="font-style:italic">/* Number of attempted system call (since Linux 3.5) */</span>
+    <span style="">unsigned</span> <span style="">int</span> si_arch;  <span style="font-style:italic">/* Architecture of attempted system call (since Linux 3.5) */</span>
 } siginfo_t;
 </code></pre></div><p>这个结构包含的信息非常多，重点关注<code>si_code</code>和<code>si_addr</code></p>
 <ul>
@@ -439,8 +534,8 @@ siginfo: Quit (Signal sent by the kernel <span style="color:#ae81ff">0</span> <s
 <p>This structure provides so-called user-context information describing the process state prior to invocation of the signal handler, including the previous process signal mask and saved register values (e.g., program counter and stack pointer).</p>
 <p>The <code>mcontext_t</code> type is machine-dependent and opaque.<br>
 The <code>ucontext_t</code> type is a structure that has at least the following fields:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">typedef</span> <span style="color:#66d9ef">struct</span> ucontext_t {
-    <span style="color:#66d9ef">struct</span> ucontext_t <span style="color:#f92672">*</span>uc_link;
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="font-weight:bold">typedef</span> <span style="font-weight:bold">struct</span> ucontext_t {
+    <span style="font-weight:bold">struct</span> ucontext_t *uc_link;
     sigset_t          uc_sigmask;
     stack_t           uc_stack;
     mcontext_t        uc_mcontext;
@@ -450,68 +545,136 @@ The <code>ucontext_t</code> type is a structure that has at least the following 
 <p>详细信息参考<code>getcontext(3)</code>, <code>makecontext(3)</code>手册</p>
 <h2 id="heading8">同步等待信号</h2>
 <h3 id="1-sigwaitinfo">方法1: sigwaitinfo</h3>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;signal.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">sigwait</span>(<span style="color:#66d9ef">const</span> sigset_t <span style="color:#f92672">*</span>set, <span style="color:#66d9ef">int</span> <span style="color:#f92672">*</span>sig);
-<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">sigwaitinfo</span>(<span style="color:#66d9ef">const</span> sigset_t <span style="color:#f92672">*</span>set, siginfo_t <span style="color:#f92672">*</span>info);
-<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">sigtimedwait</span>(<span style="color:#66d9ef">const</span> sigset_t <span style="color:#f92672">*</span>set, siginfo_t <span style="color:#f92672">*</span>info, <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">struct</span> timespec <span style="color:#f92672">*</span>timeout);
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="">#</span><span style="">include</span> <span style="">&lt;signal.h&gt;</span><span style="">
+</span><span style=""></span><span style="">int</span> sigwait(<span style="font-weight:bold">const</span> sigset_t *set, <span style="">int</span> *sig);
+<span style="">int</span> sigwaitinfo(<span style="font-weight:bold">const</span> sigset_t *set, siginfo_t *info);
+<span style="">int</span> sigtimedwait(<span style="font-weight:bold">const</span> sigset_t *set, siginfo_t *info, <span style="font-weight:bold">const</span> <span style="font-weight:bold">struct</span> timespec *timeout);
 </code></pre></div><p>示例</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;signal.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;stddef.h&gt;  // Get NULL</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;stdio.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span>
-<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>(<span style="color:#66d9ef">int</span> argc, <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>argv[]) {
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="">#</span><span style="">include</span> <span style="">&lt;signal.h&gt;</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">include</span> <span style="">&lt;stddef.h&gt;  // Get NULL</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">include</span> <span style="">&lt;stdio.h&gt;</span><span style="">
+</span><span style=""></span>
+<span style="">int</span> main(<span style="">int</span> argc, <span style="font-weight:bold">const</span> <span style="">char</span> *argv[]) {
     sigset_t mask;
-    sigfillset(<span style="color:#f92672">&amp;</span>mask);
-    sigprocmask(SIG_SETMASK, <span style="color:#f92672">&amp;</span>mask, NULL);
+    sigfillset(&amp;mask);
+    sigprocmask(SIG_SETMASK, &amp;mask, NULL);
 
-    <span style="color:#66d9ef">for</span> (;;) {
+    <span style="font-weight:bold">for</span> (;;) {
         siginfo_t siginfo;
-        <span style="color:#66d9ef">int</span> sig <span style="color:#f92672">=</span> sigwaitinfo(<span style="color:#f92672">&amp;</span>mask, <span style="color:#f92672">&amp;</span>siginfo);
-        printf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">signal: %d</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, sig);
-        psiginfo(<span style="color:#f92672">&amp;</span>siginfo, <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">siginfo</span><span style="color:#e6db74">&#34;</span>);
+        <span style="">int</span> sig = sigwaitinfo(&amp;mask, &amp;siginfo);
+        printf(<span style="font-style:italic"></span><span style="font-style:italic">&#34;</span><span style="font-style:italic">signal: %d</span><span style="font-weight:bold;font-style:italic">\n</span><span style="font-style:italic">&#34;</span>, sig);
+        psiginfo(&amp;siginfo, <span style="font-style:italic"></span><span style="font-style:italic">&#34;</span><span style="font-style:italic">siginfo</span><span style="font-style:italic">&#34;</span>);
     }
 }
-</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ ./a.out
-^Csignal: <span style="color:#ae81ff">2</span>
-siginfo: Interrupt <span style="color:#f92672">(</span>Signal sent by the kernel <span style="color:#ae81ff">0</span> 0<span style="color:#f92672">)</span>
-^<span style="color:#ae81ff">\s</span>ignal: <span style="color:#ae81ff">3</span>
-siginfo: Quit <span style="color:#f92672">(</span>Signal sent by the kernel <span style="color:#ae81ff">0</span> 0<span style="color:#f92672">)</span>
-signal: <span style="color:#ae81ff">28</span>
-siginfo: Window changed <span style="color:#f92672">(</span>Signal sent by the kernel <span style="color:#ae81ff">0</span> 0<span style="color:#f92672">)</span>
+</code></pre></div><div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ ./a.out
+^Csignal: 2
+siginfo: Interrupt (Signal sent by the kernel 0 0)
+^<span style="font-weight:bold;font-style:italic">\s</span>ignal: 3
+siginfo: Quit (Signal sent by the kernel 0 0)
+signal: 28
+siginfo: Window changed (Signal sent by the kernel 0 0)
 </code></pre></div><h3 id="2-signalfd">方法2: signalfd</h3>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;sys/signalfd.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">signalfd</span>(<span style="color:#66d9ef">int</span> fd, <span style="color:#66d9ef">const</span> sigset_t <span style="color:#f92672">*</span>mask, <span style="color:#66d9ef">int</span> flags);
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="">#</span><span style="">include</span> <span style="">&lt;sys/signalfd.h&gt;</span><span style="">
+</span><span style=""></span><span style="">int</span> signalfd(<span style="">int</span> fd, <span style="font-weight:bold">const</span> sigset_t *mask, <span style="">int</span> flags);
 </code></pre></div><p>示例</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;signal.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;stddef.h&gt;  // Get NULL</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;stdio.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;sys/signalfd.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;unistd.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span>
-<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>(<span style="color:#66d9ef">int</span> argc, <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>argv[]) {
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="">#</span><span style="">include</span> <span style="">&lt;signal.h&gt;</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">include</span> <span style="">&lt;stddef.h&gt;  // Get NULL</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">include</span> <span style="">&lt;stdio.h&gt;</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">include</span> <span style="">&lt;sys/signalfd.h&gt;</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">include</span> <span style="">&lt;unistd.h&gt;</span><span style="">
+</span><span style=""></span>
+<span style="">int</span> main(<span style="">int</span> argc, <span style="font-weight:bold">const</span> <span style="">char</span> *argv[]) {
     sigset_t mask;
-    sigfillset(<span style="color:#f92672">&amp;</span>mask);
-    sigprocmask(SIG_SETMASK, <span style="color:#f92672">&amp;</span>mask, NULL);
+    sigfillset(&amp;mask);
+    sigprocmask(SIG_SETMASK, &amp;mask, NULL);
 
-    <span style="color:#66d9ef">int</span> fd <span style="color:#f92672">=</span> signalfd(<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>, <span style="color:#f92672">&amp;</span>mask, <span style="color:#ae81ff">0</span>);
-    <span style="color:#66d9ef">for</span> (;;) {
-        <span style="color:#66d9ef">struct</span> signalfd_siginfo siginfo;
-        read(fd, <span style="color:#f92672">&amp;</span>siginfo, <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">struct</span> signalfd_siginfo));
-        printf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">signal: %d</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, siginfo.ssi_signo);
+    <span style="">int</span> fd = signalfd(-1, &amp;mask, 0);
+    <span style="font-weight:bold">for</span> (;;) {
+        <span style="font-weight:bold">struct</span> signalfd_siginfo siginfo;
+        read(fd, &amp;siginfo, <span style="font-weight:bold">sizeof</span>(<span style="font-weight:bold">struct</span> signalfd_siginfo));
+        printf(<span style="font-style:italic"></span><span style="font-style:italic">&#34;</span><span style="font-style:italic">signal: %d</span><span style="font-weight:bold;font-style:italic">\n</span><span style="font-style:italic">&#34;</span>, siginfo.ssi_signo);
     }
 }
-</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ ./a.out
-^Csignal: <span style="color:#ae81ff">2</span>
-^<span style="color:#ae81ff">\s</span>ignal: <span style="color:#ae81ff">3</span>
+</code></pre></div><div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ ./a.out
+^Csignal: 2
+^<span style="font-weight:bold;font-style:italic">\s</span>ignal: 3
 </code></pre></div><h2 id="heading9">其它等待信号方法</h2>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;unistd.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">pause</span>(<span style="color:#66d9ef">void</span>);
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="">#</span><span style="">include</span> <span style="">&lt;unistd.h&gt;</span><span style="">
+</span><span style=""></span><span style="">int</span> pause(<span style="">void</span>);
 
-<span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;signal.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">sigsuspend</span>(<span style="color:#66d9ef">const</span> sigset_t <span style="color:#f92672">*</span>sigmask);
+<span style="">#</span><span style="">include</span> <span style="">&lt;signal.h&gt;</span><span style="">
+</span><span style=""></span><span style="">int</span> sigsuspend(<span style="font-weight:bold">const</span> sigset_t *sigmask);
 </code></pre></div>
-</article>
+      </div>
+
+      <footer>
+        
 
 
+        <div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "yourdiscussshortname" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+        
+        
+      </footer>
+    </article>
+
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script type="text/javascript" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/startup.js" id="MathJax-script"></script>
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [
+          ['$', '$'], ['\\(', '\\)']
+        ],
+        processEscapes: true,
+        processEnvironments: true
+      },
+      options: {
+        skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+      }
+    };
+  </script>
+  </section>
+
+      </div>
+
+      <footer class="footer">
+  <section class="container">
+    
+      <p>记录点滴生活</p>
+    
+     © 2019
+    
+       · 
+       <a href="https://gohugo.io/">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/">Coder</a>.
+    
+    
+  </section>
+</footer>
+
+    </main>
+
+    
+
+  </body>
 
 </html>

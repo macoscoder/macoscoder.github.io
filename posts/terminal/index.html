@@ -1,27 +1,150 @@
 <!DOCTYPE html>
-<html lang="zh-cn">
-<title>终端 | 我的博客</title>
-<meta charset="utf-8">
-<meta name="generator" content="Hugo 0.60.1" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="canonical" href="http://flyblog.tech/posts/terminal/">
-<link rel="alternate" type="application/rss+xml" href="" title="我的博客">
-<link rel="stylesheet" href="http://flyblog.tech/css/theme.css">
-<link rel="stylesheet" href="http://flyblog.tech/css/classes.css">
+<html lang="zh">
 
-<header class="dark">
-  <h2><a href="http://flyblog.tech/">我的博客</a></h2>
-  <nav>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="author" content="fly">
+    <meta name="description" content="我的博客">
+    <meta name="keywords" content="blog,developer,personal">
+
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="终端"/>
+<meta name="twitter:description" content="终端 简介 终端是通过RS232串口连接到计算机的一种设备，它有一个黑白显示器(24*80)和一个键盘组成
+tty这个词是teletype的缩写，称为电传打字机，这是早期的终端设备，它有一个打印机和一个键盘组成
+上面所说的这种传统的终端已经灭绝了，取而代之的是虚拟终端(virtual terminal)和伪终端(pseudoterminal)
+virtual terminal 虚拟终端有时候也被称为虚拟控制台(virtual console)
+虚拟终端对应的设备文件为/dev/ttyn，n的范围是[1-63]，通常前6个虚拟终端可以通过快捷键来切换
+在X环境下可以通过Ctl&#43;Alt&#43;F[1-6]来切换到对应的虚拟终端，在虚拟终端环境下可以通过Alt&#43;F[1-6]或Alt&#43;&lt;-和Alt&#43;-&gt;来切换
+其他虚拟终端可以通过如下命令来切换，以/dev/tty10为例:
+# openvt -c 10 agetty tty10 linux ; chvt 10 还有三个特殊的设备文件/dev/tty, /dev/tty0, /dev/console
+ /dev/tty指向进程的控制终端(如果有的话)，也就是进程的stdin`,stdout,stderr`指向的设备文件(如果没有重定向的话) /dev/tty0指向当前激活的虚拟终端 /dev/console 是system console，linux内核日志输出的地方，默认情况下是指向/dev/tty0，也就是指向当前激活的虚拟终端  示例验证
+# tty 查看当前所在的虚拟终端 /dev/tty1 # sleep 5; echo hello &gt; /dev/tty0 执行上述命令后，立即用Alt&#43;F2切换到第二个虚拟终端(/dev/tty2)，5s后可看到终端输入hello，这证明了/dev/tty0是指向当前的虚拟终端
+另一个查看当前/dev/console和/dev/tty0指向的终端的方法
+$ cat /sys/devices/virtual/tty/console/active tty0 $ cat /sys/devices/virtual/tty/tty0/active tty2 pseudoterminal 伪终端是一对设备，主设备文件为/dev/ptmx，从设备文件为/dev/pts/n，n的范围为[0-4096]
+最大值可通过/proc/sys/kernel/pty/max文件配置
+主设备文件是一个多路器，全称pty master multiplexer，多路器是一种注册机制，可通过打开/dev/ptmx文件来注册
+打开/dev/ptmx文件返回一个主设备的文件描述符，通过此描述符可以获取注册的从设备文件名
+#include &lt;fcntl.h&gt;#include &lt;stdlib.h&gt;int ptm_fd = open(&#34;/dev/ptmx&#34;, O_RDWR | O_NOCTTY); const char *pts_name = ptsname(ptm_fd); 打开从设备文件得到从设备文件的描述符，在主设备描述符上写数据，可以通过从设备描述符读出来，反之亦然。这类似双向管道"/>
+
+    <meta property="og:title" content="终端" />
+<meta property="og:description" content="终端 简介 终端是通过RS232串口连接到计算机的一种设备，它有一个黑白显示器(24*80)和一个键盘组成
+tty这个词是teletype的缩写，称为电传打字机，这是早期的终端设备，它有一个打印机和一个键盘组成
+上面所说的这种传统的终端已经灭绝了，取而代之的是虚拟终端(virtual terminal)和伪终端(pseudoterminal)
+virtual terminal 虚拟终端有时候也被称为虚拟控制台(virtual console)
+虚拟终端对应的设备文件为/dev/ttyn，n的范围是[1-63]，通常前6个虚拟终端可以通过快捷键来切换
+在X环境下可以通过Ctl&#43;Alt&#43;F[1-6]来切换到对应的虚拟终端，在虚拟终端环境下可以通过Alt&#43;F[1-6]或Alt&#43;&lt;-和Alt&#43;-&gt;来切换
+其他虚拟终端可以通过如下命令来切换，以/dev/tty10为例:
+# openvt -c 10 agetty tty10 linux ; chvt 10 还有三个特殊的设备文件/dev/tty, /dev/tty0, /dev/console
+ /dev/tty指向进程的控制终端(如果有的话)，也就是进程的stdin`,stdout,stderr`指向的设备文件(如果没有重定向的话) /dev/tty0指向当前激活的虚拟终端 /dev/console 是system console，linux内核日志输出的地方，默认情况下是指向/dev/tty0，也就是指向当前激活的虚拟终端  示例验证
+# tty 查看当前所在的虚拟终端 /dev/tty1 # sleep 5; echo hello &gt; /dev/tty0 执行上述命令后，立即用Alt&#43;F2切换到第二个虚拟终端(/dev/tty2)，5s后可看到终端输入hello，这证明了/dev/tty0是指向当前的虚拟终端
+另一个查看当前/dev/console和/dev/tty0指向的终端的方法
+$ cat /sys/devices/virtual/tty/console/active tty0 $ cat /sys/devices/virtual/tty/tty0/active tty2 pseudoterminal 伪终端是一对设备，主设备文件为/dev/ptmx，从设备文件为/dev/pts/n，n的范围为[0-4096]
+最大值可通过/proc/sys/kernel/pty/max文件配置
+主设备文件是一个多路器，全称pty master multiplexer，多路器是一种注册机制，可通过打开/dev/ptmx文件来注册
+打开/dev/ptmx文件返回一个主设备的文件描述符，通过此描述符可以获取注册的从设备文件名
+#include &lt;fcntl.h&gt;#include &lt;stdlib.h&gt;int ptm_fd = open(&#34;/dev/ptmx&#34;, O_RDWR | O_NOCTTY); const char *pts_name = ptsname(ptm_fd); 打开从设备文件得到从设备文件的描述符，在主设备描述符上写数据，可以通过从设备描述符读出来，反之亦然。这类似双向管道" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://flyblog.tech/posts/terminal/" />
+<meta property="article:published_time" content="2011-12-23T13:05:31+00:00" />
+<meta property="article:modified_time" content="2011-12-23T13:05:31+00:00" />
+
+
     
-  </nav>
-</header>
+      <base href="http://flyblog.tech/posts/terminal/">
+    
+    <title>
+  终端 · fly
+</title>
 
-<article>
-  <header>
-    <h1>终端</h1>
-    <p><time datetime="2011-12-23T13:05:31Z">December 23, 2011</time></p>
-  </header>
-  <h1 id="heading">终端</h1>
+    
+      <link rel="canonical" href="http://flyblog.tech/posts/terminal/">
+    
+
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,700%7CMerriweather:300,700%7CSource+Code+Pro:400,700" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.11.2/css/all.css" integrity="sha384-KA6wR/X5RY4zFAHpv/CnoG2UW1uogYfdnP67Uv7eULvTveboZJg0qUpmJZb5VqzN" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" integrity="sha256-l85OmPOjvil/SOvVt3HnSSjzF1TUMyT9eV0c2BzEGzU=" crossorigin="anonymous" />
+
+    
+      
+      
+      <link rel="stylesheet" href="http://flyblog.tech/css/coder.min.28d751104f30c16da1aa1bb04015cbe662cacfe0d1b01af4f2240ad58580069c.css" integrity="sha256-KNdREE8wwW2hqhuwQBXL5mLKz&#43;DRsBr08iQK1YWABpw=" crossorigin="anonymous" media="screen" />
+    
+
+    
+
+    
+
+    
+      <link rel="stylesheet" href="http://flyblog.tech/css/custom.css" />
+    
+
+    
+    
+    <link rel="icon" type="image/png" href="http://flyblog.tech/img/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="http://flyblog.tech/img/favicon-16x16.png" sizes="16x16">
+
+    <meta name="generator" content="Hugo 0.60.1" />
+  </head>
+
+  
+  
+  <body class="colorscheme-light">
+    <main class="wrapper">
+      <nav class="navigation">
+  <section class="container">
+    <a class="navigation-title" href="http://flyblog.tech/">
+      fly
+    </a>
+    <input type="checkbox" id="menu-toggle" />
+    <label class="menu-button float-right" for="menu-toggle"><i class="fas fa-bars"></i></label>
+    <ul class="navigation-list">
+      
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="http://flyblog.tech/posts/">Blog</a>
+          </li>
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="http://flyblog.tech/about/">About</a>
+          </li>
+        
+      
+      
+    </ul>
+  </section>
+</nav>
+
+
+      <div class="content">
+        
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">终端</h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fas fa-calendar"></i>
+              <time datetime='2011-12-23T13:05:31Z'>
+                December 23, 2011
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fas fa-clock"></i>
+              
+            </span>
+          </div>
+          
+          
+        </div>
+      </header>
+
+      <div>
+        <h1 id="heading">终端</h1>
 <h2 id="heading1">简介</h2>
 <p>终端是通过RS232串口连接到计算机的一种设备，它有一个黑白显示器(24*80)和一个键盘组成<br>
 <code>tty</code>这个词是<code>teletype</code>的缩写，称为电传打字机，这是早期的终端设备，它有一个打印机和一个键盘组成</p>
@@ -31,7 +154,7 @@
 <p>虚拟终端对应的设备文件为<code>/dev/ttyn</code>，n的范围是[1-63]，通常前6个虚拟终端可以通过快捷键来切换<br>
 在X环境下可以通过<code>Ctl+Alt+F[1-6]</code>来切换到对应的虚拟终端，在虚拟终端环境下可以通过<code>Alt+F[1-6]</code>或<code>Alt+&lt;-</code>和<code>Alt+-&gt;</code>来切换<br>
 其他虚拟终端可以通过如下命令来切换，以<code>/dev/tty10</code>为例:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh"><span style="color:#75715e"># openvt -c 10 agetty tty10 linux ; chvt 10</span>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh"><span style="font-style:italic"># openvt -c 10 agetty tty10 linux ; chvt 10</span>
 </code></pre></div><p>还有三个特殊的设备文件<code>/dev/tty</code>, <code>/dev/tty0</code>, <code>/dev/console</code></p>
 <ul>
 <li><code>/dev/tty</code>指向进程的控制终端(如果有的话)，也就是进程的<code>stdin`,</code>stdout<code>,</code>stderr`指向的设备文件(如果没有重定向的话)</li>
@@ -39,12 +162,12 @@
 <li><code>/dev/console</code> 是system console，linux内核日志输出的地方，默认情况下是指向<code>/dev/tty0</code>，也就是指向当前激活的虚拟终端</li>
 </ul>
 <p>示例验证</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh"><span style="color:#75715e"># tty                       查看当前所在的虚拟终端</span>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh"><span style="font-style:italic"># tty                       查看当前所在的虚拟终端</span>
 /dev/tty1
-<span style="color:#75715e"># sleep 5; echo hello &gt; /dev/tty0</span>
+<span style="font-style:italic"># sleep 5; echo hello &gt; /dev/tty0</span>
 </code></pre></div><p>执行上述命令后，立即用<code>Alt+F2</code>切换到第二个虚拟终端(<code>/dev/tty2</code>)，5s后可看到终端输入hello，这证明了<code>/dev/tty0</code>是指向当前的虚拟终端</p>
 <p>另一个查看当前<code>/dev/console</code>和<code>/dev/tty0</code>指向的终端的方法</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ cat /sys/devices/virtual/tty/console/active
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ cat /sys/devices/virtual/tty/console/active
 tty0
 $ cat /sys/devices/virtual/tty/tty0/active
 tty2
@@ -53,13 +176,13 @@ tty2
 最大值可通过<code>/proc/sys/kernel/pty/max</code>文件配置</p>
 <p>主设备文件是一个多路器，全称<code>pty master multiplexer</code>，多路器是一种注册机制，可通过打开<code>/dev/ptmx</code>文件来注册<br>
 打开<code>/dev/ptmx</code>文件返回一个主设备的文件描述符，通过此描述符可以获取注册的从设备文件名</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;fcntl.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;stdlib.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> ptm_fd <span style="color:#f92672">=</span> open(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">/dev/ptmx</span><span style="color:#e6db74">&#34;</span>, O_RDWR <span style="color:#f92672">|</span> O_NOCTTY);
-<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>pts_name <span style="color:#f92672">=</span> ptsname(ptm_fd);
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="">#</span><span style="">include</span> <span style="">&lt;fcntl.h&gt;</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">include</span> <span style="">&lt;stdlib.h&gt;</span><span style="">
+</span><span style=""></span><span style="">int</span> ptm_fd = open(<span style="font-style:italic"></span><span style="font-style:italic">&#34;</span><span style="font-style:italic">/dev/ptmx</span><span style="font-style:italic">&#34;</span>, O_RDWR | O_NOCTTY);
+<span style="font-weight:bold">const</span> <span style="">char</span> *pts_name = ptsname(ptm_fd);
 </code></pre></div><p>打开从设备文件得到从设备文件的描述符，在主设备描述符上写数据，可以通过从设备描述符读出来，反之亦然。这类似双向管道</p>
 <p>示意图</p>
-<p><img src="/image/pty.png" alt="pty"></p>
+<p><img src="http://flyblog.tech/image/pty.png" alt="pty"></p>
 <p>上图中<code>driver program</code>是父进程，<code>terminal-oriented program</code>是子进程</p>
 <p>从图中看到，伪终端对是一种进程间通信的技术，其中的从设备相当于传统的终端设备，主设备与从设备连接形成一个通信通道</p>
 <p>进程间通信技术有很多，为什么需要使用伪终端技术来进行通信呢？</p>
@@ -67,35 +190,103 @@ tty2
 而且能将对终端的IO导向另一个进程，基于此原因，内核引入了伪终端对，面向终端的程序与从设备交互，<code>driver program</code>与主设备交互</p>
 <p>典型的<code>driver program</code>有<code>terminal emulator</code>和<code>sshd</code></p>
 <p>ssd使用伪终端示意图</p>
-<p><img src="/image/ssh.png" alt="ssh"></p>
+<p><img src="http://flyblog.tech/image/ssh.png" alt="ssh"></p>
 <p>示例(在mac上执行)</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ ssh -t fly@192.168.0.112 vi
-fly@192.168.0.112<span style="color:#960050;background-color:#1e0010">&#39;</span>s password:
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ ssh -t fly@192.168.0.112 vi
+fly@192.168.0.112<span style="">&#39;</span>s password:
 </code></pre></div><p>上述命令在我的<code>debian</code>系统上打开vi程序</p>
 <p>在<code>debian</code>上执行下列命令</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ ps -e | grep vi
-Sl     <span style="color:#ae81ff">514</span>   <span style="color:#ae81ff">514</span>   <span style="color:#ae81ff">516</span> ?        VBoxService
-Sl     <span style="color:#ae81ff">748</span>   <span style="color:#ae81ff">748</span>  <span style="color:#ae81ff">1268</span> ?        dconf-service
-Ss+   <span style="color:#ae81ff">1525</span>  <span style="color:#ae81ff">1525</span>  <span style="color:#ae81ff">1525</span> pts/0    vi
-$ pstree -ps <span style="color:#ae81ff">1525</span>
-systemd<span style="color:#f92672">(</span>1<span style="color:#f92672">)</span>───sshd<span style="color:#f92672">(</span>483<span style="color:#f92672">)</span>───sshd<span style="color:#f92672">(</span>1518<span style="color:#f92672">)</span>───sshd<span style="color:#f92672">(</span>1524<span style="color:#f92672">)</span>───vi<span style="color:#f92672">(</span>1525<span style="color:#f92672">)</span>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ ps -e | grep vi
+Sl     514   514   516 ?        VBoxService
+Sl     748   748  1268 ?        dconf-service
+Ss+   1525  1525  1525 pts/0    vi
+$ pstree -ps 1525
+systemd(1)───sshd(483)───sshd(1518)───sshd(1524)───vi(1525)
 </code></pre></div><p>从上述输出看到，<code>vi(1525)</code>的父进程是<code>sshd(1524)</code>，<code>sshd(1524)</code>和<code>vi(1525)</code>这两个进程通过伪终端通信，也就是上面示意图的右图</p>
 <p>在我的debian系统桌面环境下执行下列命令</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ pstree -ps <span style="color:#e6db74">`</span>echo $$<span style="color:#e6db74">`</span>
-systemd<span style="color:#f92672">(</span>1<span style="color:#f92672">)</span>───systemd<span style="color:#f92672">(</span>579<span style="color:#f92672">)</span>───gnome-terminal-<span style="color:#f92672">(</span>1627<span style="color:#f92672">)</span>───bash<span style="color:#f92672">(</span>1633<span style="color:#f92672">)</span>───pstree<span style="color:#f92672">(</span>1646<span style="color:#f92672">)</span>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ pstree -ps <span style="font-style:italic">`</span>echo $$<span style="font-style:italic">`</span>
+systemd(1)───systemd(579)───gnome-terminal-(1627)───bash(1633)───pstree(1646)
 </code></pre></div><p><code>gnome-terminal-</code>和<code>bash(1633)</code>这对父子进程也是通过伪终端通信的</p>
 <p>上述的<code>gnome-terminal-</code>显示不全，全称为<code>gnome-terminal-server</code></p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ ps -e -o cmd | grep gnome-terminal
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ ps -e -o cmd | grep gnome-terminal
 /usr/lib/gnome-terminal/gnome-terminal-server
-grep --color<span style="color:#f92672">=</span>auto gnome-terminal
+grep --color=auto gnome-terminal
 </code></pre></div><p>下面是我手绘的一张图，包含了终端模拟器</p>
-<p><img src="/image/terminal.png" alt="terimal emulator"></p>
+<p><img src="http://flyblog.tech/image/terminal.png" alt="terimal emulator"></p>
 <p>M表示伪终端主设备，S表示伪终端从设备</p>
 <p>左侧的S是bash和ssh的控制终端，gnome-terminal没有控制终端，它是一个gui应用<br>
 右侧的S是bash的控制终端，sshd没有控制终端，它是一个daemon</p>
 
-</article>
+      </div>
+
+      <footer>
+        
 
 
+        <div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "yourdiscussshortname" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+        
+        
+      </footer>
+    </article>
+
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script type="text/javascript" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/startup.js" id="MathJax-script"></script>
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [
+          ['$', '$'], ['\\(', '\\)']
+        ],
+        processEscapes: true,
+        processEnvironments: true
+      },
+      options: {
+        skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+      }
+    };
+  </script>
+  </section>
+
+      </div>
+
+      <footer class="footer">
+  <section class="container">
+    
+      <p>记录点滴生活</p>
+    
+     © 2019
+    
+       · 
+       <a href="https://gohugo.io/">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/">Coder</a>.
+    
+    
+  </section>
+</footer>
+
+    </main>
+
+    
+
+  </body>
 
 </html>

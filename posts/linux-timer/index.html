@@ -1,32 +1,125 @@
 <!DOCTYPE html>
-<html lang="zh-cn">
-<title>Linux Timer | 我的博客</title>
-<meta charset="utf-8">
-<meta name="generator" content="Hugo 0.60.1" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="canonical" href="http://flyblog.tech/posts/linux-timer/">
-<link rel="alternate" type="application/rss+xml" href="" title="我的博客">
-<link rel="stylesheet" href="http://flyblog.tech/css/theme.css">
-<link rel="stylesheet" href="http://flyblog.tech/css/classes.css">
+<html lang="zh">
 
-<header class="dark">
-  <h2><a href="http://flyblog.tech/">我的博客</a></h2>
-  <nav>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="author" content="fly">
+    <meta name="description" content="我的博客">
+    <meta name="keywords" content="blog,developer,personal">
+
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Linux Timer"/>
+<meta name="twitter:description" content="Linux Timer Classical UNIX API 1. setitimer #include &lt;sys/time.h&gt;int setitimer(int which, const struct itimerval *new_value, struct itimerval *old_value); int getitimer(int which, struct itimerval *curr_value); which参数说明  ITIMER_REAL: real time, At each expiration, a SIGALRM signal is generated. ITIMER_VIRTUAL: user-mode CPU time, At each expiration, a SIGVTALRM signal is generated. ITIMER_PROF: total (i.e., both user and system) CPU time, At each expiration, a SIGPROF signal is generated.  2. alarm #include &lt;unistd."/>
+
+    <meta property="og:title" content="Linux Timer" />
+<meta property="og:description" content="Linux Timer Classical UNIX API 1. setitimer #include &lt;sys/time.h&gt;int setitimer(int which, const struct itimerval *new_value, struct itimerval *old_value); int getitimer(int which, struct itimerval *curr_value); which参数说明  ITIMER_REAL: real time, At each expiration, a SIGALRM signal is generated. ITIMER_VIRTUAL: user-mode CPU time, At each expiration, a SIGVTALRM signal is generated. ITIMER_PROF: total (i.e., both user and system) CPU time, At each expiration, a SIGPROF signal is generated.  2. alarm #include &lt;unistd." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://flyblog.tech/posts/linux-timer/" />
+<meta property="article:published_time" content="2011-12-23T13:05:31+00:00" />
+<meta property="article:modified_time" content="2011-12-23T13:05:31+00:00" />
+
+
     
-  </nav>
-</header>
+      <base href="http://flyblog.tech/posts/linux-timer/">
+    
+    <title>
+  Linux Timer · fly
+</title>
 
-<article>
-  <header>
-    <h1>Linux Timer</h1>
-    <p><time datetime="2011-12-23T13:05:31Z">December 23, 2011</time></p>
-  </header>
-  <h1 id="linux-timer">Linux Timer</h1>
+    
+      <link rel="canonical" href="http://flyblog.tech/posts/linux-timer/">
+    
+
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,700%7CMerriweather:300,700%7CSource+Code+Pro:400,700" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.11.2/css/all.css" integrity="sha384-KA6wR/X5RY4zFAHpv/CnoG2UW1uogYfdnP67Uv7eULvTveboZJg0qUpmJZb5VqzN" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" integrity="sha256-l85OmPOjvil/SOvVt3HnSSjzF1TUMyT9eV0c2BzEGzU=" crossorigin="anonymous" />
+
+    
+      
+      
+      <link rel="stylesheet" href="http://flyblog.tech/css/coder.min.28d751104f30c16da1aa1bb04015cbe662cacfe0d1b01af4f2240ad58580069c.css" integrity="sha256-KNdREE8wwW2hqhuwQBXL5mLKz&#43;DRsBr08iQK1YWABpw=" crossorigin="anonymous" media="screen" />
+    
+
+    
+
+    
+
+    
+      <link rel="stylesheet" href="http://flyblog.tech/css/custom.css" />
+    
+
+    
+    
+    <link rel="icon" type="image/png" href="http://flyblog.tech/img/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="http://flyblog.tech/img/favicon-16x16.png" sizes="16x16">
+
+    <meta name="generator" content="Hugo 0.60.1" />
+  </head>
+
+  
+  
+  <body class="colorscheme-light">
+    <main class="wrapper">
+      <nav class="navigation">
+  <section class="container">
+    <a class="navigation-title" href="http://flyblog.tech/">
+      fly
+    </a>
+    <input type="checkbox" id="menu-toggle" />
+    <label class="menu-button float-right" for="menu-toggle"><i class="fas fa-bars"></i></label>
+    <ul class="navigation-list">
+      
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="http://flyblog.tech/posts/">Blog</a>
+          </li>
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="http://flyblog.tech/about/">About</a>
+          </li>
+        
+      
+      
+    </ul>
+  </section>
+</nav>
+
+
+      <div class="content">
+        
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">Linux Timer</h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fas fa-calendar"></i>
+              <time datetime='2011-12-23T13:05:31Z'>
+                December 23, 2011
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fas fa-clock"></i>
+              
+            </span>
+          </div>
+          
+          
+        </div>
+      </header>
+
+      <div>
+        <h1 id="linux-timer">Linux Timer</h1>
 <h2 id="classical-unix-api">Classical UNIX API</h2>
 <h3 id="1-setitimer">1. setitimer</h3>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;sys/time.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">setitimer</span>(<span style="color:#66d9ef">int</span> which, <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">struct</span> itimerval <span style="color:#f92672">*</span>new_value, <span style="color:#66d9ef">struct</span> itimerval <span style="color:#f92672">*</span>old_value);
-<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">getitimer</span>(<span style="color:#66d9ef">int</span> which, <span style="color:#66d9ef">struct</span> itimerval <span style="color:#f92672">*</span>curr_value);
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="">#</span><span style="">include</span> <span style="">&lt;sys/time.h&gt;</span><span style="">
+</span><span style=""></span><span style="">int</span> setitimer(<span style="">int</span> which, <span style="font-weight:bold">const</span> <span style="font-weight:bold">struct</span> itimerval *new_value, <span style="font-weight:bold">struct</span> itimerval *old_value);
+<span style="">int</span> getitimer(<span style="">int</span> which, <span style="font-weight:bold">struct</span> itimerval *curr_value);
 </code></pre></div><h4 id="which">which参数说明</h4>
 <ul>
 <li><code>ITIMER_REAL</code>: real time, At each expiration, a <code>SIGALRM</code> signal is generated.</li>
@@ -34,136 +127,204 @@
 <li><code>ITIMER_PROF</code>: total (i.e., both user and system) CPU time, At each expiration, a <code>SIGPROF</code> signal is generated.</li>
 </ul>
 <h3 id="2-alarm">2. alarm</h3>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;unistd.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">int</span> <span style="color:#a6e22e">alarm</span>(<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">int</span> seconds);
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="">#</span><span style="">include</span> <span style="">&lt;unistd.h&gt;</span><span style="">
+</span><span style=""></span><span style="">unsigned</span> <span style="">int</span> alarm(<span style="">unsigned</span> <span style="">int</span> seconds);
 </code></pre></div><p><code>alarm</code>相当于<code>setitimer</code>(which参数指定为<code>ITIMER_REAL</code>)</p>
 <p><strong>注意</strong>: 对于Classical UNIX API，每个进程<strong>只有</strong>三个定时器</p>
 <h2 id="posix-timer-api">POSIX Timer API</h2>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;signal.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;time.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">timer_create</span>(clockid_t clockid, <span style="color:#66d9ef">struct</span> sigevent <span style="color:#f92672">*</span>sevp, timer_t <span style="color:#f92672">*</span>timerid);
-<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">timer_settime</span>(timer_t timerid, <span style="color:#66d9ef">int</span> flags, <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">struct</span> itimerspec <span style="color:#f92672">*</span>new_value, <span style="color:#66d9ef">struct</span> itimerspec <span style="color:#f92672">*</span>old_value);
-<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">timer_gettime</span>(timer_t timerid, <span style="color:#66d9ef">struct</span> itimerspec <span style="color:#f92672">*</span>curr_value);
-<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">timer_delete</span>(timer_t timerid);
-<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">timer_getoverrun</span>(timer_t timerid);
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="">#</span><span style="">include</span> <span style="">&lt;signal.h&gt;</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">include</span> <span style="">&lt;time.h&gt;</span><span style="">
+</span><span style=""></span><span style="">int</span> timer_create(clockid_t clockid, <span style="font-weight:bold">struct</span> sigevent *sevp, timer_t *timerid);
+<span style="">int</span> timer_settime(timer_t timerid, <span style="">int</span> flags, <span style="font-weight:bold">const</span> <span style="font-weight:bold">struct</span> itimerspec *new_value, <span style="font-weight:bold">struct</span> itimerspec *old_value);
+<span style="">int</span> timer_gettime(timer_t timerid, <span style="font-weight:bold">struct</span> itimerspec *curr_value);
+<span style="">int</span> timer_delete(timer_t timerid);
+<span style="">int</span> timer_getoverrun(timer_t timerid);
 
-Link with <span style="color:#f92672">-</span>lrt.
+Link with -lrt.
 </code></pre></div><h3 id="1-">示例1: 使用信号</h3>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;signal.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;stdio.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;sys/signalfd.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;time.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;unistd.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span>
-<span style="color:#75715e">#</span><span style="color:#75715e">define SIG_TIMER SIGRTMAX</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span>
-<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>() {
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="">#</span><span style="">include</span> <span style="">&lt;signal.h&gt;</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">include</span> <span style="">&lt;stdio.h&gt;</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">include</span> <span style="">&lt;sys/signalfd.h&gt;</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">include</span> <span style="">&lt;time.h&gt;</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">include</span> <span style="">&lt;unistd.h&gt;</span><span style="">
+</span><span style=""></span>
+<span style="">#</span><span style="">define SIG_TIMER SIGRTMAX</span><span style="">
+</span><span style=""></span>
+<span style="">int</span> main() {
     timer_t tid;
-    <span style="color:#66d9ef">struct</span> sigevent se;
-    se.sigev_notify <span style="color:#f92672">=</span> SIGEV_SIGNAL;
-    se.sigev_signo <span style="color:#f92672">=</span> SIG_TIMER;
-    timer_create(CLOCK_REALTIME, <span style="color:#f92672">&amp;</span>se, <span style="color:#f92672">&amp;</span>tid);
+    <span style="font-weight:bold">struct</span> sigevent se;
+    se.sigev_notify = SIGEV_SIGNAL;
+    se.sigev_signo = SIG_TIMER;
+    timer_create(CLOCK_REALTIME, &amp;se, &amp;tid);
 
-    <span style="color:#66d9ef">struct</span> itimerspec its;
-    its.it_value.tv_sec <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>;
-    its.it_value.tv_nsec <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
-    its.it_interval <span style="color:#f92672">=</span> its.it_value;
-    timer_settime(tid, <span style="color:#ae81ff">0</span>, <span style="color:#f92672">&amp;</span>its, NULL);
+    <span style="font-weight:bold">struct</span> itimerspec its;
+    its.it_value.tv_sec = 1;
+    its.it_value.tv_nsec = 0;
+    its.it_interval = its.it_value;
+    timer_settime(tid, 0, &amp;its, NULL);
 
     sigset_t mask;
-    sigemptyset(<span style="color:#f92672">&amp;</span>mask);
-    sigaddset(<span style="color:#f92672">&amp;</span>mask, SIG_TIMER);
-    sigprocmask(SIG_BLOCK, <span style="color:#f92672">&amp;</span>mask, NULL);
+    sigemptyset(&amp;mask);
+    sigaddset(&amp;mask, SIG_TIMER);
+    sigprocmask(SIG_BLOCK, &amp;mask, NULL);
 
-    <span style="color:#66d9ef">int</span> fd <span style="color:#f92672">=</span> signalfd(<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>, <span style="color:#f92672">&amp;</span>mask, <span style="color:#ae81ff">0</span>);
+    <span style="">int</span> fd = signalfd(-1, &amp;mask, 0);
 
-    <span style="color:#66d9ef">int</span> expire_count <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
-    <span style="color:#66d9ef">for</span> (;;) {
-        <span style="color:#66d9ef">struct</span> signalfd_siginfo siginfo;
-        read(fd, <span style="color:#f92672">&amp;</span>siginfo, <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">struct</span> signalfd_siginfo));
-        expire_count <span style="color:#f92672">+</span><span style="color:#f92672">=</span> (<span style="color:#ae81ff">1</span> <span style="color:#f92672">+</span> siginfo.ssi_overrun);
-        printf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">expire_count = %d</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, expire_count);
+    <span style="">int</span> expire_count = 0;
+    <span style="font-weight:bold">for</span> (;;) {
+        <span style="font-weight:bold">struct</span> signalfd_siginfo siginfo;
+        read(fd, &amp;siginfo, <span style="font-weight:bold">sizeof</span>(<span style="font-weight:bold">struct</span> signalfd_siginfo));
+        expire_count += (1 + siginfo.ssi_overrun);
+        printf(<span style="font-style:italic"></span><span style="font-style:italic">&#34;</span><span style="font-style:italic">expire_count = %d</span><span style="font-weight:bold;font-style:italic">\n</span><span style="font-style:italic">&#34;</span>, expire_count);
     }
 
     timer_delete(tid);
     close(fd);
 }
 </code></pre></div><h3 id="2-">示例2: 使用线程</h3>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;pthread.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;signal.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;stdio.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;time.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span>
-<span style="color:#66d9ef">static</span> pthread_mutex_t mtx <span style="color:#f92672">=</span> PTHREAD_MUTEX_INITIALIZER;
-<span style="color:#66d9ef">static</span> pthread_cond_t cond <span style="color:#f92672">=</span> PTHREAD_COND_INITIALIZER;
-<span style="color:#66d9ef">static</span> <span style="color:#66d9ef">int</span> expire_count <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="">#</span><span style="">include</span> <span style="">&lt;pthread.h&gt;</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">include</span> <span style="">&lt;signal.h&gt;</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">include</span> <span style="">&lt;stdio.h&gt;</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">include</span> <span style="">&lt;time.h&gt;</span><span style="">
+</span><span style=""></span>
+<span style="font-weight:bold">static</span> pthread_mutex_t mtx = PTHREAD_MUTEX_INITIALIZER;
+<span style="font-weight:bold">static</span> pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
+<span style="font-weight:bold">static</span> <span style="">int</span> expire_count = 0;
 
-<span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">thread_func</span>(<span style="color:#66d9ef">union</span> sigval sv) {
-    timer_t <span style="color:#f92672">*</span>tidp <span style="color:#f92672">=</span> sv.sival_ptr;
+<span style="font-weight:bold">static</span> <span style="">void</span> thread_func(<span style="font-weight:bold">union</span> sigval sv) {
+    timer_t *tidp = sv.sival_ptr;
 
-    pthread_mutex_lock(<span style="color:#f92672">&amp;</span>mtx);
-    expire_count <span style="color:#f92672">+</span><span style="color:#f92672">=</span> (<span style="color:#ae81ff">1</span> <span style="color:#f92672">+</span> timer_getoverrun(<span style="color:#f92672">*</span>tidp));
-    pthread_mutex_unlock(<span style="color:#f92672">&amp;</span>mtx);
+    pthread_mutex_lock(&amp;mtx);
+    expire_count += (1 + timer_getoverrun(*tidp));
+    pthread_mutex_unlock(&amp;mtx);
 
-    pthread_cond_signal(<span style="color:#f92672">&amp;</span>cond);
+    pthread_cond_signal(&amp;cond);
 }
 
-<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>() {
+<span style="">int</span> main() {
     timer_t tid;
-    <span style="color:#66d9ef">struct</span> sigevent se;
-    se.sigev_notify <span style="color:#f92672">=</span> SIGEV_THREAD;
-    se.sigev_notify_attributes <span style="color:#f92672">=</span> NULL;
-    se.sigev_notify_function <span style="color:#f92672">=</span> thread_func;
-    se.sigev_value.sival_ptr <span style="color:#f92672">=</span> <span style="color:#f92672">&amp;</span>tid;
-    timer_create(CLOCK_REALTIME, <span style="color:#f92672">&amp;</span>se, <span style="color:#f92672">&amp;</span>tid);
+    <span style="font-weight:bold">struct</span> sigevent se;
+    se.sigev_notify = SIGEV_THREAD;
+    se.sigev_notify_attributes = NULL;
+    se.sigev_notify_function = thread_func;
+    se.sigev_value.sival_ptr = &amp;tid;
+    timer_create(CLOCK_REALTIME, &amp;se, &amp;tid);
 
-    <span style="color:#66d9ef">struct</span> itimerspec its;
-    its.it_value.tv_sec <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>;
-    its.it_value.tv_nsec <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
-    its.it_interval <span style="color:#f92672">=</span> its.it_value;
-    timer_settime(tid, <span style="color:#ae81ff">0</span>, <span style="color:#f92672">&amp;</span>its, NULL);
+    <span style="font-weight:bold">struct</span> itimerspec its;
+    its.it_value.tv_sec = 1;
+    its.it_value.tv_nsec = 0;
+    its.it_interval = its.it_value;
+    timer_settime(tid, 0, &amp;its, NULL);
 
-    pthread_mutex_lock(<span style="color:#f92672">&amp;</span>mtx);
+    pthread_mutex_lock(&amp;mtx);
 
-    <span style="color:#66d9ef">for</span> (;;) {
-        pthread_cond_wait(<span style="color:#f92672">&amp;</span>cond, <span style="color:#f92672">&amp;</span>mtx);
-        printf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">expire_count = %d</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, expire_count);
+    <span style="font-weight:bold">for</span> (;;) {
+        pthread_cond_wait(&amp;cond, &amp;mtx);
+        printf(<span style="font-style:italic"></span><span style="font-style:italic">&#34;</span><span style="font-style:italic">expire_count = %d</span><span style="font-weight:bold;font-style:italic">\n</span><span style="font-style:italic">&#34;</span>, expire_count);
     }
 
     timer_delete(tid);
 }
 </code></pre></div><h2 id="linuxspecific">Linux-specific</h2>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;sys/timerfd.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">timerfd_create</span>(<span style="color:#66d9ef">int</span> clockid, <span style="color:#66d9ef">int</span> flags);
-<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">timerfd_settime</span>(<span style="color:#66d9ef">int</span> fd, <span style="color:#66d9ef">int</span> flags, <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">struct</span> itimerspec <span style="color:#f92672">*</span>new_value, <span style="color:#66d9ef">struct</span> itimerspec <span style="color:#f92672">*</span>old_value);
-<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">timerfd_gettime</span>(<span style="color:#66d9ef">int</span> fd, <span style="color:#66d9ef">struct</span> itimerspec <span style="color:#f92672">*</span>curr_value);
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="">#</span><span style="">include</span> <span style="">&lt;sys/timerfd.h&gt;</span><span style="">
+</span><span style=""></span><span style="">int</span> timerfd_create(<span style="">int</span> clockid, <span style="">int</span> flags);
+<span style="">int</span> timerfd_settime(<span style="">int</span> fd, <span style="">int</span> flags, <span style="font-weight:bold">const</span> <span style="font-weight:bold">struct</span> itimerspec *new_value, <span style="font-weight:bold">struct</span> itimerspec *old_value);
+<span style="">int</span> timerfd_gettime(<span style="">int</span> fd, <span style="font-weight:bold">struct</span> itimerspec *curr_value);
 </code></pre></div><h3 id="heading">示例</h3>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;stdio.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;sys/timerfd.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;time.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;unistd.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span>
-<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>() {
-    <span style="color:#66d9ef">int</span> fd <span style="color:#f92672">=</span> timerfd_create(CLOCK_REALTIME, TFD_CLOEXEC);
-    <span style="color:#66d9ef">struct</span> itimerspec its;
-    its.it_value.tv_sec <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>;
-    its.it_value.tv_nsec <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
-    its.it_interval <span style="color:#f92672">=</span> its.it_value;
-    timerfd_settime(fd, <span style="color:#ae81ff">0</span>, <span style="color:#f92672">&amp;</span>its, NULL);
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="">#</span><span style="">include</span> <span style="">&lt;stdio.h&gt;</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">include</span> <span style="">&lt;sys/timerfd.h&gt;</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">include</span> <span style="">&lt;time.h&gt;</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">include</span> <span style="">&lt;unistd.h&gt;</span><span style="">
+</span><span style=""></span>
+<span style="">int</span> main() {
+    <span style="">int</span> fd = timerfd_create(CLOCK_REALTIME, TFD_CLOEXEC);
+    <span style="font-weight:bold">struct</span> itimerspec its;
+    its.it_value.tv_sec = 1;
+    its.it_value.tv_nsec = 0;
+    its.it_interval = its.it_value;
+    timerfd_settime(fd, 0, &amp;its, NULL);
 
-    <span style="color:#66d9ef">long</span> <span style="color:#66d9ef">long</span> expire_count <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
-    <span style="color:#66d9ef">for</span> (;;) {
-        <span style="color:#66d9ef">long</span> <span style="color:#66d9ef">long</span> count;
-        read(fd, <span style="color:#f92672">&amp;</span>count, <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">long</span> <span style="color:#66d9ef">long</span>));
-        expire_count <span style="color:#f92672">+</span><span style="color:#f92672">=</span> count;
-        printf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">expire_count = %lld</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, expire_count);
+    <span style="">long</span> <span style="">long</span> expire_count = 0;
+    <span style="font-weight:bold">for</span> (;;) {
+        <span style="">long</span> <span style="">long</span> count;
+        read(fd, &amp;count, <span style="font-weight:bold">sizeof</span>(<span style="">long</span> <span style="">long</span>));
+        expire_count += count;
+        printf(<span style="font-style:italic"></span><span style="font-style:italic">&#34;</span><span style="font-style:italic">expire_count = %lld</span><span style="font-weight:bold;font-style:italic">\n</span><span style="font-style:italic">&#34;</span>, expire_count);
     }
 
     close(fd);
 }
 </code></pre></div>
-</article>
+      </div>
+
+      <footer>
+        
 
 
+        <div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "yourdiscussshortname" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+        
+        
+      </footer>
+    </article>
+
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script type="text/javascript" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/startup.js" id="MathJax-script"></script>
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [
+          ['$', '$'], ['\\(', '\\)']
+        ],
+        processEscapes: true,
+        processEnvironments: true
+      },
+      options: {
+        skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+      }
+    };
+  </script>
+  </section>
+
+      </div>
+
+      <footer class="footer">
+  <section class="container">
+    
+      <p>记录点滴生活</p>
+    
+     © 2019
+    
+       · 
+       <a href="https://gohugo.io/">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/">Coder</a>.
+    
+    
+  </section>
+</footer>
+
+    </main>
+
+    
+
+  </body>
 
 </html>

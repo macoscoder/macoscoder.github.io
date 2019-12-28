@@ -1,38 +1,141 @@
 <!DOCTYPE html>
-<html lang="zh-cn">
-<title>linux中的睡觉函数 | 我的博客</title>
-<meta charset="utf-8">
-<meta name="generator" content="Hugo 0.60.1" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="canonical" href="http://flyblog.tech/posts/sleep/">
-<link rel="alternate" type="application/rss+xml" href="" title="我的博客">
-<link rel="stylesheet" href="http://flyblog.tech/css/theme.css">
-<link rel="stylesheet" href="http://flyblog.tech/css/classes.css">
+<html lang="zh">
 
-<header class="dark">
-  <h2><a href="http://flyblog.tech/">我的博客</a></h2>
-  <nav>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="author" content="fly">
+    <meta name="description" content="我的博客">
+    <meta name="keywords" content="blog,developer,personal">
+
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="linux中的睡觉函数"/>
+<meta name="twitter:description" content="linux中的睡觉函数 1. sleep库函数 #include &lt;unistd.h&gt;unsigned int sleep(unsigned int seconds); sleep只能精确到秒，不推荐使用
+2. nanosleep系统调用 #include &lt;time.h&gt;int nanosleep(const struct timespec *req, struct timespec *rem); nanosleep精确到纳秒
+3. clock_nanosleep系统调用 #include &lt;time.h&gt;int clock_nanosleep(clockid_t clock_id, int flags, const struct timespec *request, struct timespec *remain); clock_id参数可以指定为
+ CLOCK_REALTIME 真实时间 CLOCK_MONOTONIC 单调时间  flags参数可以为
+ 0 指定相对时间 TIMER_ABSTIME 指定绝对时间  clock_nanosleep支持指定相对时间和绝对时间
+示例 sleep.c #include &lt;errno.h&gt;#include &lt;signal.h&gt;#include &lt;stdio.h&gt;#include &lt;time.h&gt; #define NANO (1LL)#define MICRO (1000 * NANO)#define MILLI (1000 * MICRO)#define SECOND (1000 * MILLI)#define MINUTE (60 * SECOND)#define HOUR (60 * Minute) long long nano_time() { struct timespec ts; clock_gettime(CLOCK_REALTIME, &amp;ts); return ts."/>
+
+    <meta property="og:title" content="linux中的睡觉函数" />
+<meta property="og:description" content="linux中的睡觉函数 1. sleep库函数 #include &lt;unistd.h&gt;unsigned int sleep(unsigned int seconds); sleep只能精确到秒，不推荐使用
+2. nanosleep系统调用 #include &lt;time.h&gt;int nanosleep(const struct timespec *req, struct timespec *rem); nanosleep精确到纳秒
+3. clock_nanosleep系统调用 #include &lt;time.h&gt;int clock_nanosleep(clockid_t clock_id, int flags, const struct timespec *request, struct timespec *remain); clock_id参数可以指定为
+ CLOCK_REALTIME 真实时间 CLOCK_MONOTONIC 单调时间  flags参数可以为
+ 0 指定相对时间 TIMER_ABSTIME 指定绝对时间  clock_nanosleep支持指定相对时间和绝对时间
+示例 sleep.c #include &lt;errno.h&gt;#include &lt;signal.h&gt;#include &lt;stdio.h&gt;#include &lt;time.h&gt; #define NANO (1LL)#define MICRO (1000 * NANO)#define MILLI (1000 * MICRO)#define SECOND (1000 * MILLI)#define MINUTE (60 * SECOND)#define HOUR (60 * Minute) long long nano_time() { struct timespec ts; clock_gettime(CLOCK_REALTIME, &amp;ts); return ts." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://flyblog.tech/posts/sleep/" />
+<meta property="article:published_time" content="2011-12-23T13:05:31+00:00" />
+<meta property="article:modified_time" content="2011-12-23T13:05:31+00:00" />
+
+
     
-  </nav>
-</header>
+      <base href="http://flyblog.tech/posts/sleep/">
+    
+    <title>
+  linux中的睡觉函数 · fly
+</title>
 
-<article>
-  <header>
-    <h1>linux中的睡觉函数</h1>
-    <p><time datetime="2011-12-23T13:05:31Z">December 23, 2011</time></p>
-  </header>
-  <h1 id="linux">linux中的睡觉函数</h1>
+    
+      <link rel="canonical" href="http://flyblog.tech/posts/sleep/">
+    
+
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,700%7CMerriweather:300,700%7CSource+Code+Pro:400,700" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.11.2/css/all.css" integrity="sha384-KA6wR/X5RY4zFAHpv/CnoG2UW1uogYfdnP67Uv7eULvTveboZJg0qUpmJZb5VqzN" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" integrity="sha256-l85OmPOjvil/SOvVt3HnSSjzF1TUMyT9eV0c2BzEGzU=" crossorigin="anonymous" />
+
+    
+      
+      
+      <link rel="stylesheet" href="http://flyblog.tech/css/coder.min.28d751104f30c16da1aa1bb04015cbe662cacfe0d1b01af4f2240ad58580069c.css" integrity="sha256-KNdREE8wwW2hqhuwQBXL5mLKz&#43;DRsBr08iQK1YWABpw=" crossorigin="anonymous" media="screen" />
+    
+
+    
+
+    
+
+    
+      <link rel="stylesheet" href="http://flyblog.tech/css/custom.css" />
+    
+
+    
+    
+    <link rel="icon" type="image/png" href="http://flyblog.tech/img/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="http://flyblog.tech/img/favicon-16x16.png" sizes="16x16">
+
+    <meta name="generator" content="Hugo 0.60.1" />
+  </head>
+
+  
+  
+  <body class="colorscheme-light">
+    <main class="wrapper">
+      <nav class="navigation">
+  <section class="container">
+    <a class="navigation-title" href="http://flyblog.tech/">
+      fly
+    </a>
+    <input type="checkbox" id="menu-toggle" />
+    <label class="menu-button float-right" for="menu-toggle"><i class="fas fa-bars"></i></label>
+    <ul class="navigation-list">
+      
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="http://flyblog.tech/posts/">Blog</a>
+          </li>
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="http://flyblog.tech/about/">About</a>
+          </li>
+        
+      
+      
+    </ul>
+  </section>
+</nav>
+
+
+      <div class="content">
+        
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">linux中的睡觉函数</h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fas fa-calendar"></i>
+              <time datetime='2011-12-23T13:05:31Z'>
+                December 23, 2011
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fas fa-clock"></i>
+              
+            </span>
+          </div>
+          
+          
+        </div>
+      </header>
+
+      <div>
+        <h1 id="linux">linux中的睡觉函数</h1>
 <h2 id="1-sleep">1. sleep库函数</h2>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;unistd.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">int</span> <span style="color:#a6e22e">sleep</span>(<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">int</span> seconds);
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="">#</span><span style="">include</span> <span style="">&lt;unistd.h&gt;</span><span style="">
+</span><span style=""></span><span style="">unsigned</span> <span style="">int</span> sleep(<span style="">unsigned</span> <span style="">int</span> seconds);
 </code></pre></div><p><code>sleep</code>只能精确到秒，<strong>不推荐</strong>使用</p>
 <h2 id="2-nanosleep">2. nanosleep系统调用</h2>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;time.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">nanosleep</span>(<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">struct</span> timespec <span style="color:#f92672">*</span>req, <span style="color:#66d9ef">struct</span> timespec <span style="color:#f92672">*</span>rem);
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="">#</span><span style="">include</span> <span style="">&lt;time.h&gt;</span><span style="">
+</span><span style=""></span><span style="">int</span> nanosleep(<span style="font-weight:bold">const</span> <span style="font-weight:bold">struct</span> timespec *req, <span style="font-weight:bold">struct</span> timespec *rem);
 </code></pre></div><p><code>nanosleep</code>精确到纳秒</p>
 <h2 id="3-clocknanosleep">3. clock_nanosleep系统调用</h2>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;time.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">clock_nanosleep</span>(clockid_t clock_id, <span style="color:#66d9ef">int</span> flags, <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">struct</span> timespec <span style="color:#f92672">*</span>request, <span style="color:#66d9ef">struct</span> timespec <span style="color:#f92672">*</span>remain);
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="">#</span><span style="">include</span> <span style="">&lt;time.h&gt;</span><span style="">
+</span><span style=""></span><span style="">int</span> clock_nanosleep(clockid_t clock_id, <span style="">int</span> flags, <span style="font-weight:bold">const</span> <span style="font-weight:bold">struct</span> timespec *request, <span style="font-weight:bold">struct</span> timespec *remain);
 </code></pre></div><p><code>clock_id</code>参数可以指定为</p>
 <ul>
 <li>CLOCK_REALTIME    真实时间</li>
@@ -45,71 +148,71 @@
 </ul>
 <p><code>clock_nanosleep</code>支持指定相对时间和绝对时间</p>
 <h2 id="-sleepc">示例 sleep.c</h2>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;errno.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;signal.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;stdio.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;time.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span>
-<span style="color:#75715e">#</span><span style="color:#75715e">define NANO    (1LL)</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">define MICRO   (1000 * NANO)</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">define MILLI   (1000 * MICRO)</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">define SECOND  (1000 * MILLI)</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">define MINUTE  (60 * SECOND)</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">define HOUR    (60 * Minute)</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span>
-<span style="color:#66d9ef">long</span> <span style="color:#66d9ef">long</span> <span style="color:#a6e22e">nano_time</span>() {
-    <span style="color:#66d9ef">struct</span> timespec ts;
-    clock_gettime(CLOCK_REALTIME, <span style="color:#f92672">&amp;</span>ts);
-    <span style="color:#66d9ef">return</span> ts.tv_sec <span style="color:#f92672">*</span> SECOND <span style="color:#f92672">+</span> ts.tv_nsec;
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="">#</span><span style="">include</span> <span style="">&lt;errno.h&gt;</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">include</span> <span style="">&lt;signal.h&gt;</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">include</span> <span style="">&lt;stdio.h&gt;</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">include</span> <span style="">&lt;time.h&gt;</span><span style="">
+</span><span style=""></span>
+<span style="">#</span><span style="">define NANO    (1LL)</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">define MICRO   (1000 * NANO)</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">define MILLI   (1000 * MICRO)</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">define SECOND  (1000 * MILLI)</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">define MINUTE  (60 * SECOND)</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">define HOUR    (60 * Minute)</span><span style="">
+</span><span style=""></span>
+<span style="">long</span> <span style="">long</span> nano_time() {
+    <span style="font-weight:bold">struct</span> timespec ts;
+    clock_gettime(CLOCK_REALTIME, &amp;ts);
+    <span style="font-weight:bold">return</span> ts.tv_sec * SECOND + ts.tv_nsec;
 }
 
-<span style="color:#66d9ef">void</span> <span style="color:#a6e22e">sleep_nano</span>(<span style="color:#66d9ef">long</span> <span style="color:#66d9ef">long</span> rel) {
-    <span style="color:#66d9ef">struct</span> timespec ts <span style="color:#f92672">=</span> {
-        .tv_sec <span style="color:#f92672">=</span> rel <span style="color:#f92672">/</span> SECOND,
-        .tv_nsec <span style="color:#f92672">=</span> rel <span style="color:#f92672">%</span> SECOND,
+<span style="">void</span> sleep_nano(<span style="">long</span> <span style="">long</span> rel) {
+    <span style="font-weight:bold">struct</span> timespec ts = {
+        .tv_sec = rel / SECOND,
+        .tv_nsec = rel % SECOND,
     };
-    <span style="color:#66d9ef">while</span> (nanosleep(<span style="color:#f92672">&amp;</span>ts, <span style="color:#f92672">&amp;</span>ts) <span style="color:#f92672">=</span><span style="color:#f92672">=</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span> <span style="color:#f92672">&amp;</span><span style="color:#f92672">&amp;</span> errno <span style="color:#f92672">=</span><span style="color:#f92672">=</span> EINTR)
+    <span style="font-weight:bold">while</span> (nanosleep(&amp;ts, &amp;ts) == -1 &amp;&amp; errno == EINTR)
         ;
 }
 
-<span style="color:#66d9ef">void</span> <span style="color:#a6e22e">sleep_rel</span>(<span style="color:#66d9ef">long</span> <span style="color:#66d9ef">long</span> rel) {
-    <span style="color:#66d9ef">struct</span> timespec ts <span style="color:#f92672">=</span> {
-        .tv_sec <span style="color:#f92672">=</span> rel <span style="color:#f92672">/</span> SECOND,
-        .tv_nsec <span style="color:#f92672">=</span> rel <span style="color:#f92672">%</span> SECOND,
+<span style="">void</span> sleep_rel(<span style="">long</span> <span style="">long</span> rel) {
+    <span style="font-weight:bold">struct</span> timespec ts = {
+        .tv_sec = rel / SECOND,
+        .tv_nsec = rel % SECOND,
     };
-    <span style="color:#66d9ef">while</span> (clock_nanosleep(CLOCK_MONOTONIC, <span style="color:#ae81ff">0</span>, <span style="color:#f92672">&amp;</span>ts, <span style="color:#f92672">&amp;</span>ts) <span style="color:#f92672">=</span><span style="color:#f92672">=</span> EINTR)
+    <span style="font-weight:bold">while</span> (clock_nanosleep(CLOCK_MONOTONIC, 0, &amp;ts, &amp;ts) == EINTR)
         ;
 }
 
-<span style="color:#66d9ef">void</span> <span style="color:#a6e22e">sleep_abs</span>(<span style="color:#66d9ef">long</span> <span style="color:#66d9ef">long</span> abs) {
-    <span style="color:#66d9ef">struct</span> timespec ts <span style="color:#f92672">=</span> {
-        .tv_sec <span style="color:#f92672">=</span> abs <span style="color:#f92672">/</span> SECOND,
-        .tv_nsec <span style="color:#f92672">=</span> abs <span style="color:#f92672">%</span> SECOND,
+<span style="">void</span> sleep_abs(<span style="">long</span> <span style="">long</span> abs) {
+    <span style="font-weight:bold">struct</span> timespec ts = {
+        .tv_sec = abs / SECOND,
+        .tv_nsec = abs % SECOND,
     };
-    <span style="color:#66d9ef">while</span> (clock_nanosleep(CLOCK_REALTIME, TIMER_ABSTIME, <span style="color:#f92672">&amp;</span>ts, NULL) <span style="color:#f92672">=</span><span style="color:#f92672">=</span> EINTR)
+    <span style="font-weight:bold">while</span> (clock_nanosleep(CLOCK_REALTIME, TIMER_ABSTIME, &amp;ts, NULL) == EINTR)
         ;
 }
 
-<span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">handler</span>(<span style="color:#66d9ef">int</span> sig) {}
+<span style="font-weight:bold">static</span> <span style="">void</span> handler(<span style="">int</span> sig) {}
 
-<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>() {
-    <span style="color:#66d9ef">struct</span> sigaction sa;
-    sa.sa_handler <span style="color:#f92672">=</span> handler;
-    sa.sa_flags <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
-    sigemptyset(<span style="color:#f92672">&amp;</span>sa.sa_mask);
-    sigaction(SIGINT, <span style="color:#f92672">&amp;</span>sa, NULL);
+<span style="">int</span> main() {
+    <span style="font-weight:bold">struct</span> sigaction sa;
+    sa.sa_handler = handler;
+    sa.sa_flags = 0;
+    sigemptyset(&amp;sa.sa_mask);
+    sigaction(SIGINT, &amp;sa, NULL);
 
-    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>;; i<span style="color:#f92672">+</span><span style="color:#f92672">+</span>) {
-        sleep_nano(SECOND <span style="color:#f92672">*</span> <span style="color:#ae81ff">1</span>);
-        <span style="color:#75715e">// sleep_rel(SECOND * 1);
-</span><span style="color:#75715e"></span>        <span style="color:#75715e">// sleep_abs(nano_time() + SECOND * 1);
-</span><span style="color:#75715e"></span>        printf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">%d</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, i);
+    <span style="font-weight:bold">for</span> (<span style="">int</span> i = 1;; i++) {
+        sleep_nano(SECOND * 1);
+        <span style="font-style:italic">// sleep_rel(SECOND * 1);
+</span><span style="font-style:italic"></span>        <span style="font-style:italic">// sleep_abs(nano_time() + SECOND * 1);
+</span><span style="font-style:italic"></span>        printf(<span style="font-style:italic"></span><span style="font-style:italic">&#34;</span><span style="font-style:italic">%d</span><span style="font-weight:bold;font-style:italic">\n</span><span style="font-style:italic">&#34;</span>, i);
     }
 }
 </code></pre></div><h2 id="heading">演示</h2>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ cc sleep.c
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ cc sleep.c
 $ ./a.out
-<span style="color:#ae81ff">1</span>
+1
 ^C^C^C2
 ^C^C^C^C^C^C^C^C^C^C^C^C3
 ^C^C^C^C^C^C^C^C^C^C^C4
@@ -118,11 +221,79 @@ $ ./a.out
 ^C^C^C^C^C^C^C^C^C^C^C^C7
 ^C^C^C^C^C^C^C^C^C^C^C^C8
 ^C^C^C^C^C9
-<span style="color:#ae81ff">10</span>
-^<span style="color:#ae81ff">\[</span>1<span style="color:#f92672">]</span>    <span style="color:#ae81ff">15269</span> quit       ./a.out
+10
+^<span style="font-weight:bold;font-style:italic">\[</span>1]    15269 quit       ./a.out
 </code></pre></div>
-</article>
+      </div>
+
+      <footer>
+        
 
 
+        <div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "yourdiscussshortname" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+        
+        
+      </footer>
+    </article>
+
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script type="text/javascript" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/startup.js" id="MathJax-script"></script>
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [
+          ['$', '$'], ['\\(', '\\)']
+        ],
+        processEscapes: true,
+        processEnvironments: true
+      },
+      options: {
+        skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+      }
+    };
+  </script>
+  </section>
+
+      </div>
+
+      <footer class="footer">
+  <section class="container">
+    
+      <p>记录点滴生活</p>
+    
+     © 2019
+    
+       · 
+       <a href="https://gohugo.io/">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/">Coder</a>.
+    
+    
+  </section>
+</footer>
+
+    </main>
+
+    
+
+  </body>
 
 </html>

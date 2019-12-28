@@ -1,111 +1,218 @@
 <!DOCTYPE html>
-<html lang="zh-cn">
-<title>unix time | 我的博客</title>
-<meta charset="utf-8">
-<meta name="generator" content="Hugo 0.60.1" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="canonical" href="http://flyblog.tech/posts/unix-time/">
-<link rel="alternate" type="application/rss+xml" href="" title="我的博客">
-<link rel="stylesheet" href="http://flyblog.tech/css/theme.css">
-<link rel="stylesheet" href="http://flyblog.tech/css/classes.css">
+<html lang="zh">
 
-<header class="dark">
-  <h2><a href="http://flyblog.tech/">我的博客</a></h2>
-  <nav>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="author" content="fly">
+    <meta name="description" content="我的博客">
+    <meta name="keywords" content="blog,developer,personal">
+
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="unix time"/>
+<meta name="twitter:description" content="unix time Calendar Time 1. time #include &lt;time.h&gt;time_t time(time_t *tloc); 这是一个系统调用，用来获取从1970-01-01 00:00:00 &#43;0000 (UTC)至今的秒数，称为日历时间
+一般tloc传NULL
+2. gettimeofday #include &lt;sys/time.h&gt;int gettimeofday(struct timeval *tv, struct timezone *tz); 这也是一个系统调用，这个系统调用获取的时间精度更高。
+timeval 结构如下：
+struct timeval { time_t tv_sec; /* seconds */ suseconds_t tv_usec; /* microseconds */ }; tv_sec 的值跟time系统调用的返回值一样
+tv_usec 表示微秒
+第二个参数已经废弃，传NULL就行
+3. clock_gettime #include &lt;time.h&gt;int clock_gettime(clockid_t clk_id, struct timespec *tp); struct timespec { time_t tv_sec; /* seconds */ long tv_nsec; /* nanoseconds */ }; clock_gettime可以获取纳秒级时间"/>
+
+    <meta property="og:title" content="unix time" />
+<meta property="og:description" content="unix time Calendar Time 1. time #include &lt;time.h&gt;time_t time(time_t *tloc); 这是一个系统调用，用来获取从1970-01-01 00:00:00 &#43;0000 (UTC)至今的秒数，称为日历时间
+一般tloc传NULL
+2. gettimeofday #include &lt;sys/time.h&gt;int gettimeofday(struct timeval *tv, struct timezone *tz); 这也是一个系统调用，这个系统调用获取的时间精度更高。
+timeval 结构如下：
+struct timeval { time_t tv_sec; /* seconds */ suseconds_t tv_usec; /* microseconds */ }; tv_sec 的值跟time系统调用的返回值一样
+tv_usec 表示微秒
+第二个参数已经废弃，传NULL就行
+3. clock_gettime #include &lt;time.h&gt;int clock_gettime(clockid_t clk_id, struct timespec *tp); struct timespec { time_t tv_sec; /* seconds */ long tv_nsec; /* nanoseconds */ }; clock_gettime可以获取纳秒级时间" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://flyblog.tech/posts/unix-time/" />
+<meta property="article:published_time" content="2011-12-23T13:05:31+00:00" />
+<meta property="article:modified_time" content="2011-12-23T13:05:31+00:00" />
+
+
     
-  </nav>
-</header>
+      <base href="http://flyblog.tech/posts/unix-time/">
+    
+    <title>
+  unix time · fly
+</title>
 
-<article>
-  <header>
-    <h1>unix time</h1>
-    <p><time datetime="2011-12-23T13:05:31Z">December 23, 2011</time></p>
-  </header>
-  <h1 id="unix-time">unix time</h1>
+    
+      <link rel="canonical" href="http://flyblog.tech/posts/unix-time/">
+    
+
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,700%7CMerriweather:300,700%7CSource+Code+Pro:400,700" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.11.2/css/all.css" integrity="sha384-KA6wR/X5RY4zFAHpv/CnoG2UW1uogYfdnP67Uv7eULvTveboZJg0qUpmJZb5VqzN" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" integrity="sha256-l85OmPOjvil/SOvVt3HnSSjzF1TUMyT9eV0c2BzEGzU=" crossorigin="anonymous" />
+
+    
+      
+      
+      <link rel="stylesheet" href="http://flyblog.tech/css/coder.min.28d751104f30c16da1aa1bb04015cbe662cacfe0d1b01af4f2240ad58580069c.css" integrity="sha256-KNdREE8wwW2hqhuwQBXL5mLKz&#43;DRsBr08iQK1YWABpw=" crossorigin="anonymous" media="screen" />
+    
+
+    
+
+    
+
+    
+      <link rel="stylesheet" href="http://flyblog.tech/css/custom.css" />
+    
+
+    
+    
+    <link rel="icon" type="image/png" href="http://flyblog.tech/img/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="http://flyblog.tech/img/favicon-16x16.png" sizes="16x16">
+
+    <meta name="generator" content="Hugo 0.60.1" />
+  </head>
+
+  
+  
+  <body class="colorscheme-light">
+    <main class="wrapper">
+      <nav class="navigation">
+  <section class="container">
+    <a class="navigation-title" href="http://flyblog.tech/">
+      fly
+    </a>
+    <input type="checkbox" id="menu-toggle" />
+    <label class="menu-button float-right" for="menu-toggle"><i class="fas fa-bars"></i></label>
+    <ul class="navigation-list">
+      
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="http://flyblog.tech/posts/">Blog</a>
+          </li>
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="http://flyblog.tech/about/">About</a>
+          </li>
+        
+      
+      
+    </ul>
+  </section>
+</nav>
+
+
+      <div class="content">
+        
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">unix time</h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fas fa-calendar"></i>
+              <time datetime='2011-12-23T13:05:31Z'>
+                December 23, 2011
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fas fa-clock"></i>
+              
+            </span>
+          </div>
+          
+          
+        </div>
+      </header>
+
+      <div>
+        <h1 id="unix-time">unix time</h1>
 <h2 id="calendar-time">Calendar Time</h2>
-<p><img src="/image/time.png" alt="calendar time"></p>
+<p><img src="http://flyblog.tech/image/time.png" alt="calendar time"></p>
 <h3 id="1-time">1. time</h3>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"> <span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;time.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span>time_t <span style="color:#a6e22e">time</span>(time_t <span style="color:#f92672">*</span>tloc);
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"> <span style="">#</span><span style="">include</span> <span style="">&lt;time.h&gt;</span><span style="">
+</span><span style=""></span>time_t time(time_t *tloc);
 </code></pre></div><p>这是一个系统调用，用来获取从1970-01-01 00:00:00 +0000 (UTC)至今的秒数，称为日历时间</p>
 <p>一般<code>tloc</code>传<code>NULL</code></p>
 <h3 id="2-gettimeofday">2. gettimeofday</h3>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"> <span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;sys/time.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">gettimeofday</span>(<span style="color:#66d9ef">struct</span> timeval <span style="color:#f92672">*</span>tv, <span style="color:#66d9ef">struct</span> timezone <span style="color:#f92672">*</span>tz);
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"> <span style="">#</span><span style="">include</span> <span style="">&lt;sys/time.h&gt;</span><span style="">
+</span><span style=""></span><span style="">int</span> gettimeofday(<span style="font-weight:bold">struct</span> timeval *tv, <span style="font-weight:bold">struct</span> timezone *tz);
 </code></pre></div><p>这也是一个系统调用，这个系统调用获取的时间精度更高。</p>
 <p><code>timeval</code> 结构如下：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">struct</span> timeval {
-    time_t      tv_sec;     <span style="color:#75715e">/* seconds */</span>
-    suseconds_t tv_usec;    <span style="color:#75715e">/* microseconds */</span>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="font-weight:bold">struct</span> timeval {
+    time_t      tv_sec;     <span style="font-style:italic">/* seconds */</span>
+    suseconds_t tv_usec;    <span style="font-style:italic">/* microseconds */</span>
 };
 </code></pre></div><p><code>tv_sec</code> 的值跟<code>time</code>系统调用的返回值一样</p>
 <p><code>tv_usec</code> 表示微秒</p>
 <p>第二个参数已经废弃，传<code>NULL</code>就行</p>
 <h3 id="3-clockgettime">3. clock_gettime</h3>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;time.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">clock_gettime</span>(clockid_t clk_id, <span style="color:#66d9ef">struct</span> timespec <span style="color:#f92672">*</span>tp);
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="">#</span><span style="">include</span> <span style="">&lt;time.h&gt;</span><span style="">
+</span><span style=""></span><span style="">int</span> clock_gettime(clockid_t clk_id, <span style="font-weight:bold">struct</span> timespec *tp);
 
-<span style="color:#66d9ef">struct</span> timespec {
-    time_t   tv_sec;        <span style="color:#75715e">/* seconds */</span>
-    <span style="color:#66d9ef">long</span>     tv_nsec;       <span style="color:#75715e">/* nanoseconds */</span>
+<span style="font-weight:bold">struct</span> timespec {
+    time_t   tv_sec;        <span style="font-style:italic">/* seconds */</span>
+    <span style="">long</span>     tv_nsec;       <span style="font-style:italic">/* nanoseconds */</span>
 };
 </code></pre></div><p><code>clock_gettime</code>可以获取纳秒级时间</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">long</span> <span style="color:#66d9ef">long</span> <span style="color:#a6e22e">get_nano_time</span>() {
-    <span style="color:#66d9ef">struct</span> timespec ts;
-    clock_gettime(CLOCK_REALTIME, <span style="color:#f92672">&amp;</span>ts);
-    <span style="color:#66d9ef">return</span> ts.tv_sec <span style="color:#f92672">*</span> <span style="color:#ae81ff">1000000000</span> <span style="color:#f92672">+</span> ts.tv_nsec;
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="">long</span> <span style="">long</span> get_nano_time() {
+    <span style="font-weight:bold">struct</span> timespec ts;
+    clock_gettime(CLOCK_REALTIME, &amp;ts);
+    <span style="font-weight:bold">return</span> ts.tv_sec * 1000000000 + ts.tv_nsec;
 }
 </code></pre></div><p>日历时间（用秒数表示的时间）很有用，但是有时候我们需要获取具体的日期时间，即所谓的Broken-Down Time</p>
 <h2 id="brokendown-time">Broken-Down Time</h2>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;time.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">struct</span> tm <span style="color:#f92672">*</span><span style="color:#a6e22e">gmtime</span>(<span style="color:#66d9ef">const</span> time_t <span style="color:#f92672">*</span>timep);
-<span style="color:#66d9ef">struct</span> tm <span style="color:#f92672">*</span><span style="color:#a6e22e">localtime</span>(<span style="color:#66d9ef">const</span> time_t <span style="color:#f92672">*</span>timep);
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="">#</span><span style="">include</span> <span style="">&lt;time.h&gt;</span><span style="">
+</span><span style=""></span><span style="font-weight:bold">struct</span> tm *gmtime(<span style="font-weight:bold">const</span> time_t *timep);
+<span style="font-weight:bold">struct</span> tm *localtime(<span style="font-weight:bold">const</span> time_t *timep);
 </code></pre></div><p>这两个函数将<code>time_t</code>表示的秒数转成日期时间(datetime)</p>
 <p><code>gmtime</code>返回的是UTC(GMT)日期时间</p>
 <p><code>localtime</code>返回的系统本地日期时间</p>
 <p><code>struct tm</code>结构如下：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">struct</span> tm {
-    <span style="color:#66d9ef">int</span> tm_sec;   <span style="color:#75715e">/* Seconds (0-60)                     对应%S格式 */</span>
-    <span style="color:#66d9ef">int</span> tm_min;   <span style="color:#75715e">/* Minutes (0-59)                     对应%M格式 */</span>
-    <span style="color:#66d9ef">int</span> tm_hour;  <span style="color:#75715e">/* Hours (0-23)                       对应%H格式 */</span>
-    <span style="color:#66d9ef">int</span> tm_mday;  <span style="color:#75715e">/* Day of the month (1-31)            对应%d格式 */</span>
-    <span style="color:#66d9ef">int</span> tm_mon;   <span style="color:#75715e">/* Month (0-11)                       对应%m格式-1 */</span>
-    <span style="color:#66d9ef">int</span> tm_year;  <span style="color:#75715e">/* Year - 1900                        对应%Y格式-1900 */</span>
-    <span style="color:#66d9ef">int</span> tm_wday;  <span style="color:#75715e">/* Day of the week (0-6, Sunday = 0)  对应%w格式 */</span>
-    <span style="color:#66d9ef">int</span> tm_yday;  <span style="color:#75715e">/* Day in the year (0-365, 1 Jan = 0) 对应%j格式-1 */</span>
-    <span style="color:#66d9ef">int</span> tm_isdst; <span style="color:#75715e">/* Daylight saving time */</span>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="font-weight:bold">struct</span> tm {
+    <span style="">int</span> tm_sec;   <span style="font-style:italic">/* Seconds (0-60)                     对应%S格式 */</span>
+    <span style="">int</span> tm_min;   <span style="font-style:italic">/* Minutes (0-59)                     对应%M格式 */</span>
+    <span style="">int</span> tm_hour;  <span style="font-style:italic">/* Hours (0-23)                       对应%H格式 */</span>
+    <span style="">int</span> tm_mday;  <span style="font-style:italic">/* Day of the month (1-31)            对应%d格式 */</span>
+    <span style="">int</span> tm_mon;   <span style="font-style:italic">/* Month (0-11)                       对应%m格式-1 */</span>
+    <span style="">int</span> tm_year;  <span style="font-style:italic">/* Year - 1900                        对应%Y格式-1900 */</span>
+    <span style="">int</span> tm_wday;  <span style="font-style:italic">/* Day of the week (0-6, Sunday = 0)  对应%w格式 */</span>
+    <span style="">int</span> tm_yday;  <span style="font-style:italic">/* Day in the year (0-365, 1 Jan = 0) 对应%j格式-1 */</span>
+    <span style="">int</span> tm_isdst; <span style="font-style:italic">/* Daylight saving time */</span>
 };
 </code></pre></div><p>注释中指出了对应<code>strftime</code>函数的格式说明符</p>
 <p>下面代码可以获取本地日期</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">time_t t <span style="color:#f92672">=</span> time(NULL);
-<span style="color:#66d9ef">struct</span> tm <span style="color:#f92672">*</span>tm <span style="color:#f92672">=</span> localtime(<span style="color:#f92672">&amp;</span>t);
-printf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">%d-%02d-%02d %02d:%02d:%02d</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>,
-        <span style="color:#ae81ff">1900</span> <span style="color:#f92672">+</span> tm<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>tm_year, tm<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>tm_mon <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>, tm<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>tm_mday, tm<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>tm_hour, tm<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>tm_min, tm<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>tm_sec);
-<span style="color:#75715e">// output:
-</span><span style="color:#75715e"></span><span style="color:#75715e">// 2018-12-09 11:16:00
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">time_t t = time(NULL);
+<span style="font-weight:bold">struct</span> tm *tm = localtime(&amp;t);
+printf(<span style="font-style:italic"></span><span style="font-style:italic">&#34;</span><span style="font-style:italic">%d-%02d-%02d %02d:%02d:%02d</span><span style="font-weight:bold;font-style:italic">\n</span><span style="font-style:italic">&#34;</span>,
+        1900 + tm-&gt;tm_year, tm-&gt;tm_mon + 1, tm-&gt;tm_mday, tm-&gt;tm_hour, tm-&gt;tm_min, tm-&gt;tm_sec);
+<span style="font-style:italic">// output:
+</span><span style="font-style:italic"></span><span style="font-style:italic">// 2018-12-09 11:16:00
 </span></code></pre></div><h2 id="brokendown-time1">Broken-Down Time与字符串形式的互转</h2>
 <h3 id="1-struct-tm">1. struct tm转成字符串</h3>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;time.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span>size_t strftime(<span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>outstr, size_t max, <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>format, <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">struct</span> tm <span style="color:#f92672">*</span>tm)
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="">#</span><span style="">include</span> <span style="">&lt;time.h&gt;</span><span style="">
+</span><span style=""></span>size_t strftime(<span style="">char</span> *outstr, size_t max, <span style="font-weight:bold">const</span> <span style="">char</span> *format, <span style="font-weight:bold">const</span> <span style="font-weight:bold">struct</span> tm *tm)
 </code></pre></div><p>下面代码可以获取本地日期</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">time_t t <span style="color:#f92672">=</span> time(NULL);
-<span style="color:#66d9ef">struct</span> tm <span style="color:#f92672">*</span>tm <span style="color:#f92672">=</span> localtime(<span style="color:#f92672">&amp;</span>t);
-<span style="color:#66d9ef">char</span> str[<span style="color:#ae81ff">32</span>];
-strftime(str, <span style="color:#66d9ef">sizeof</span>(str), <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">%F %T</span><span style="color:#e6db74">&#34;</span>, tm);
-<span style="color:#75715e">// strftime(str, sizeof(str), &#34;%Y-%m-%d %H:%M:%S&#34;, tm);
-</span><span style="color:#75715e"></span>printf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">%s</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, str);
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">time_t t = time(NULL);
+<span style="font-weight:bold">struct</span> tm *tm = localtime(&amp;t);
+<span style="">char</span> str[32];
+strftime(str, <span style="font-weight:bold">sizeof</span>(str), <span style="font-style:italic"></span><span style="font-style:italic">&#34;</span><span style="font-style:italic">%F %T</span><span style="font-style:italic">&#34;</span>, tm);
+<span style="font-style:italic">// strftime(str, sizeof(str), &#34;%Y-%m-%d %H:%M:%S&#34;, tm);
+</span><span style="font-style:italic"></span>printf(<span style="font-style:italic"></span><span style="font-style:italic">&#34;</span><span style="font-style:italic">%s</span><span style="font-weight:bold;font-style:italic">\n</span><span style="font-style:italic">&#34;</span>, str);
 </code></pre></div><h3 id="2-struct-tm">2. 字符串转struct tm</h3>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;time.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">strptime</span>(<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>s, <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>format, <span style="color:#66d9ef">struct</span> tm <span style="color:#f92672">*</span>tm);
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="">#</span><span style="">include</span> <span style="">&lt;time.h&gt;</span><span style="">
+</span><span style=""></span><span style="">char</span> *strptime(<span style="font-weight:bold">const</span> <span style="">char</span> *s, <span style="font-weight:bold">const</span> <span style="">char</span> *format, <span style="font-weight:bold">struct</span> tm *tm);
 </code></pre></div><p>下面的代码将字符串表示的日期时间转换为struct tm</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>dtstr <span style="color:#f92672">=</span> <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">2018-12-09 11:16:00</span><span style="color:#e6db74">&#34;</span>;
-<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>format <span style="color:#f92672">=</span> <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">%Y-%m-%d %H:%M:%S</span><span style="color:#e6db74">&#34;</span>;
-<span style="color:#66d9ef">struct</span> tm tm;
-memset(<span style="color:#f92672">&amp;</span>tm, <span style="color:#ae81ff">0</span>, <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">struct</span> tm));
-strptime(dtstr, format, <span style="color:#f92672">&amp;</span>tm);
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="font-weight:bold">const</span> <span style="">char</span> *dtstr = <span style="font-style:italic"></span><span style="font-style:italic">&#34;</span><span style="font-style:italic">2018-12-09 11:16:00</span><span style="font-style:italic">&#34;</span>;
+<span style="font-weight:bold">const</span> <span style="">char</span> *format = <span style="font-style:italic"></span><span style="font-style:italic">&#34;</span><span style="font-style:italic">%Y-%m-%d %H:%M:%S</span><span style="font-style:italic">&#34;</span>;
+<span style="font-weight:bold">struct</span> tm tm;
+memset(&amp;tm, 0, <span style="font-weight:bold">sizeof</span>(<span style="font-weight:bold">struct</span> tm));
+strptime(dtstr, format, &amp;tm);
 </code></pre></div><h2 id="brokendown-time-timet">Broken-Down Time 转日历时间(time_t)</h2>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;time.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span>time_t <span style="color:#a6e22e">mktime</span>(<span style="color:#66d9ef">struct</span> tm <span style="color:#f92672">*</span>tm);
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="">#</span><span style="">include</span> <span style="">&lt;time.h&gt;</span><span style="">
+</span><span style=""></span>time_t mktime(<span style="font-weight:bold">struct</span> tm *tm);
 </code></pre></div><p>注意：</p>
 <pre><code>1. mktime使用系统的时区信息来解释tm参数
 2. mktime根据tm-&gt;tm_isdst的值，决定是否将tm视为夏令时
@@ -117,95 +224,163 @@ strptime(dtstr, format, <span style="color:#f92672">&amp;</span>tm);
 4. 最后mktime会修改tm_wday和tm_yday，使其与其他字段匹配
 </code></pre>
 <p>下面代码将struct tm转换成日历时间(time_t)，（特意选了一个夏令时，即：实行夏时制时的时间）</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>dtstr <span style="color:#f92672">=</span> <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">1991-07-01 05:00:00</span><span style="color:#e6db74">&#34;</span>;
-<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>format <span style="color:#f92672">=</span> <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">%Y-%m-%d %H:%M:%S</span><span style="color:#e6db74">&#34;</span>;
-<span style="color:#66d9ef">struct</span> tm tm;
-memset(<span style="color:#f92672">&amp;</span>tm, <span style="color:#ae81ff">0</span>, <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">struct</span> tm));
-strptime(dtstr, format, <span style="color:#f92672">&amp;</span>tm);
-tm.tm_isdst <span style="color:#f92672">=</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>; <span style="color:#75715e">// Not set by strptime(); tells mktime() to determine if DST is in effect
-</span><span style="color:#75715e"></span>time_t t <span style="color:#f92672">=</span> mktime(<span style="color:#f92672">&amp;</span>tm);
-printf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">%ld</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, t); <span style="color:#75715e">// 678312000
-</span><span style="color:#75715e"></span>printf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">%d</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, tm.tm_isdst); <span style="color:#75715e">// 1 表示这个时间为夏令时
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="font-weight:bold">const</span> <span style="">char</span> *dtstr = <span style="font-style:italic"></span><span style="font-style:italic">&#34;</span><span style="font-style:italic">1991-07-01 05:00:00</span><span style="font-style:italic">&#34;</span>;
+<span style="font-weight:bold">const</span> <span style="">char</span> *format = <span style="font-style:italic"></span><span style="font-style:italic">&#34;</span><span style="font-style:italic">%Y-%m-%d %H:%M:%S</span><span style="font-style:italic">&#34;</span>;
+<span style="font-weight:bold">struct</span> tm tm;
+memset(&amp;tm, 0, <span style="font-weight:bold">sizeof</span>(<span style="font-weight:bold">struct</span> tm));
+strptime(dtstr, format, &amp;tm);
+tm.tm_isdst = -1; <span style="font-style:italic">// Not set by strptime(); tells mktime() to determine if DST is in effect
+</span><span style="font-style:italic"></span>time_t t = mktime(&amp;tm);
+printf(<span style="font-style:italic"></span><span style="font-style:italic">&#34;</span><span style="font-style:italic">%ld</span><span style="font-weight:bold;font-style:italic">\n</span><span style="font-style:italic">&#34;</span>, t); <span style="font-style:italic">// 678312000
+</span><span style="font-style:italic"></span>printf(<span style="font-style:italic"></span><span style="font-style:italic">&#34;</span><span style="font-style:italic">%d</span><span style="font-weight:bold;font-style:italic">\n</span><span style="font-style:italic">&#34;</span>, tm.tm_isdst); <span style="font-style:italic">// 1 表示这个时间为夏令时
 </span></code></pre></div><p>这里如果将 tm.tm_isdst = -1; 这行注释掉，那么转换输出的日历时间是<code>678315600</code>这是错误的</p>
 <p>我们通过<code>date</code>命令反转这两个日历时间：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">date <span style="color:#f92672">-</span>d <span style="color:#960050;background-color:#1e0010">@</span><span style="color:#ae81ff">678312000</span> <span style="color:#960050;background-color:#1e0010">&#39;</span><span style="color:#f92672">+</span><span style="color:#f92672">%</span>F <span style="color:#f92672">%</span>T<span style="color:#960050;background-color:#1e0010">&#39;</span>
-date <span style="color:#f92672">-</span>d <span style="color:#960050;background-color:#1e0010">@</span><span style="color:#ae81ff">678315600</span> <span style="color:#960050;background-color:#1e0010">&#39;</span><span style="color:#f92672">+</span><span style="color:#f92672">%</span>F <span style="color:#f92672">%</span>T<span style="color:#960050;background-color:#1e0010">&#39;</span>
-<span style="color:#75715e">// output:
-</span><span style="color:#75715e"></span><span style="color:#75715e">// 1991-07-01 05:00:00
-</span><span style="color:#75715e"></span><span style="color:#75715e">// 1991-07-01 06:00:00
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">date -d <span style="">@</span>678312000 <span style="">&#39;</span>+%F %T<span style="">&#39;</span>
+date -d <span style="">@</span>678315600 <span style="">&#39;</span>+%F %T<span style="">&#39;</span>
+<span style="font-style:italic">// output:
+</span><span style="font-style:italic"></span><span style="font-style:italic">// 1991-07-01 05:00:00
+</span><span style="font-style:italic"></span><span style="font-style:italic">// 1991-07-01 06:00:00
 </span></code></pre></div><p>从转换结果看出来差了1小时，实行夏时制的时间比不实行夏时制的时间早了1小时</p>
 <h2 id="heading">一个示例</h2>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">enum</span> option {
-    year    <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>,
-    month   <span style="color:#f92672">=</span> <span style="color:#ae81ff">2</span>,
-    day     <span style="color:#f92672">=</span> <span style="color:#ae81ff">3</span>,
-    hour    <span style="color:#f92672">=</span> <span style="color:#ae81ff">4</span>,
-    minute  <span style="color:#f92672">=</span> <span style="color:#ae81ff">5</span>,
-    second  <span style="color:#f92672">=</span> <span style="color:#ae81ff">6</span>,
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="font-weight:bold">enum</span> option {
+    year    = 1,
+    month   = 2,
+    day     = 3,
+    hour    = 4,
+    minute  = 5,
+    second  = 6,
 };
 
-time_t <span style="color:#a6e22e">time_add</span>(time_t t, <span style="color:#66d9ef">int</span> x, <span style="color:#66d9ef">enum</span> option opt) {
-    <span style="color:#66d9ef">struct</span> tm <span style="color:#f92672">*</span>tm <span style="color:#f92672">=</span> localtime(<span style="color:#f92672">&amp;</span>t);
-    <span style="color:#66d9ef">switch</span> (opt) {
-    <span style="color:#66d9ef">case</span> year:
-        tm<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>tm_year <span style="color:#f92672">+</span><span style="color:#f92672">=</span> x;
-        <span style="color:#66d9ef">break</span>;
-    <span style="color:#66d9ef">case</span> month:
-        tm<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>tm_mon <span style="color:#f92672">+</span><span style="color:#f92672">=</span> x;
-        <span style="color:#66d9ef">break</span>;
-    <span style="color:#66d9ef">case</span> day:
-        tm<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>tm_mday <span style="color:#f92672">+</span><span style="color:#f92672">=</span> x;
-        <span style="color:#66d9ef">break</span>;
-    <span style="color:#66d9ef">case</span> hour:
-        tm<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>tm_hour <span style="color:#f92672">+</span><span style="color:#f92672">=</span> x;
-        <span style="color:#66d9ef">break</span>;
-    <span style="color:#66d9ef">case</span> minute:
-        tm<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>tm_min <span style="color:#f92672">+</span><span style="color:#f92672">=</span> x;
-        <span style="color:#66d9ef">break</span>;
-    <span style="color:#66d9ef">case</span> second:
-        tm<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>tm_sec <span style="color:#f92672">+</span><span style="color:#f92672">=</span> x;
-        <span style="color:#66d9ef">break</span>;
+time_t time_add(time_t t, <span style="">int</span> x, <span style="font-weight:bold">enum</span> option opt) {
+    <span style="font-weight:bold">struct</span> tm *tm = localtime(&amp;t);
+    <span style="font-weight:bold">switch</span> (opt) {
+    <span style="font-weight:bold">case</span> year:
+        tm-&gt;tm_year += x;
+        <span style="font-weight:bold">break</span>;
+    <span style="font-weight:bold">case</span> month:
+        tm-&gt;tm_mon += x;
+        <span style="font-weight:bold">break</span>;
+    <span style="font-weight:bold">case</span> day:
+        tm-&gt;tm_mday += x;
+        <span style="font-weight:bold">break</span>;
+    <span style="font-weight:bold">case</span> hour:
+        tm-&gt;tm_hour += x;
+        <span style="font-weight:bold">break</span>;
+    <span style="font-weight:bold">case</span> minute:
+        tm-&gt;tm_min += x;
+        <span style="font-weight:bold">break</span>;
+    <span style="font-weight:bold">case</span> second:
+        tm-&gt;tm_sec += x;
+        <span style="font-weight:bold">break</span>;
     }
-    <span style="color:#66d9ef">return</span> mktime(tm);
+    <span style="font-weight:bold">return</span> mktime(tm);
 }
 
-<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">datetime_string</span>(time_t t) {
-    <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">char</span> str[<span style="color:#ae81ff">32</span>];
-    <span style="color:#66d9ef">struct</span> tm <span style="color:#f92672">*</span>tm <span style="color:#f92672">=</span> localtime(<span style="color:#f92672">&amp;</span>t);
-    strftime(str, <span style="color:#66d9ef">sizeof</span>(str), <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">%F %T</span><span style="color:#e6db74">&#34;</span>, tm);
-    <span style="color:#66d9ef">return</span> str;
+<span style="font-weight:bold">const</span> <span style="">char</span> *datetime_string(time_t t) {
+    <span style="font-weight:bold">static</span> <span style="">char</span> str[32];
+    <span style="font-weight:bold">struct</span> tm *tm = localtime(&amp;t);
+    strftime(str, <span style="font-weight:bold">sizeof</span>(str), <span style="font-style:italic"></span><span style="font-style:italic">&#34;</span><span style="font-style:italic">%F %T</span><span style="font-style:italic">&#34;</span>, tm);
+    <span style="font-weight:bold">return</span> str;
 }
 
-<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>() {
-    time_t t <span style="color:#f92672">=</span> time(NULL);
-    <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>s <span style="color:#f92672">=</span> datetime_string(t);
-    printf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">%s</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, s);
-    t <span style="color:#f92672">=</span> time_add(t, <span style="color:#ae81ff">2</span>, day);
-    t <span style="color:#f92672">=</span> time_add(t, <span style="color:#ae81ff">1</span>, hour);
-    t <span style="color:#f92672">=</span> time_add(t, <span style="color:#ae81ff">10</span>, minute);
-    t <span style="color:#f92672">=</span> time_add(t, <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>, year);
-    s <span style="color:#f92672">=</span> datetime_string(t);
-    printf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">%s</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, s);
+<span style="">int</span> main() {
+    time_t t = time(NULL);
+    <span style="font-weight:bold">const</span> <span style="">char</span> *s = datetime_string(t);
+    printf(<span style="font-style:italic"></span><span style="font-style:italic">&#34;</span><span style="font-style:italic">%s</span><span style="font-weight:bold;font-style:italic">\n</span><span style="font-style:italic">&#34;</span>, s);
+    t = time_add(t, 2, day);
+    t = time_add(t, 1, hour);
+    t = time_add(t, 10, minute);
+    t = time_add(t, -1, year);
+    s = datetime_string(t);
+    printf(<span style="font-style:italic"></span><span style="font-style:italic">&#34;</span><span style="font-style:italic">%s</span><span style="font-weight:bold;font-style:italic">\n</span><span style="font-style:italic">&#34;</span>, s);
 }
-<span style="color:#75715e">// output:
-</span><span style="color:#75715e"></span><span style="color:#75715e">// 2018-12-09 16:18:51
-</span><span style="color:#75715e"></span><span style="color:#75715e">// 2017-12-11 17:28:51
+<span style="font-style:italic">// output:
+</span><span style="font-style:italic"></span><span style="font-style:italic">// 2018-12-09 16:18:51
+</span><span style="font-style:italic"></span><span style="font-style:italic">// 2017-12-11 17:28:51
 </span></code></pre></div><h2 id="heading1">其它无用的函数</h2>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;time.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">ctime</span>(<span style="color:#66d9ef">const</span> time_t <span style="color:#f92672">*</span>timep);   <span style="color:#75715e">// calendar time
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">asctime</span>(<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">struct</span> tm <span style="color:#f92672">*</span>tm); <span style="color:#75715e">// ascii time
-</span></code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">time_t t <span style="color:#f92672">=</span> time(NULL);
-<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>s1 <span style="color:#f92672">=</span> ctime(<span style="color:#f92672">&amp;</span>t);
-<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>s2 <span style="color:#f92672">=</span> asctime(localtime(<span style="color:#f92672">&amp;</span>t));
-printf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">%s%s</span><span style="color:#e6db74">&#34;</span>, s1, s2);
-<span style="color:#75715e">// output:
-</span><span style="color:#75715e"></span><span style="color:#75715e">// Sun Dec  9 15:43:37 2018
-</span><span style="color:#75715e"></span><span style="color:#75715e">// Sun Dec  9 15:43:37 2018
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="">#</span><span style="">include</span> <span style="">&lt;time.h&gt;</span><span style="">
+</span><span style=""></span><span style="">char</span> *ctime(<span style="font-weight:bold">const</span> time_t *timep);   <span style="font-style:italic">// calendar time
+</span><span style="font-style:italic"></span><span style="">char</span> *asctime(<span style="font-weight:bold">const</span> <span style="font-weight:bold">struct</span> tm *tm); <span style="font-style:italic">// ascii time
+</span></code></pre></div><div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">time_t t = time(NULL);
+<span style="font-weight:bold">const</span> <span style="">char</span> *s1 = ctime(&amp;t);
+<span style="font-weight:bold">const</span> <span style="">char</span> *s2 = asctime(localtime(&amp;t));
+printf(<span style="font-style:italic"></span><span style="font-style:italic">&#34;</span><span style="font-style:italic">%s%s</span><span style="font-style:italic">&#34;</span>, s1, s2);
+<span style="font-style:italic">// output:
+</span><span style="font-style:italic"></span><span style="font-style:italic">// Sun Dec  9 15:43:37 2018
+</span><span style="font-style:italic"></span><span style="font-style:italic">// Sun Dec  9 15:43:37 2018
 </span></code></pre></div><p>ctime(&amp;t)与asctime(localtime(&amp;t))等价，它们将日历时间转换为固定格式的时间字符串，因为格式固定，一般不满足我们的需求，
 所以基本没什么用</p>
 
-</article>
+      </div>
+
+      <footer>
+        
 
 
+        <div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "yourdiscussshortname" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+        
+        
+      </footer>
+    </article>
+
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script type="text/javascript" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/startup.js" id="MathJax-script"></script>
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [
+          ['$', '$'], ['\\(', '\\)']
+        ],
+        processEscapes: true,
+        processEnvironments: true
+      },
+      options: {
+        skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+      }
+    };
+  </script>
+  </section>
+
+      </div>
+
+      <footer class="footer">
+  <section class="container">
+    
+      <p>记录点滴生活</p>
+    
+     © 2019
+    
+       · 
+       <a href="https://gohugo.io/">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/">Coder</a>.
+    
+    
+  </section>
+</footer>
+
+    </main>
+
+    
+
+  </body>
 
 </html>

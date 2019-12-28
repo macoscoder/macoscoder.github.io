@@ -1,63 +1,156 @@
 <!DOCTYPE html>
-<html lang="zh-cn">
-<title>多线程中信号处理方法 | 我的博客</title>
-<meta charset="utf-8">
-<meta name="generator" content="Hugo 0.60.1" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="canonical" href="http://flyblog.tech/posts/thread-and-signal/">
-<link rel="alternate" type="application/rss+xml" href="" title="我的博客">
-<link rel="stylesheet" href="http://flyblog.tech/css/theme.css">
-<link rel="stylesheet" href="http://flyblog.tech/css/classes.css">
+<html lang="zh">
 
-<header class="dark">
-  <h2><a href="http://flyblog.tech/">我的博客</a></h2>
-  <nav>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="author" content="fly">
+    <meta name="description" content="我的博客">
+    <meta name="keywords" content="blog,developer,personal">
+
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="多线程中信号处理方法"/>
+<meta name="twitter:description" content="多线程中信号处理方法 方法说明  在创建子线程之前，主线程阻塞所有信号，随后创建的子线程继承主线程的signal mask 创建一个专用线程，用于处理信号(使用sigwait, sigwaitinfo, sigtimedwait)  示例 #include &#34;go.h&#34;#include &#34;log.h&#34;#include &lt;signal.h&gt;#include &lt;unistd.h&gt; void sig_handler(void *arg) { int sig; sigset_t mask; sigfillset(&amp;mask); for (;;) { sigwait(&amp;mask, &amp;sig); // 同步等待信号，将异步信号处理转换成多线程处理  debugf(&#34;sig = %d&#34;, sig); // debugf内部加锁了  if (sig == SIGINT) _exit(1); } } void foo(void *arg) { for (;;) { debugf(&#34;foo&#34;); sleep(1); } } int main() { sigset_t mask; sigfillset(&amp;mask); sigprocmask(SIG_SETMASK, &amp;mask, NULL); // 屏蔽所有信号  go(sig_handler, NULL); // 专用线程用于处理信号  go(foo, NULL); pause(); }  go."/>
+
+    <meta property="og:title" content="多线程中信号处理方法" />
+<meta property="og:description" content="多线程中信号处理方法 方法说明  在创建子线程之前，主线程阻塞所有信号，随后创建的子线程继承主线程的signal mask 创建一个专用线程，用于处理信号(使用sigwait, sigwaitinfo, sigtimedwait)  示例 #include &#34;go.h&#34;#include &#34;log.h&#34;#include &lt;signal.h&gt;#include &lt;unistd.h&gt; void sig_handler(void *arg) { int sig; sigset_t mask; sigfillset(&amp;mask); for (;;) { sigwait(&amp;mask, &amp;sig); // 同步等待信号，将异步信号处理转换成多线程处理  debugf(&#34;sig = %d&#34;, sig); // debugf内部加锁了  if (sig == SIGINT) _exit(1); } } void foo(void *arg) { for (;;) { debugf(&#34;foo&#34;); sleep(1); } } int main() { sigset_t mask; sigfillset(&amp;mask); sigprocmask(SIG_SETMASK, &amp;mask, NULL); // 屏蔽所有信号  go(sig_handler, NULL); // 专用线程用于处理信号  go(foo, NULL); pause(); }  go." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://flyblog.tech/posts/thread-and-signal/" />
+<meta property="article:published_time" content="2011-12-23T13:05:31+00:00" />
+<meta property="article:modified_time" content="2011-12-23T13:05:31+00:00" />
+
+
     
-  </nav>
-</header>
+      <base href="http://flyblog.tech/posts/thread-and-signal/">
+    
+    <title>
+  多线程中信号处理方法 · fly
+</title>
 
-<article>
-  <header>
-    <h1>多线程中信号处理方法</h1>
-    <p><time datetime="2011-12-23T13:05:31Z">December 23, 2011</time></p>
-  </header>
-  <h1 id="heading">多线程中信号处理方法</h1>
+    
+      <link rel="canonical" href="http://flyblog.tech/posts/thread-and-signal/">
+    
+
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,700%7CMerriweather:300,700%7CSource+Code+Pro:400,700" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.11.2/css/all.css" integrity="sha384-KA6wR/X5RY4zFAHpv/CnoG2UW1uogYfdnP67Uv7eULvTveboZJg0qUpmJZb5VqzN" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" integrity="sha256-l85OmPOjvil/SOvVt3HnSSjzF1TUMyT9eV0c2BzEGzU=" crossorigin="anonymous" />
+
+    
+      
+      
+      <link rel="stylesheet" href="http://flyblog.tech/css/coder.min.28d751104f30c16da1aa1bb04015cbe662cacfe0d1b01af4f2240ad58580069c.css" integrity="sha256-KNdREE8wwW2hqhuwQBXL5mLKz&#43;DRsBr08iQK1YWABpw=" crossorigin="anonymous" media="screen" />
+    
+
+    
+
+    
+
+    
+      <link rel="stylesheet" href="http://flyblog.tech/css/custom.css" />
+    
+
+    
+    
+    <link rel="icon" type="image/png" href="http://flyblog.tech/img/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="http://flyblog.tech/img/favicon-16x16.png" sizes="16x16">
+
+    <meta name="generator" content="Hugo 0.60.1" />
+  </head>
+
+  
+  
+  <body class="colorscheme-light">
+    <main class="wrapper">
+      <nav class="navigation">
+  <section class="container">
+    <a class="navigation-title" href="http://flyblog.tech/">
+      fly
+    </a>
+    <input type="checkbox" id="menu-toggle" />
+    <label class="menu-button float-right" for="menu-toggle"><i class="fas fa-bars"></i></label>
+    <ul class="navigation-list">
+      
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="http://flyblog.tech/posts/">Blog</a>
+          </li>
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="http://flyblog.tech/about/">About</a>
+          </li>
+        
+      
+      
+    </ul>
+  </section>
+</nav>
+
+
+      <div class="content">
+        
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">多线程中信号处理方法</h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fas fa-calendar"></i>
+              <time datetime='2011-12-23T13:05:31Z'>
+                December 23, 2011
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fas fa-clock"></i>
+              
+            </span>
+          </div>
+          
+          
+        </div>
+      </header>
+
+      <div>
+        <h1 id="heading">多线程中信号处理方法</h1>
 <h2 id="heading1">方法说明</h2>
 <ul>
 <li>在创建子线程之前，主线程阻塞所有信号，随后创建的子线程继承主线程的<code>signal mask</code></li>
 <li>创建一个专用线程，用于处理信号(使用<code>sigwait</code>, <code>sigwaitinfo</code>, <code>sigtimedwait</code>)</li>
 </ul>
 <h2 id="heading2">示例</h2>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&#34;go.h&#34;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&#34;log.h&#34;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;signal.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;unistd.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span>
-<span style="color:#66d9ef">void</span> <span style="color:#a6e22e">sig_handler</span>(<span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>arg) {
-    <span style="color:#66d9ef">int</span> sig;
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="">#</span><span style="">include</span> <span style="">&#34;go.h&#34;</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">include</span> <span style="">&#34;log.h&#34;</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">include</span> <span style="">&lt;signal.h&gt;</span><span style="">
+</span><span style=""></span><span style="">#</span><span style="">include</span> <span style="">&lt;unistd.h&gt;</span><span style="">
+</span><span style=""></span>
+<span style="">void</span> sig_handler(<span style="">void</span> *arg) {
+    <span style="">int</span> sig;
     sigset_t mask;
-    sigfillset(<span style="color:#f92672">&amp;</span>mask);
-    <span style="color:#66d9ef">for</span> (;;) {
-        sigwait(<span style="color:#f92672">&amp;</span>mask, <span style="color:#f92672">&amp;</span>sig);    <span style="color:#75715e">// 同步等待信号，将异步信号处理转换成多线程处理
-</span><span style="color:#75715e"></span>        debugf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">sig = %d</span><span style="color:#e6db74">&#34;</span>, sig); <span style="color:#75715e">// debugf内部加锁了
-</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">if</span> (sig <span style="color:#f92672">=</span><span style="color:#f92672">=</span> SIGINT)
-            _exit(<span style="color:#ae81ff">1</span>);
+    sigfillset(&amp;mask);
+    <span style="font-weight:bold">for</span> (;;) {
+        sigwait(&amp;mask, &amp;sig);    <span style="font-style:italic">// 同步等待信号，将异步信号处理转换成多线程处理
+</span><span style="font-style:italic"></span>        debugf(<span style="font-style:italic"></span><span style="font-style:italic">&#34;</span><span style="font-style:italic">sig = %d</span><span style="font-style:italic">&#34;</span>, sig); <span style="font-style:italic">// debugf内部加锁了
+</span><span style="font-style:italic"></span>        <span style="font-weight:bold">if</span> (sig == SIGINT)
+            _exit(1);
     }
 }
 
-<span style="color:#66d9ef">void</span> <span style="color:#a6e22e">foo</span>(<span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>arg) {
-    <span style="color:#66d9ef">for</span> (;;) {
-        debugf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">foo</span><span style="color:#e6db74">&#34;</span>);
-        sleep(<span style="color:#ae81ff">1</span>);
+<span style="">void</span> foo(<span style="">void</span> *arg) {
+    <span style="font-weight:bold">for</span> (;;) {
+        debugf(<span style="font-style:italic"></span><span style="font-style:italic">&#34;</span><span style="font-style:italic">foo</span><span style="font-style:italic">&#34;</span>);
+        sleep(1);
     }
 }
 
-<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>() {
+<span style="">int</span> main() {
     sigset_t mask;
-    sigfillset(<span style="color:#f92672">&amp;</span>mask);
-    sigprocmask(SIG_SETMASK, <span style="color:#f92672">&amp;</span>mask, NULL); <span style="color:#75715e">// 屏蔽所有信号
-</span><span style="color:#75715e"></span>    go(sig_handler, NULL);                 <span style="color:#75715e">// 专用线程用于处理信号
-</span><span style="color:#75715e"></span>    go(foo, NULL);
+    sigfillset(&amp;mask);
+    sigprocmask(SIG_SETMASK, &amp;mask, NULL); <span style="font-style:italic">// 屏蔽所有信号
+</span><span style="font-style:italic"></span>    go(sig_handler, NULL);                 <span style="font-style:italic">// 专用线程用于处理信号
+</span><span style="font-style:italic"></span>    go(foo, NULL);
     pause();
 }
 </code></pre></div><ul>
@@ -65,18 +158,86 @@
 <li><code>log.h</code> 参考<a href="http://www.flyblog.tech/thread%20specific%20data">thread specific data</a></li>
 </ul>
 <h2 id="heading3">演示</h2>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ ./a.out
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ ./a.out
 DEBUG: foo
 DEBUG: foo
-^<span style="color:#ae81ff">\D</span>EBUG: sig <span style="color:#f92672">=</span> <span style="color:#ae81ff">3</span>
+^<span style="font-weight:bold;font-style:italic">\D</span>EBUG: sig = 3
 DEBUG: foo
-^<span style="color:#ae81ff">\D</span>EBUG: sig <span style="color:#f92672">=</span> <span style="color:#ae81ff">3</span>
-^<span style="color:#ae81ff">\D</span>EBUG: sig <span style="color:#f92672">=</span> <span style="color:#ae81ff">3</span>
+^<span style="font-weight:bold;font-style:italic">\D</span>EBUG: sig = 3
+^<span style="font-weight:bold;font-style:italic">\D</span>EBUG: sig = 3
 DEBUG: foo
-^CDEBUG: sig <span style="color:#f92672">=</span> <span style="color:#ae81ff">2</span>
+^CDEBUG: sig = 2
 </code></pre></div>
-</article>
+      </div>
+
+      <footer>
+        
 
 
+        <div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "yourdiscussshortname" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+        
+        
+      </footer>
+    </article>
+
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script type="text/javascript" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/startup.js" id="MathJax-script"></script>
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [
+          ['$', '$'], ['\\(', '\\)']
+        ],
+        processEscapes: true,
+        processEnvironments: true
+      },
+      options: {
+        skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+      }
+    };
+  </script>
+  </section>
+
+      </div>
+
+      <footer class="footer">
+  <section class="container">
+    
+      <p>记录点滴生活</p>
+    
+     © 2019
+    
+       · 
+       <a href="https://gohugo.io/">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/">Coder</a>.
+    
+    
+  </section>
+</footer>
+
+    </main>
+
+    
+
+  </body>
 
 </html>
