@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<title>文件介绍 | 我的博客</title>
+<meta charset="utf-8">
+<meta name="generator" content="Hugo 0.60.1" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="canonical" href="http://flyblog.tech/posts/file/">
+<link rel="alternate" type="application/rss+xml" href="" title="我的博客">
+<link rel="stylesheet" href="http://flyblog.tech/css/theme.css">
+<link rel="stylesheet" href="http://flyblog.tech/css/classes.css">
+
+<header class="dark">
+  <h2><a href="http://flyblog.tech/">我的博客</a></h2>
+  <nav>
+    
+  </nav>
+</header>
+
+<article>
+  <header>
+    <h1>文件介绍</h1>
+    <p><time datetime="2011-12-23T13:05:31Z">December 23, 2011</time></p>
+  </header>
+  <h1 id="heading">文件介绍</h1>
+<h2 id="heading1">文件系统结构</h2>
+<p><img src="/image/fs.png" alt="file system"></p>
+<h2 id="heading2">文件</h2>
+<ul>
+<li>文件是由inode+data blocks组成</li>
+<li>inode存储在inode table中</li>
+<li>inode在inode table中的索引称为inode number</li>
+<li>每个文件系统有一张inode table</li>
+</ul>
+<p>inode存储文件状态(元)信息</p>
+<ul>
+<li>file type</li>
+<li>uid, gid</li>
+<li>access permisstion</li>
+<li>last access time, last modify time, last inode change time</li>
+<li>inode link(ref) count</li>
+<li>file size</li>
+<li>data block count</li>
+<li>data block pointers</li>
+</ul>
+<p>注意：inode中并不包含文件名，文件名和inode number存储在directory entry中</p>
+<p>如果用面向对象的思想来描述文件，那么把inode看成对象，inode number就是对象地址，
+link count就是对象的引用计数，directory entry是对象的引用</p>
+<h2 id="heading3">创建文件</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;sys/types.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;sys/stat.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;fcntl.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">open</span>(<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>pathname, <span style="color:#66d9ef">int</span> flags);
+<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">open</span>(<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>pathname, <span style="color:#66d9ef">int</span> flags, mode_t mode);
+</code></pre></div><p>open函数创建inode，然后创建一个引用(directory entry)，其中包含inode number和引用名，此时该inode的引用计数为1
+<code>pathname</code>为新的引用名</p>
+<h2 id="heading4">增加引用计数</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;unistd.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">link</span>(<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>oldpath, <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>newpath);
+</code></pre></div><p>link函数用来增加inode的引用计数，并创建一个新的引用(directory entry)，其中包含inode number和新的引用名
+引用名<code>oldpath</code>指向已有的inode对象，<code>newpath</code>为新建的引用的名称</p>
+<h2 id="heading5">减少引用计数</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;unistd.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">unlink</span>(<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>pathname);
+</code></pre></div><p>unlink将引用名<code>pathname</code>指向的inode对象的引用计数减1，如果对象的引用计数减为0，则内核将删除inode和对应的data blocks</p>
+<p><code>rm(1)</code>命令调用<code>unlink</code>函数</p>
+
+</article>
+
+
+
+</html>

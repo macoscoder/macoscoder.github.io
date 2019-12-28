@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<title>database/sql 包的使用 | 我的博客</title>
+<meta charset="utf-8">
+<meta name="generator" content="Hugo 0.60.1" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="canonical" href="http://flyblog.tech/posts/golang-mysql/">
+<link rel="alternate" type="application/rss+xml" href="" title="我的博客">
+<link rel="stylesheet" href="http://flyblog.tech/css/theme.css">
+<link rel="stylesheet" href="http://flyblog.tech/css/classes.css">
+
+<header class="dark">
+  <h2><a href="http://flyblog.tech/">我的博客</a></h2>
+  <nav>
+    
+  </nav>
+</header>
+
+<article>
+  <header>
+    <h1>database/sql 包的使用</h1>
+    <p><time datetime="2011-12-23T13:05:31Z">December 23, 2011</time></p>
+  </header>
+  <h1 id="databasesql-">database/sql 包的使用</h1>
+<h2 id="-mysql-driver">安装 mysql driver</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">go get -v github.com/go-sql-driver/mysql
+</code></pre></div><h2 id="-sqlopen">创建连接池: <code>sql.Open</code></h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">newPool</span>() <span style="color:#f92672">*</span><span style="color:#a6e22e">sql</span>.<span style="color:#a6e22e">DB</span> {
+    <span style="color:#a6e22e">cfg</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">mysql</span>.<span style="color:#a6e22e">NewConfig</span>()
+    <span style="color:#a6e22e">cfg</span>.<span style="color:#a6e22e">User</span> = <span style="color:#e6db74">&#34;root&#34;</span>
+    <span style="color:#a6e22e">cfg</span>.<span style="color:#a6e22e">Passwd</span> = <span style="color:#e6db74">&#34;xxxxxx&#34;</span>
+    <span style="color:#a6e22e">cfg</span>.<span style="color:#a6e22e">Net</span> = <span style="color:#e6db74">&#34;tcp&#34;</span>
+    <span style="color:#a6e22e">cfg</span>.<span style="color:#a6e22e">Addr</span> = <span style="color:#e6db74">&#34;127.0.0.1:3306&#34;</span>
+    <span style="color:#a6e22e">cfg</span>.<span style="color:#a6e22e">DBName</span> = <span style="color:#e6db74">&#34;mydb&#34;</span>
+    <span style="color:#a6e22e">dsn</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">cfg</span>.<span style="color:#a6e22e">FormatDSN</span>()
+    <span style="color:#a6e22e">db</span>, <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">sql</span>.<span style="color:#a6e22e">Open</span>(<span style="color:#e6db74">&#34;mysql&#34;</span>, <span style="color:#a6e22e">dsn</span>)
+    <span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+        <span style="color:#a6e22e">log</span>.<span style="color:#a6e22e">Fatal</span>(<span style="color:#a6e22e">err</span>)
+    }
+    <span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">db</span>.<span style="color:#a6e22e">Ping</span>(); <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+        <span style="color:#a6e22e">log</span>.<span style="color:#a6e22e">Fatal</span>(<span style="color:#a6e22e">err</span>)
+    }
+    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">db</span>
+}
+
+<span style="color:#66d9ef">var</span> <span style="color:#a6e22e">pool</span> = <span style="color:#a6e22e">newPool</span>()
+</code></pre></div><p><code>sql.DB</code>表示一个连接池<br>
+<code>sql.Open</code>的第一个参数是驱动名称，这里是<code>&quot;mysql&quot;</code><br>
+这个名称是在<code>mysql</code>包初始化时注册的，代码见:</p>
+<blockquote>
+<p>github.com/go-sql-driver/mysql/driver.go</p>
+</blockquote>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">init</span>() {
+    <span style="color:#a6e22e">sql</span>.<span style="color:#a6e22e">Register</span>(<span style="color:#e6db74">&#34;mysql&#34;</span>, <span style="color:#f92672">&amp;</span><span style="color:#a6e22e">MySQLDriver</span>{})
+}
+</code></pre></div><p><code>sql.Open</code>的第二个参数是数据源名称，这里通过<code>mysql.Config</code>结构来配置，然后调用<code>FormatDSN</code>方法得出数据源名称为:<br>
+<code>&quot;root:xxxxxx@tcp(127.0.0.1:3306)/mydb&quot;</code></p>
+<p><code>db.Ping()</code>用来检查网络连通性以及用户密码是否正确</p>
+<p>注意:<br>
+<code>pool</code>是一个包级变量，生命周期持续整个应用，所以不需要关闭，<code>sql.DB</code>设计上就是作为长期存活的对象来使用的</p>
+<h2 id="-sqldbquery">查询数据: <code>(*sql.DB).Query</code></h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#75715e">// User 用户
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">User</span> <span style="color:#66d9ef">struct</span> {
+    <span style="color:#a6e22e">ID</span>   <span style="color:#66d9ef">int64</span>
+    <span style="color:#a6e22e">Name</span> <span style="color:#66d9ef">string</span>
+}
+
+<span style="color:#75715e">// QueryUser 根据id查询用户
+</span><span style="color:#75715e"></span><span style="color:#75715e">// 注意：如果结果集为空集，这个代码是有问题的
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">QueryUser</span>(<span style="color:#a6e22e">id</span> <span style="color:#66d9ef">int64</span>) (<span style="color:#f92672">*</span><span style="color:#a6e22e">User</span>, <span style="color:#66d9ef">error</span>) {
+    <span style="color:#a6e22e">rows</span>, <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">pool</span>.<span style="color:#a6e22e">Query</span>(<span style="color:#e6db74">&#34;select `id`, `name` from `user` where `id` = ?&#34;</span>, <span style="color:#a6e22e">id</span>)
+    <span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+        <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">nil</span>, <span style="color:#a6e22e">err</span>
+    }
+    <span style="color:#66d9ef">defer</span> <span style="color:#a6e22e">rows</span>.<span style="color:#a6e22e">Close</span>() <span style="color:#75715e">// 注意这里，一定要关闭
+</span><span style="color:#75715e"></span>    <span style="color:#a6e22e">user</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">User</span>{}
+    <span style="color:#66d9ef">for</span> <span style="color:#a6e22e">rows</span>.<span style="color:#a6e22e">Next</span>() {
+        <span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">rows</span>.<span style="color:#a6e22e">Scan</span>(<span style="color:#f92672">&amp;</span><span style="color:#a6e22e">user</span>.<span style="color:#a6e22e">ID</span>, <span style="color:#f92672">&amp;</span><span style="color:#a6e22e">user</span>.<span style="color:#a6e22e">Name</span>); <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+            <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">nil</span>, <span style="color:#a6e22e">err</span>
+        }
+        <span style="color:#66d9ef">break</span>
+    }
+    <span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">rows</span>.<span style="color:#a6e22e">Err</span>(); <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+        <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">nil</span>, <span style="color:#a6e22e">err</span>
+    }
+    <span style="color:#66d9ef">return</span> <span style="color:#f92672">&amp;</span><span style="color:#a6e22e">user</span>, <span style="color:#66d9ef">nil</span>
+}
+</code></pre></div><p>连接池对程序员是透明的，这里并不需要显式的从连接池里获取连接，而是通过连接池来执行查询语句<br>
+<code>Query</code>方法返回一个<code>*Rows</code>指针，代表结果集</p>
+<p>要注意的是<code>defer rows.Close()</code>如果忘了关闭，可能会造成连接泄露</p>
+<p><code>rows.Scan</code>方法有个方便的特性，如果id在数据库里是<code>varchar(50)</code>类型，我们传的参数&amp;user.ID指向<code>int64</code>，<br>
+这依然可以工作，<code>Scan</code>方法会执行自动转换</p>
+<h2 id="-sqldbqueryrow">单行查询: (*sql.DB).QueryRow</h2>
+<p>上面那个查询的例子，最多只有一个结果，使用单行查询更简单</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#75715e">// QueryUser 单行查询
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">QueryUser</span>(<span style="color:#a6e22e">id</span> <span style="color:#66d9ef">int64</span>) (<span style="color:#f92672">*</span><span style="color:#a6e22e">User</span>, <span style="color:#66d9ef">error</span>) {
+    <span style="color:#a6e22e">row</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">pool</span>.<span style="color:#a6e22e">QueryRow</span>(<span style="color:#e6db74">&#34;select `id`, `name` from `user` where `id` = ?&#34;</span>, <span style="color:#a6e22e">id</span>)
+    <span style="color:#a6e22e">user</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">User</span>{}
+    <span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">row</span>.<span style="color:#a6e22e">Scan</span>(<span style="color:#f92672">&amp;</span><span style="color:#a6e22e">user</span>.<span style="color:#a6e22e">ID</span>, <span style="color:#f92672">&amp;</span><span style="color:#a6e22e">user</span>.<span style="color:#a6e22e">Name</span>); <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+        <span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">==</span> <span style="color:#a6e22e">sql</span>.<span style="color:#a6e22e">ErrNoRows</span> {
+            <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">nil</span>, <span style="color:#66d9ef">nil</span>  <span style="color:#75715e">// 返回 (*User)(nil) 表示查询结果不错在
+</span><span style="color:#75715e"></span>        }
+        <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">nil</span>, <span style="color:#a6e22e">err</span>
+    }
+    <span style="color:#66d9ef">return</span> <span style="color:#f92672">&amp;</span><span style="color:#a6e22e">user</span>, <span style="color:#66d9ef">nil</span>
+}
+</code></pre></div><h2 id="-sqldbexec">插入、更新、删除: <code>(*sql.DB).Exec</code></h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#75715e">// InsertUser 插入用户
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">InsertUser</span>(<span style="color:#a6e22e">name</span> <span style="color:#66d9ef">string</span>) (<span style="color:#66d9ef">int64</span>, <span style="color:#66d9ef">error</span>) {
+    <span style="color:#a6e22e">res</span>, <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">pool</span>.<span style="color:#a6e22e">Exec</span>(<span style="color:#e6db74">&#34;insert into `user` (`name`) values (?)&#34;</span>, <span style="color:#a6e22e">name</span>)
+    <span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>, <span style="color:#a6e22e">err</span>
+    }
+    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">res</span>.<span style="color:#a6e22e">LastInsertId</span>()
+}
+</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#75715e">// UpdateUser 更新用户
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">UpdateUser</span>(<span style="color:#a6e22e">id</span> <span style="color:#66d9ef">int64</span>, <span style="color:#a6e22e">name</span> <span style="color:#66d9ef">string</span>) <span style="color:#66d9ef">error</span> {
+    <span style="color:#a6e22e">_</span>, <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">pool</span>.<span style="color:#a6e22e">Exec</span>(<span style="color:#e6db74">&#34;update `user` set `name` = ? where `id` = ?&#34;</span>, <span style="color:#a6e22e">name</span>, <span style="color:#a6e22e">id</span>)
+    <span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+        <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">err</span>
+    }
+    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">nil</span>
+}
+</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#75715e">// DeleteUser 删除用户
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">DeleteUser</span>(<span style="color:#a6e22e">id</span> <span style="color:#66d9ef">int64</span>) <span style="color:#66d9ef">error</span> {
+    <span style="color:#a6e22e">_</span>, <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">pool</span>.<span style="color:#a6e22e">Exec</span>(<span style="color:#e6db74">&#34;delete from `user` where `id` = ?&#34;</span>, <span style="color:#a6e22e">id</span>)
+    <span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+        <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">err</span>
+    }
+    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">nil</span>
+}
+</code></pre></div><h2 id="sqldbbegin-sqldbcommit-sqldbrollback">事务：<code>(*sql.DB).Begin, (*sql.DB).Commit, (*sql.DB).Rollback</code></h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#75715e">// UpdateFooBar 更新
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">UpdateFooBar</span>(<span style="color:#a6e22e">id</span> <span style="color:#66d9ef">int64</span>, <span style="color:#a6e22e">x</span>, <span style="color:#a6e22e">y</span> <span style="color:#66d9ef">string</span>) (<span style="color:#a6e22e">err</span> <span style="color:#66d9ef">error</span>) {
+    <span style="color:#a6e22e">tx</span>, <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">pool</span>.<span style="color:#a6e22e">Begin</span>()
+    <span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+        <span style="color:#66d9ef">return</span>
+    }
+    <span style="color:#66d9ef">defer</span> <span style="color:#66d9ef">func</span>() {
+        <span style="color:#66d9ef">switch</span> {
+        <span style="color:#66d9ef">case</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span>:
+            <span style="color:#a6e22e">_</span> = <span style="color:#a6e22e">tx</span>.<span style="color:#a6e22e">Rollback</span>() <span style="color:#75715e">// ignore error
+</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">default</span>:
+            <span style="color:#a6e22e">err</span> = <span style="color:#a6e22e">tx</span>.<span style="color:#a6e22e">Commit</span>() <span style="color:#75715e">// modify named return value
+</span><span style="color:#75715e"></span>        }
+    }()
+    <span style="color:#a6e22e">_</span>, <span style="color:#a6e22e">err</span> = <span style="color:#a6e22e">tx</span>.<span style="color:#a6e22e">Exec</span>(<span style="color:#e6db74">&#34;update `foo` set `x` = ? where `id` = ?&#34;</span>, <span style="color:#a6e22e">x</span>, <span style="color:#a6e22e">id</span>)
+    <span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+        <span style="color:#66d9ef">return</span>
+    }
+    <span style="color:#a6e22e">_</span>, <span style="color:#a6e22e">err</span> = <span style="color:#a6e22e">tx</span>.<span style="color:#a6e22e">Exec</span>(<span style="color:#e6db74">&#34;update `bar` set `y` = ? where `id` = ?&#34;</span>, <span style="color:#a6e22e">y</span>, <span style="color:#a6e22e">id</span>)
+    <span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+        <span style="color:#66d9ef">return</span>
+    }
+    <span style="color:#66d9ef">return</span>
+}
+</code></pre></div><p>事务保证所有操作都在同一个连接上执行</p>
+<h2 id="heading">错误处理</h2>
+<h3 id="-rowserr">迭代结果集错误: <code>(*Rows).Err</code></h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">for</span> <span style="color:#a6e22e">rows</span>.<span style="color:#a6e22e">Next</span>() {
+    <span style="color:#75715e">// ...
+</span><span style="color:#75715e"></span>}
+<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> = <span style="color:#a6e22e">rows</span>.<span style="color:#a6e22e">Err</span>(); <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+    <span style="color:#75715e">// 处理错误
+</span><span style="color:#75715e"></span>}
+</code></pre></div><h3 id="-sqlerrnorows">单行查询错误: <code>sql.ErrNoRows</code></h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">var</span> <span style="color:#a6e22e">name</span> <span style="color:#66d9ef">string</span>
+<span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">db</span>.<span style="color:#a6e22e">QueryRow</span>(<span style="color:#e6db74">&#34;select `name` from `user` where `id` = ?&#34;</span>, <span style="color:#ae81ff">1</span>).<span style="color:#a6e22e">Scan</span>(<span style="color:#f92672">&amp;</span><span style="color:#a6e22e">name</span>)
+<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+    <span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">==</span> <span style="color:#a6e22e">sql</span>.<span style="color:#a6e22e">ErrNoRows</span> { <span style="color:#75715e">// 没有查询到结果
+</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">return</span> <span style="color:#e6db74">&#34;&#34;</span>, <span style="color:#66d9ef">nil</span>
+    }
+    <span style="color:#66d9ef">return</span> <span style="color:#e6db74">&#34;&#34;</span>, <span style="color:#a6e22e">err</span>
+}
+<span style="color:#66d9ef">return</span> <span style="color:#a6e22e">name</span>, <span style="color:#66d9ef">nil</span>
+</code></pre></div><p><strong>注意: 只有<code>QueryRow</code>方法才会返回<code>sql.ErrNoRows</code>错误，<code>Query</code>方法不会返回这个错误</strong></p>
+<h3 id="heading1">通过错误码识别错误</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span>, <span style="color:#a6e22e">ok</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">err</span>.(<span style="color:#f92672">*</span><span style="color:#a6e22e">mysql</span>.<span style="color:#a6e22e">MySQLError</span>); <span style="color:#a6e22e">ok</span> {
+    <span style="color:#66d9ef">switch</span> <span style="color:#a6e22e">err</span>.<span style="color:#a6e22e">Number</span> {
+    <span style="color:#66d9ef">case</span> <span style="color:#a6e22e">mysqlerr</span>.<span style="color:#a6e22e">ER_ACCESS_DENIED_ERROR</span>:
+    <span style="color:#75715e">// 权限错误
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">default</span>:
+    <span style="color:#75715e">// 其他错误
+</span><span style="color:#75715e"></span>    }
+}
+</code></pre></div><p>mysql的错误码列表在下面的包中维护:</p>
+<blockquote>
+<p>github.com/VividCortex/mysqlerr</p>
+</blockquote>
+<h2 id="null-ifnull">null字段: <code>ifnull</code></h2>
+<p>在设计数据库表时尽量避免<code>null</code>字段，因为go的一些值类型无法表达<code>null</code>，比如<code>string</code>, <code>int</code> 等</p>
+<p>如果无法避免<code>null</code>字段，则使用<code>ifnull</code>函数设置默认值，例如：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#66d9ef">select</span> <span style="color:#f92672">`</span>id<span style="color:#f92672">`</span>, ifnull(<span style="color:#f92672">`</span>name<span style="color:#f92672">`</span>, <span style="color:#e6db74">&#39;</span><span style="color:#e6db74">&#39;</span>) <span style="color:#66d9ef">as</span> <span style="color:#f92672">`</span>name<span style="color:#f92672">`</span> <span style="color:#66d9ef">from</span> <span style="color:#f92672">`</span><span style="color:#66d9ef">user</span><span style="color:#f92672">`</span> <span style="color:#66d9ef">where</span> <span style="color:#f92672">`</span>id<span style="color:#f92672">`</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">22</span>
+</code></pre></div>
+</article>
+
+
+
+</html>

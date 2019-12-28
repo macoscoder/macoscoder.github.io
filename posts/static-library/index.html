@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<title>静态库 | 我的博客</title>
+<meta charset="utf-8">
+<meta name="generator" content="Hugo 0.60.1" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="canonical" href="http://flyblog.tech/posts/static-library/">
+<link rel="alternate" type="application/rss+xml" href="" title="我的博客">
+<link rel="stylesheet" href="http://flyblog.tech/css/theme.css">
+<link rel="stylesheet" href="http://flyblog.tech/css/classes.css">
+
+<header class="dark">
+  <h2><a href="http://flyblog.tech/">我的博客</a></h2>
+  <nav>
+    
+  </nav>
+</header>
+
+<article>
+  <header>
+    <h1>静态库</h1>
+    <p><time datetime="2011-12-23T13:05:31Z">December 23, 2011</time></p>
+  </header>
+  <h1 id="heading">静态库</h1>
+<h2 id="heading1">编译生成对象文件</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ ls
+a.c  b.c  c.c  d.c
+$ cc -c *.c
+$ ls *.o
+a.o  b.o  c.o  d.o
+</code></pre></div><h2 id="heading2">创建静态库</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ ar -r libdemo.a *.o
+$ ls libdemo.a
+libdemo.a
+</code></pre></div><h2 id="heading3">查看静态库里的对象模块</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ ar -t libdemo.a
+a.o
+b.o
+c.o
+d.o
+</code></pre></div><h2 id="heading4">使用静态库</h2>
+<h3 id="1">方法1</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ rm *.o
+$ echo <span style="color:#e6db74">&#39;int main() {}&#39;</span> &gt; main.c
+$ ls
+a.c  b.c  c.c  d.c  libdemo.a  main.c
+$ cc -c main.c
+$ cc -o main main.o libdemo.a
+$ ls main
+main
+</code></pre></div><h3 id="2">方法2</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ rm main
+$ cc -o main main.o -L. -ldemo
+$ ls main
+main
+</code></pre></div><h2 id="ar">ar命令</h2>
+<h3 id="synopsis">SYNOPSIS</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">ar options archive object-file...
+</code></pre></div><h3 id="options">OPTIONS</h3>
+<h4 id="operation-code">operation code</h4>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">d Delete modules from the archive.
+r Insert an object file into the archive, replacing any previous object file of the same name.
+t Display a table listing the contents of archive.
+x Extract members <span style="color:#f92672">(</span>named member<span style="color:#f92672">)</span> from the archive.
+</code></pre></div><h4 id="modifiers">modifiers</h4>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">v This modifier requests the verbose version of an operation.
+</code></pre></div>
+</article>
+
+
+
+</html>

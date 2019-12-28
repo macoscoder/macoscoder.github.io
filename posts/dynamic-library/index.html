@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<title>动态库 | 我的博客</title>
+<meta charset="utf-8">
+<meta name="generator" content="Hugo 0.60.1" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="canonical" href="http://flyblog.tech/posts/dynamic-library/">
+<link rel="alternate" type="application/rss+xml" href="" title="我的博客">
+<link rel="stylesheet" href="http://flyblog.tech/css/theme.css">
+<link rel="stylesheet" href="http://flyblog.tech/css/classes.css">
+
+<header class="dark">
+  <h2><a href="http://flyblog.tech/">我的博客</a></h2>
+  <nav>
+    
+  </nav>
+</header>
+
+<article>
+  <header>
+    <h1>动态库</h1>
+    <p><time datetime="2011-12-23T13:05:31Z">December 23, 2011</time></p>
+  </header>
+  <h1 id="heading">动态库</h1>
+<h2 id="heading1">创建动态库</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ ls
+a.c b.c main.c
+$ gcc -c -fPIC a.c b.c
+$ gcc -shared -o libfoo.so.1.0.0 a.o b.o
+</code></pre></div><h2 id="heading2">使用动态库</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ gcc -c -fPIC main.c
+$ gcc -o main main.o libfoo.so.1.0.0
+$ ls main
+main
+</code></pre></div><h2 id="heading3">运行</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ LD_LIBRARY_PATH<span style="color:#f92672">=</span>. ./main
+foo
+</code></pre></div><h2 id="soname">soname</h2>
+<p>创建动态库时可以指定别名，称作<code>soname</code></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ gcc -shared -Wl,-soname,libfoo.so.1 -o libfoo.so.1.0.0 a.o b.o
+$ ls libfoo.so
+libfoo.so
+</code></pre></div><p>上述方法创建的动态库的<code>soname</code>为<code>libfoo.so.1</code></p>
+<p>查看动态库的<code>soname</code></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ readelf -d libfoo.so.1.0.0 | grep SONAME
+0x000000000000000e <span style="color:#f92672">(</span>SONAME<span style="color:#f92672">)</span>             Library soname: <span style="color:#f92672">[</span>libfoo.so.1<span style="color:#f92672">]</span>
+</code></pre></div><p>创建可执行程序</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ gcc -o main main.o libfoo.so.1.0.0
+$ LD_LIBRARY_PATH<span style="color:#f92672">=</span>. ./main
+./main: error <span style="color:#66d9ef">while</span> loading shared libraries: libfoo.so.1: cannot open shared object file: No such file or directory
+</code></pre></div><p>报错了，找不到<code>libfoo.so.1</code></p>
+<p>这也就是说，如果创建动态库时指定了<code>soname</code>，创建可执行程序时，可执行程序里存的是<code>soname</code><br>
+如果创建动态库时没有指定<code>soname</code>，创建可执行程序时，可执行程序里存的是动态库的文件名，称为<code>realname</code></p>
+<p><code>soname</code>提供了一种间接性，当动态库版本更新时，只要<code>soname</code>不变，那么已有的可执行程序就可以链接到新版本的动态库</p>
+<p>创建符号链接</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ ln -s libfoo.so.1.0.0 libfoo.so.1
+$ LD_LIBRARY_PATH<span style="color:#f92672">=</span>. ./main
+$ ./main
+foo
+</code></pre></div><h2 id="linker-name">linker name</h2>
+<p>通常会再创建一个符号链接指向<code>soname</code>，称为<code>linker name</code>，目的是在链接程序时不需要指定版本号</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ ln -s libfoo.so.1 libfoo.so
+$ gcc -o main main.o -L. -lfoo
+$ LD_LIBRARY_PATH<span style="color:#f92672">=</span>. ./main
+foo
+</code></pre></div><h2 id="heading4">动态库命名约定</h2>
+<ul>
+<li>realname - libname.so.major-id.minor-id</li>
+<li>soname - libname.so.major-id</li>
+<li>linker name - libname.so</li>
+</ul>
+<p>其中<code>major-d</code>为一个数字，<code>minor-id</code>一般为用点分开的两个数字，例如:</p>
+<ul>
+<li>realname - <code>libname.so.1.0.0</code></li>
+<li>soname - <code>libname.so.1</code></li>
+<li>linker name - <code>libname.so</code></li>
+</ul>
+<p>当动态库minor-id变化时，一般是需要更新<code>libname.so.major-id</code>这个符号链接，使其指向最新的版本</p>
+<h2 id="heading5">常用命令</h2>
+<ul>
+<li>ldd - List dynamic dependencies</li>
+<li>objdump - 反汇编</li>
+<li>readelf - Displays information about ELF files.</li>
+<li>nm - List symbols from object files</li>
+</ul>
+<h2 id="heading6">标准库目录</h2>
+<ul>
+<li>/lib 系统启动必须的标准库安装目录</li>
+<li>/usr/lib 大多数标准款安装目录</li>
+</ul>
+<p>除此之外还有配置文件<code>/etc/ld.so.conf</code>指定的目录，比如:</p>
+<ul>
+<li>/usr/local/lib 非标准库安装目录</li>
+<li>/lib/x86_64-linux-gnu 64位库</li>
+<li>/usr/lib/x86_64-linux-gnu 64位库</li>
+</ul>
+<h2 id="dynamic-linkerloader">dynamic linker/loader</h2>
+<ul>
+<li>ld.so 早期<code>a.out</code>格式的动态链接器</li>
+<li>ld-linux.so.1 <code>libc5</code>的动态链接器</li>
+<li>ld-linux.so.2 <code>glibc2</code>的动态链接器</li>
+</ul>
+<h2 id="ldconfig-">ldconfig 命令</h2>
+<p>动态链接器搜索动态库的顺序是</p>
+<ul>
+<li>LD_LIBRARY_PATH 环境指定的目录</li>
+<li>DT_RUNPATH 属性指定的目录，通过-rpath链接选项设置</li>
+<li>/etc/ld.so.cache 缓存文件指定的库路径</li>
+<li>/lib 和 /usr/lib 目录</li>
+</ul>
+<p><code>ldconfig</code>命令的其中一个功能是维护<code>/etc/ld.so.cache</code>文件，另一个功能是更新<code>soname</code>符号链接</p>
+<p><code>ldconfig -p</code>选项列出<code>/etc/ld.so.cache</code>文件中缓存的所有动态库路径</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ /sbin/ldconfig -p | wc -l
+<span style="color:#ae81ff">1043</span>
+</code></pre></div><p><code>ldconfig -n</code>选项创建指定目录的<code>soname</code></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ ls libdemo*
+libdemo.so.1.0.0
+$ /sbin/ldconfig -n .
+$ ls libdemo*
+libdemo.so.1  libdemo.so.1.0.0
+</code></pre></div><p>一般当有新库被安装到标准目录，或旧库被删除，或<code>/etc/ld.so.conf</code>文件更新，都需要运行<code>ldconfig</code></p>
+<h2 id="rpath-linker-option">-rpath linker option</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ gcc -Wl,-rpath,<span style="color:#e6db74">&#39;$ORIGIN&#39;</span> -o main main.o libdemo.so
+$ ./main
+foo
+bar
+</code></pre></div><p>查看<code>main</code>的<code>DT_RUNPATH</code>属性</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ readelf -d main | grep PATH
+0x000000000000001d <span style="color:#f92672">(</span>RUNPATH<span style="color:#f92672">)</span>            Library runpath: <span style="color:#f92672">[</span>$ORIGIN<span style="color:#f92672">]</span>
+</code></pre></div><p><code>$ORIGIN</code> 指定运行时搜索当前目录，也就是可执行程序<code>main</code>所在的目录</p>
+<p>这样做的好处是开箱即用，不需要使用<code>LD_LIBRARY_PATH</code>环境变量，也不需要安装动态库到标准目录</p>
+<h2 id="bsymbolic-linker-option">–Bsymbolic linker option</h2>
+<p>默认情况下，主程序通过定义与动态库同名的的全局变量或全局函数，可以实现注入功能<br>
+也就是动态库中本来调用自己定义的全局函数，现在却调用了主程序的版本</p>
+<p>要避免这种情况，可以用链接器选项<code>–Bsymbolic</code>来创建动态库，让动态库调用自己定义的版本</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">gcc -shared -Wl,-Bsymbolic -Wl,-soname,libdemo.so.1 -o libdemo.so.1.0.0 foo.o bar.o
+</code></pre></div><h2 id="heading7">静态链接</h2>
+<p>在链接程序时通过-L和-l指定库，如果同时存在动态库和静态库，那么默认使用动态库</p>
+<p>下列方法可以显式链接静态版本</p>
+<ul>
+<li>-static 选项</li>
+<li>命令行显示指定静态库全路径</li>
+</ul>
+<p>一个简单的<code>hello world</code>程序，链接静态库和动态库的区别</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">// hello.c
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;stdio.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>() {
+    printf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">hello world</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+}
+</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ cc -o hello.shared hello.c
+$ cc -static -o hello.static hello.c
+$ ll -h hello.shared hello.static
+-rwxr-xr-x <span style="color:#ae81ff">1</span> fly fly 8.5K Feb <span style="color:#ae81ff">26</span> 22:31 hello.shared
+-rwxr-xr-x <span style="color:#ae81ff">1</span> fly fly 792K Feb <span style="color:#ae81ff">26</span> 22:31 hello.static
+$ ldd hello.shared
+    linux-vdso.so.1 <span style="color:#f92672">(</span>0x00007ffe973c6000<span style="color:#f92672">)</span>
+    libc.so.6 <span style="color:#f92672">=</span>&gt; /lib/x86_64-linux-gnu/libc.so.6 <span style="color:#f92672">(</span>0x00007fa4c4a78000<span style="color:#f92672">)</span>
+    /lib64/ld-linux-x86-64.so.2 <span style="color:#f92672">(</span>0x00007fa4c5019000<span style="color:#f92672">)</span>
+$ ldd hello.static
+    not a dynamic executable
+</code></pre></div>
+</article>
+
+
+
+</html>

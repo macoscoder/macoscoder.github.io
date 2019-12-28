@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<title>文件监控 | 我的博客</title>
+<meta charset="utf-8">
+<meta name="generator" content="Hugo 0.60.1" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="canonical" href="http://flyblog.tech/posts/file-monitor/">
+<link rel="alternate" type="application/rss+xml" href="" title="我的博客">
+<link rel="stylesheet" href="http://flyblog.tech/css/theme.css">
+<link rel="stylesheet" href="http://flyblog.tech/css/classes.css">
+
+<header class="dark">
+  <h2><a href="http://flyblog.tech/">我的博客</a></h2>
+  <nav>
+    
+  </nav>
+</header>
+
+<article>
+  <header>
+    <h1>文件监控</h1>
+    <p><time datetime="2011-12-23T13:05:31Z">December 23, 2011</time></p>
+  </header>
+  <h1 id="heading">文件监控</h1>
+<h2 id="heading1">用例</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ go install demo/fwatch
+$ $GOPATH/bin/fwatch /go/src/demo | xargs -L1 goreturns -l | xargs -L1 goreturns -w &amp;
+<span style="color:#f92672">[</span>1<span style="color:#f92672">]</span> <span style="color:#ae81ff">29568</span> <span style="color:#ae81ff">29569</span> <span style="color:#ae81ff">29570</span>
+</code></pre></div><p>监控/go/src/demo目录及其子目录及未来创建的子目录下的文件修改动作
+如果文件发生修改则对其执行格式化</p>
+<h2 id="heading2">代码</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#f92672">package</span> <span style="color:#a6e22e">main</span>
+
+<span style="color:#f92672">import</span> (
+    <span style="color:#e6db74">&#34;fmt&#34;</span>
+    <span style="color:#e6db74">&#34;log&#34;</span>
+    <span style="color:#e6db74">&#34;os&#34;</span>
+    <span style="color:#e6db74">&#34;path/filepath&#34;</span>
+
+    <span style="color:#e6db74">&#34;github.com/fsnotify/fsnotify&#34;</span>
+)
+
+<span style="color:#66d9ef">func</span> <span style="color:#a6e22e">main</span>() {
+    <span style="color:#66d9ef">if</span> len(<span style="color:#a6e22e">os</span>.<span style="color:#a6e22e">Args</span>) <span style="color:#f92672">!=</span> <span style="color:#ae81ff">2</span> {
+        <span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Fprintf</span>(<span style="color:#a6e22e">os</span>.<span style="color:#a6e22e">Stderr</span>, <span style="color:#e6db74">&#34;Usage: %s pathname\n&#34;</span>, <span style="color:#a6e22e">os</span>.<span style="color:#a6e22e">Args</span>[<span style="color:#ae81ff">0</span>])
+        <span style="color:#a6e22e">os</span>.<span style="color:#a6e22e">Exit</span>(<span style="color:#ae81ff">1</span>)
+    }
+    <span style="color:#75715e">// 创建fsnotify.Watcher
+</span><span style="color:#75715e"></span>    <span style="color:#a6e22e">watcher</span>, <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">fsnotify</span>.<span style="color:#a6e22e">NewWatcher</span>()
+    <span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+        <span style="color:#a6e22e">log</span>.<span style="color:#a6e22e">Fatal</span>(<span style="color:#a6e22e">err</span>)
+    }
+    <span style="color:#66d9ef">defer</span> <span style="color:#a6e22e">watcher</span>.<span style="color:#a6e22e">Close</span>()
+    <span style="color:#75715e">// 遍历目录
+</span><span style="color:#75715e"></span>    <span style="color:#a6e22e">err</span> = <span style="color:#a6e22e">walk</span>(<span style="color:#a6e22e">os</span>.<span style="color:#a6e22e">Args</span>[<span style="color:#ae81ff">1</span>], <span style="color:#66d9ef">func</span>(<span style="color:#a6e22e">path</span> <span style="color:#66d9ef">string</span>) <span style="color:#66d9ef">error</span> {
+        <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">watcher</span>.<span style="color:#a6e22e">Add</span>(<span style="color:#a6e22e">path</span>)
+    })
+    <span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+        <span style="color:#a6e22e">log</span>.<span style="color:#a6e22e">Fatal</span>(<span style="color:#a6e22e">err</span>)
+    }
+    <span style="color:#75715e">// 监听事件
+</span><span style="color:#75715e"></span>    <span style="color:#a6e22e">err</span> = <span style="color:#a6e22e">listen</span>(<span style="color:#a6e22e">watcher</span>)
+    <span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+        <span style="color:#a6e22e">log</span>.<span style="color:#a6e22e">Fatal</span>(<span style="color:#a6e22e">err</span>)
+    }
+}
+
+<span style="color:#66d9ef">func</span> <span style="color:#a6e22e">walk</span>(<span style="color:#a6e22e">path</span> <span style="color:#66d9ef">string</span>, <span style="color:#a6e22e">visit</span> <span style="color:#66d9ef">func</span>(<span style="color:#a6e22e">path</span> <span style="color:#66d9ef">string</span>) <span style="color:#66d9ef">error</span>) <span style="color:#66d9ef">error</span> {
+    <span style="color:#75715e">// 转换成绝对路径
+</span><span style="color:#75715e"></span>    <span style="color:#a6e22e">abspath</span>, <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">filepath</span>.<span style="color:#a6e22e">Abs</span>(<span style="color:#a6e22e">path</span>)
+    <span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+        <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">err</span>
+    }
+    <span style="color:#75715e">// 遍历目录
+</span><span style="color:#75715e"></span>    <span style="color:#a6e22e">err</span> = <span style="color:#a6e22e">filepath</span>.<span style="color:#a6e22e">Walk</span>(<span style="color:#a6e22e">abspath</span>, <span style="color:#66d9ef">func</span>(<span style="color:#a6e22e">path</span> <span style="color:#66d9ef">string</span>, <span style="color:#a6e22e">info</span> <span style="color:#a6e22e">os</span>.<span style="color:#a6e22e">FileInfo</span>, <span style="color:#a6e22e">err</span> <span style="color:#66d9ef">error</span>) <span style="color:#66d9ef">error</span> {
+        <span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+            <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">nil</span>
+        }
+        <span style="color:#66d9ef">if</span> <span style="color:#a6e22e">info</span>.<span style="color:#a6e22e">IsDir</span>() <span style="color:#f92672">||</span> <span style="color:#a6e22e">path</span> <span style="color:#f92672">==</span> <span style="color:#a6e22e">abspath</span> {
+            <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">visit</span>(<span style="color:#a6e22e">path</span>)
+        }
+        <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">nil</span>
+    })
+    <span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+        <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">err</span>
+    }
+    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">nil</span>
+}
+
+<span style="color:#66d9ef">func</span> <span style="color:#a6e22e">listen</span>(<span style="color:#a6e22e">watcher</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">fsnotify</span>.<span style="color:#a6e22e">Watcher</span>) <span style="color:#66d9ef">error</span> {
+    <span style="color:#66d9ef">for</span> {
+        <span style="color:#66d9ef">select</span> {
+        <span style="color:#66d9ef">case</span> <span style="color:#a6e22e">event</span>, <span style="color:#a6e22e">ok</span> <span style="color:#f92672">:=</span> <span style="color:#f92672">&lt;-</span><span style="color:#a6e22e">watcher</span>.<span style="color:#a6e22e">Events</span>:
+            <span style="color:#66d9ef">if</span> !<span style="color:#a6e22e">ok</span> {
+                <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">nil</span>
+            }
+            <span style="color:#66d9ef">switch</span> <span style="color:#a6e22e">event</span>.<span style="color:#a6e22e">Op</span> {
+            <span style="color:#66d9ef">case</span> <span style="color:#a6e22e">fsnotify</span>.<span style="color:#a6e22e">Create</span>:
+                <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">addWatch</span>(<span style="color:#a6e22e">watcher</span>, <span style="color:#a6e22e">event</span>.<span style="color:#a6e22e">Name</span>)
+                <span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+                    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">err</span>
+                }
+            <span style="color:#66d9ef">case</span> <span style="color:#a6e22e">fsnotify</span>.<span style="color:#a6e22e">Write</span>:
+                <span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Println</span>(<span style="color:#a6e22e">event</span>.<span style="color:#a6e22e">Name</span>)
+            }
+        <span style="color:#66d9ef">case</span> <span style="color:#a6e22e">err</span>, <span style="color:#a6e22e">ok</span> <span style="color:#f92672">:=</span> <span style="color:#f92672">&lt;-</span><span style="color:#a6e22e">watcher</span>.<span style="color:#a6e22e">Errors</span>:
+            <span style="color:#66d9ef">if</span> !<span style="color:#a6e22e">ok</span> {
+                <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">nil</span>
+            }
+            <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">err</span>
+        }
+    }
+}
+
+<span style="color:#66d9ef">func</span> <span style="color:#a6e22e">addWatch</span>(<span style="color:#a6e22e">watcher</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">fsnotify</span>.<span style="color:#a6e22e">Watcher</span>, <span style="color:#a6e22e">pathname</span> <span style="color:#66d9ef">string</span>) <span style="color:#66d9ef">error</span> {
+    <span style="color:#a6e22e">fi</span>, <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">os</span>.<span style="color:#a6e22e">Stat</span>(<span style="color:#a6e22e">pathname</span>)
+    <span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+        <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">err</span>
+    }
+    <span style="color:#66d9ef">if</span> <span style="color:#a6e22e">fi</span>.<span style="color:#a6e22e">IsDir</span>() {
+        <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">watcher</span>.<span style="color:#a6e22e">Add</span>(<span style="color:#a6e22e">pathname</span>)
+    }
+    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">nil</span>
+}
+</code></pre></div>
+</article>
+
+
+
+</html>

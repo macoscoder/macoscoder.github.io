@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<title>封装net.Server | 我的博客</title>
+<meta charset="utf-8">
+<meta name="generator" content="Hugo 0.60.1" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="canonical" href="http://flyblog.tech/posts/golang-rpc/">
+<link rel="alternate" type="application/rss+xml" href="" title="我的博客">
+<link rel="stylesheet" href="http://flyblog.tech/css/theme.css">
+<link rel="stylesheet" href="http://flyblog.tech/css/classes.css">
+
+<header class="dark">
+  <h2><a href="http://flyblog.tech/">我的博客</a></h2>
+  <nav>
+    
+  </nav>
+</header>
+
+<article>
+  <header>
+    <h1>封装net.Server</h1>
+    <p><time datetime="2011-12-23T13:05:31Z">December 23, 2011</time></p>
+  </header>
+  <h1 id="netserver">封装net.Server</h1>
+<h2 id="demoserver">定义demo/server包</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#75715e">// Package server socket级别的server
+</span><span style="color:#75715e"></span><span style="color:#75715e">//
+</span><span style="color:#75715e"></span><span style="color:#75715e">// 使用方法：
+</span><span style="color:#75715e"></span><span style="color:#75715e">// srv := New(HandlerFunc(handleConn))
+</span><span style="color:#75715e"></span><span style="color:#75715e">// err := srv.ListenAndServe(&#34;tcp&#34;, &#34;:8888&#34;)
+</span><span style="color:#75715e"></span><span style="color:#75715e">// if err != nil {
+</span><span style="color:#75715e"></span><span style="color:#75715e">//     // 处理错误
+</span><span style="color:#75715e"></span><span style="color:#75715e">// }
+</span><span style="color:#75715e"></span><span style="color:#75715e">//
+</span><span style="color:#75715e"></span><span style="color:#75715e">// func handleConn(rw io.ReadWriter) {
+</span><span style="color:#75715e"></span><span style="color:#75715e">//     // 执行io操作
+</span><span style="color:#75715e"></span><span style="color:#75715e">// }
+</span><span style="color:#75715e"></span><span style="color:#f92672">package</span> <span style="color:#a6e22e">server</span>
+
+<span style="color:#f92672">import</span> (
+    <span style="color:#e6db74">&#34;io&#34;</span>
+    <span style="color:#e6db74">&#34;log&#34;</span>
+    <span style="color:#e6db74">&#34;net&#34;</span>
+)
+
+<span style="color:#75715e">// Handler 连接处理器
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">Handler</span> <span style="color:#66d9ef">interface</span> {
+    <span style="color:#a6e22e">ServeConn</span>(<span style="color:#a6e22e">rw</span> <span style="color:#a6e22e">io</span>.<span style="color:#a6e22e">ReadWriter</span>)
+}
+
+<span style="color:#75715e">// HandlerFunc 连接处理函数
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">HandlerFunc</span> <span style="color:#66d9ef">func</span>(<span style="color:#a6e22e">rw</span> <span style="color:#a6e22e">io</span>.<span style="color:#a6e22e">ReadWriter</span>)
+
+<span style="color:#75715e">// ServeConn 实现Handler接口
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">func</span> (<span style="color:#a6e22e">f</span> <span style="color:#a6e22e">HandlerFunc</span>) <span style="color:#a6e22e">ServeConn</span>(<span style="color:#a6e22e">rw</span> <span style="color:#a6e22e">io</span>.<span style="color:#a6e22e">ReadWriter</span>) {
+    <span style="color:#a6e22e">f</span>(<span style="color:#a6e22e">rw</span>)
+}
+
+<span style="color:#75715e">// Server 服务器
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">Server</span> <span style="color:#66d9ef">struct</span> {
+    <span style="color:#a6e22e">Handler</span> <span style="color:#a6e22e">Handler</span>
+}
+
+<span style="color:#75715e">// ListenAndServe 监听并服务
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">func</span> (<span style="color:#a6e22e">s</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">Server</span>) <span style="color:#a6e22e">ListenAndServe</span>(<span style="color:#a6e22e">network</span>, <span style="color:#a6e22e">address</span> <span style="color:#66d9ef">string</span>) <span style="color:#66d9ef">error</span> {
+    <span style="color:#a6e22e">ln</span>, <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">net</span>.<span style="color:#a6e22e">Listen</span>(<span style="color:#a6e22e">network</span>, <span style="color:#a6e22e">address</span>)
+    <span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+        <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">err</span>
+    }
+    <span style="color:#66d9ef">defer</span> <span style="color:#a6e22e">ln</span>.<span style="color:#a6e22e">Close</span>()
+    <span style="color:#66d9ef">for</span> {
+        <span style="color:#a6e22e">conn</span>, <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">ln</span>.<span style="color:#a6e22e">Accept</span>()
+        <span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+            <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">err</span>
+        }
+        <span style="color:#66d9ef">go</span> <span style="color:#a6e22e">s</span>.<span style="color:#a6e22e">serve</span>(<span style="color:#a6e22e">conn</span>)
+    }
+}
+
+<span style="color:#66d9ef">func</span> (<span style="color:#a6e22e">s</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">Server</span>) <span style="color:#a6e22e">serve</span>(<span style="color:#a6e22e">conn</span> <span style="color:#a6e22e">net</span>.<span style="color:#a6e22e">Conn</span>) {
+    <span style="color:#66d9ef">defer</span> <span style="color:#66d9ef">func</span>() {
+        <span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> recover(); <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+            <span style="color:#a6e22e">log</span>.<span style="color:#a6e22e">Print</span>(<span style="color:#e6db74">&#34;panic: &#34;</span>, <span style="color:#a6e22e">err</span>)
+        }
+        <span style="color:#a6e22e">conn</span>.<span style="color:#a6e22e">Close</span>()
+    }()
+    <span style="color:#a6e22e">s</span>.<span style="color:#a6e22e">Handler</span>.<span style="color:#a6e22e">ServeConn</span>(<span style="color:#a6e22e">conn</span>)
+}
+
+<span style="color:#75715e">// New 创建服务器
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">New</span>(<span style="color:#a6e22e">h</span> <span style="color:#a6e22e">Handler</span>) <span style="color:#f92672">*</span><span style="color:#a6e22e">Server</span> {
+    <span style="color:#66d9ef">return</span> <span style="color:#f92672">&amp;</span><span style="color:#a6e22e">Server</span>{
+        <span style="color:#a6e22e">Handler</span>: <span style="color:#a6e22e">h</span>,
+    }
+}
+</code></pre></div><h2 id="demorpcserver">定义demo/rpcserver包</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#75715e">// Package rpcserver 简单封装rpc server
+</span><span style="color:#75715e"></span><span style="color:#75715e">//
+</span><span style="color:#75715e"></span><span style="color:#75715e">// 使用方法：
+</span><span style="color:#75715e"></span><span style="color:#75715e">// srv := New()
+</span><span style="color:#75715e"></span><span style="color:#75715e">// srv.Register(&amp;Service1{})
+</span><span style="color:#75715e"></span><span style="color:#75715e">// srv.Register(&amp;Service2{})
+</span><span style="color:#75715e"></span><span style="color:#75715e">// err := srv.ListenAndServe(&#34;tcp&#34;, &#34;:8888&#34;)
+</span><span style="color:#75715e"></span><span style="color:#75715e">// if err != nil {
+</span><span style="color:#75715e"></span><span style="color:#75715e">//     // 处理错误
+</span><span style="color:#75715e"></span><span style="color:#75715e">// }
+</span><span style="color:#75715e"></span><span style="color:#75715e">//
+</span><span style="color:#75715e"></span><span style="color:#75715e">// type Service1 struct {}
+</span><span style="color:#75715e"></span><span style="color:#75715e">// func (*Service1) S1F1(arg *int, reply *int) error {}
+</span><span style="color:#75715e"></span><span style="color:#75715e">// func (*Service1) S1F2(arg *int, reply *int) error {}
+</span><span style="color:#75715e"></span><span style="color:#75715e">//
+</span><span style="color:#75715e"></span><span style="color:#75715e">// type Service2 struct {}
+</span><span style="color:#75715e"></span><span style="color:#75715e">// func (*Service2) S2F1(arg *int, reply *int) error {}
+</span><span style="color:#75715e"></span><span style="color:#75715e">// func (*Service2) S2F2(arg *int, reply *int) error {}
+</span><span style="color:#75715e"></span><span style="color:#f92672">package</span> <span style="color:#a6e22e">rpcserver</span>
+
+<span style="color:#f92672">import</span> (
+    <span style="color:#e6db74">&#34;io&#34;</span>
+    <span style="color:#e6db74">&#34;net/rpc&#34;</span>
+
+    <span style="color:#e6db74">&#34;demo/server&#34;</span>
+)
+
+<span style="color:#66d9ef">type</span> <span style="color:#a6e22e">nopCloser</span> <span style="color:#66d9ef">struct</span> {
+    <span style="color:#a6e22e">io</span>.<span style="color:#a6e22e">ReadWriter</span>
+}
+
+<span style="color:#66d9ef">func</span> (<span style="color:#a6e22e">nopCloser</span>) <span style="color:#a6e22e">Close</span>() <span style="color:#66d9ef">error</span> {
+    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">nil</span>
+}
+
+<span style="color:#75715e">// RPCServer wrap *rpc.Server
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">RPCServer</span> <span style="color:#66d9ef">struct</span> {
+    <span style="color:#a6e22e">rpcServer</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">rpc</span>.<span style="color:#a6e22e">Server</span>
+}
+
+<span style="color:#75715e">// ServeConn 实现server.Handler接口
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">func</span> (<span style="color:#a6e22e">s</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">RPCServer</span>) <span style="color:#a6e22e">ServeConn</span>(<span style="color:#a6e22e">rw</span> <span style="color:#a6e22e">io</span>.<span style="color:#a6e22e">ReadWriter</span>) {
+    <span style="color:#a6e22e">s</span>.<span style="color:#a6e22e">rpcServer</span>.<span style="color:#a6e22e">ServeConn</span>(<span style="color:#a6e22e">nopCloser</span>{<span style="color:#a6e22e">rw</span>})
+}
+
+<span style="color:#75715e">// Register 注册服务
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">func</span> (<span style="color:#a6e22e">s</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">RPCServer</span>) <span style="color:#a6e22e">Register</span>(<span style="color:#a6e22e">rcvr</span> <span style="color:#66d9ef">interface</span>{}) <span style="color:#66d9ef">error</span> {
+    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">s</span>.<span style="color:#a6e22e">rpcServer</span>.<span style="color:#a6e22e">Register</span>(<span style="color:#a6e22e">rcvr</span>)
+}
+
+<span style="color:#75715e">// ListenAndServe 监听并服务
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">func</span> (<span style="color:#a6e22e">s</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">RPCServer</span>) <span style="color:#a6e22e">ListenAndServe</span>(<span style="color:#a6e22e">network</span>, <span style="color:#a6e22e">address</span> <span style="color:#66d9ef">string</span>) <span style="color:#66d9ef">error</span> {
+    <span style="color:#a6e22e">srv</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">server</span>.<span style="color:#a6e22e">New</span>(<span style="color:#a6e22e">s</span>)
+    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">srv</span>.<span style="color:#a6e22e">ListenAndServe</span>(<span style="color:#a6e22e">network</span>, <span style="color:#a6e22e">address</span>)
+}
+
+<span style="color:#75715e">// New 创建rpc server
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">New</span>() <span style="color:#f92672">*</span><span style="color:#a6e22e">RPCServer</span> {
+    <span style="color:#66d9ef">return</span> <span style="color:#f92672">&amp;</span><span style="color:#a6e22e">RPCServer</span>{
+        <span style="color:#a6e22e">rpcServer</span>: <span style="color:#a6e22e">rpc</span>.<span style="color:#a6e22e">NewServer</span>(),
+    }
+}
+</code></pre></div><h2 id="heading">示例</h2>
+<h3 id="democmdrpcsrv">demo/cmd/rpcsrv</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#f92672">package</span> <span style="color:#a6e22e">main</span>
+
+<span style="color:#f92672">import</span> (
+    <span style="color:#e6db74">&#34;fmt&#34;</span>
+    <span style="color:#e6db74">&#34;log&#34;</span>
+
+    <span style="color:#e6db74">&#34;demo/rpcserver&#34;</span>
+)
+
+<span style="color:#75715e">// RPC rpc服务
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">RPC</span> <span style="color:#66d9ef">struct</span> {
+}
+
+<span style="color:#75715e">// Ping ping
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">func</span> (<span style="color:#f92672">*</span><span style="color:#a6e22e">RPC</span>) <span style="color:#a6e22e">Ping</span>(<span style="color:#a6e22e">arg</span> <span style="color:#66d9ef">string</span>, <span style="color:#a6e22e">reply</span> <span style="color:#f92672">*</span><span style="color:#66d9ef">string</span>) <span style="color:#66d9ef">error</span> {
+    <span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Println</span>(<span style="color:#a6e22e">arg</span>)
+    <span style="color:#f92672">*</span><span style="color:#a6e22e">reply</span> = <span style="color:#e6db74">&#34;pong&#34;</span>
+    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">nil</span>
+}
+
+<span style="color:#66d9ef">func</span> <span style="color:#a6e22e">main</span>() {
+    <span style="color:#a6e22e">server</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">rpcserver</span>.<span style="color:#a6e22e">New</span>()
+    <span style="color:#a6e22e">server</span>.<span style="color:#a6e22e">Register</span>(<span style="color:#f92672">&amp;</span><span style="color:#a6e22e">RPC</span>{})
+    <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">server</span>.<span style="color:#a6e22e">ListenAndServe</span>(<span style="color:#e6db74">&#34;tcp&#34;</span>, <span style="color:#e6db74">&#34;:8888&#34;</span>)
+    <span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+        <span style="color:#a6e22e">log</span>.<span style="color:#a6e22e">Fatal</span>(<span style="color:#a6e22e">err</span>)
+    }
+}
+</code></pre></div><h3 id="democmdrpccli">demo/cmd/rpccli</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#f92672">package</span> <span style="color:#a6e22e">main</span>
+
+<span style="color:#f92672">import</span> (
+    <span style="color:#e6db74">&#34;fmt&#34;</span>
+    <span style="color:#e6db74">&#34;log&#34;</span>
+    <span style="color:#e6db74">&#34;net/rpc&#34;</span>
+)
+
+<span style="color:#66d9ef">func</span> <span style="color:#a6e22e">main</span>() {
+    <span style="color:#a6e22e">cli</span>, <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">rpc</span>.<span style="color:#a6e22e">Dial</span>(<span style="color:#e6db74">&#34;tcp&#34;</span>, <span style="color:#e6db74">&#34;:8888&#34;</span>)
+    <span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+        <span style="color:#a6e22e">log</span>.<span style="color:#a6e22e">Fatal</span>(<span style="color:#a6e22e">err</span>)
+    }
+    <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">reply</span> <span style="color:#66d9ef">string</span>
+    <span style="color:#a6e22e">err</span> = <span style="color:#a6e22e">cli</span>.<span style="color:#a6e22e">Call</span>(<span style="color:#e6db74">&#34;RPC.Ping&#34;</span>, <span style="color:#e6db74">&#34;ping&#34;</span>, <span style="color:#f92672">&amp;</span><span style="color:#a6e22e">reply</span>)
+    <span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+        <span style="color:#a6e22e">log</span>.<span style="color:#a6e22e">Fatal</span>(<span style="color:#a6e22e">err</span>)
+    }
+    <span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Println</span>(<span style="color:#a6e22e">reply</span>)
+}
+</code></pre></div>
+</article>
+
+
+
+</html>

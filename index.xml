@@ -1,0 +1,500 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>我的博客</title>
+    <link>http://flyblog.tech/</link>
+    <description>Recent content on 我的博客</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language>
+    <lastBuildDate>Fri, 23 Dec 2011 13:05:31 +0000</lastBuildDate>
+    
+	<atom:link href="http://flyblog.tech/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>C&#43;&#43; notes</title>
+      <link>http://flyblog.tech/posts/c&#43;&#43;-notes/</link>
+      <pubDate>Fri, 23 Dec 2011 13:05:31 +0000</pubDate>
+      
+      <guid>http://flyblog.tech/posts/c&#43;&#43;-notes/</guid>
+      <description>C++ notes 输出预处理宏 cpp -dM /dev/null 输出头文件标准搜索路径 cpp -v -o /dev/null /dev/null 整型大小 在32位机器上
+ int 4 long 4 long long 8  在64位机器上
+ int 4 long 8 long long 8  literal character literal  auto c0 = &amp;lsquo;A&amp;rsquo;; // char auto c1 = L&#39;A&amp;rsquo;; // wchar_t auto c2 = u&#39;A&amp;rsquo;; // char16_t auto c3 = U&#39;A&amp;rsquo;; // char32_t  string literal  auto s0 = &amp;ldquo;hello&amp;rdquo;; // const char * auto s1 = L&amp;quot;hello&amp;rdquo;; // const wchar_t * auto s2 = u&amp;quot;hello&amp;rdquo;; // const char16_t *, encoded as UTF-16 auto s3 = U&amp;quot;hello&amp;rdquo;; // const char32_t *, encoded as UTF-32 auto s4 = u8&amp;quot;hello&amp;rdquo;; // const char *, encoded as UTF-8  integer literal  auto i0 = 1; // int auto i1 = 1L; // long auto i2 = 1LL; // long long auto i3 = 1U; // unsigned int auto i4 = 1UL; // unsigned long auto i5 = 1ULL; // unsigned long long  floating point literal  auto f0 = 1.</description>
+    </item>
+    
+    <item>
+      <title>database/sql 包的使用</title>
+      <link>http://flyblog.tech/posts/golang-mysql/</link>
+      <pubDate>Fri, 23 Dec 2011 13:05:31 +0000</pubDate>
+      
+      <guid>http://flyblog.tech/posts/golang-mysql/</guid>
+      <description>database/sql 包的使用 安装 mysql driver go get -v github.com/go-sql-driver/mysql 创建连接池: sql.Open func newPool() *sql.DB { cfg := mysql.NewConfig() cfg.User = &amp;#34;root&amp;#34; cfg.Passwd = &amp;#34;xxxxxx&amp;#34; cfg.Net = &amp;#34;tcp&amp;#34; cfg.Addr = &amp;#34;127.0.0.1:3306&amp;#34; cfg.DBName = &amp;#34;mydb&amp;#34; dsn := cfg.FormatDSN() db, err := sql.Open(&amp;#34;mysql&amp;#34;, dsn) if err != nil { log.Fatal(err) } if err := db.Ping(); err != nil { log.Fatal(err) } return db } var pool = newPool() sql.DB表示一个连接池
+sql.Open的第一个参数是驱动名称，这里是&amp;quot;mysql&amp;quot;
+这个名称是在mysql包初始化时注册的，代码见:
+ github.com/go-sql-driver/mysql/driver.go</description>
+    </item>
+    
+    <item>
+      <title>find 命令</title>
+      <link>http://flyblog.tech/posts/find/</link>
+      <pubDate>Fri, 23 Dec 2011 13:05:31 +0000</pubDate>
+      
+      <guid>http://flyblog.tech/posts/find/</guid>
+      <description>find 命令 SYNOPSIS find DIR... EXPRESSION EXPRESSION 表达式返回一个布尔值(true或false)
+表达式由以下操作组成:
+ TESTS ACTIONS OPERATORS  TESTS TESTS: 测试文件的属性，返回true或false
+常用的TESTS有:
+-name pattern Base of file name (the path with the leading directories removed) matches shell pattern pattern. -iname pattern Like -name, but the match is case insensitive. -path pattern File name matches shell pattern pattern. -ipath pattern Like -path. but the match is case insensitive. -regex pattern File name matches regular expression pattern.</description>
+    </item>
+    
+    <item>
+      <title>github.com/gorilla/websocket包的使用</title>
+      <link>http://flyblog.tech/posts/golang-websocket/</link>
+      <pubDate>Fri, 23 Dec 2011 13:05:31 +0000</pubDate>
+      
+      <guid>http://flyblog.tech/posts/golang-websocket/</guid>
+      <description>github.com/gorilla/websocket包的使用 Server 定义请求消息格式(以下代码在ws包中定义) // Request websocket 请求消息 type Request struct { Action string `json:&amp;#34;action&amp;#34;` Data json.RawMessage `json:&amp;#34;data&amp;#34;` } 定义Server结构，实现http.Handler接口，维护活跃的连接 // Handler 消息处理器接口 type Handler interface { ServeWS(r *Request, hr *http.Request) } // HandlerFunc 处理器函数 type HandlerFunc func(r *Request, hr *http.Request) // ServeWS 实现Handler接口 func (f HandlerFunc) ServeWS(r *Request, hr *http.Request) { f(r, hr) } // Server websocket server type Server struct { activeConns map[string]*websocket.Conn mutex sync.Mutex hander Handler } // NewServer 用这个方法来创建server func NewServer(h Handler) *Server { return &amp;amp;Server{activeConns: make(map[string]*websocket.</description>
+    </item>
+    
+    <item>
+      <title>git快速上手</title>
+      <link>http://flyblog.tech/posts/git/</link>
+      <pubDate>Fri, 23 Dec 2011 13:05:31 +0000</pubDate>
+      
+      <guid>http://flyblog.tech/posts/git/</guid>
+      <description>git快速上手 配置命令 git config [--local] --edit // edit .git/config git config --global --edit // edit $HOME/.gitconfig git config --system --edit // edit /etc/gitconfig git config --list // List all variables set in config file, along with their values. 配置用户名，邮箱 git config --global user.name &amp;#39;fly&amp;#39; git config --global usr.email &amp;#39;723937936@qq.com&amp;#39; 配置命令别名 git config --global alias.st &amp;#39;status --short&amp;#39; git config --global alias.ci &amp;#39;commit&amp;#39; git config --global alias.co &amp;#39;checkout&amp;#39; git config --global alias.br &amp;#39;branch&amp;#39; 仓库初始化 cd /path/to/your/project git init // Create an empty Git repository 此时会在project目下创建一个.</description>
+    </item>
+    
+    <item>
+      <title>go异常处理</title>
+      <link>http://flyblog.tech/posts/golang-panic/</link>
+      <pubDate>Fri, 23 Dec 2011 13:05:31 +0000</pubDate>
+      
+      <guid>http://flyblog.tech/posts/golang-panic/</guid>
+      <description>go异常处理 代码封装 // Do do try-catch-finally type Do struct { Try func() Catch func(e interface{}) Finally func() } // Call call try func (d Do) Call() { defer func() { if e := recover(); e != nil { d.Catch(e) } if d.Finally != nil { d.Finally() } }() d.Try() } // Go go try func (d Do) Go() { go d.Call() } 测试 func main() { Do{ Try: func() { a := [.</description>
+    </item>
+    
+    <item>
+      <title>grep 命令</title>
+      <link>http://flyblog.tech/posts/grep/</link>
+      <pubDate>Fri, 23 Dec 2011 13:05:31 +0000</pubDate>
+      
+      <guid>http://flyblog.tech/posts/grep/</guid>
+      <description>grep 命令 SYNOPSIS grep [OPTIONS] PATTERN [FILE...] grep [OPTIONS] -R PATTERN [FILE_OR_DIR...] grep [OPTIONS] -e PATTERN ... [FILE...] OPTIONS -E, --extended-regexp Interpret PATTERN as an extended regular expression. -e PATTERN, --regexp=PATTERN Use PATTERN as the pattern. -i, --ignore-case Ignore case distinctions, so that characters that differ only in case match each other. -v, --invert-match Invert the sense of matching, to select non-matching lines. -w, --word-regexp Select only those lines containing matches that form whole words.</description>
+    </item>
+    
+    <item>
+      <title>kafka</title>
+      <link>http://flyblog.tech/posts/kafka/</link>
+      <pubDate>Fri, 23 Dec 2011 13:05:31 +0000</pubDate>
+      
+      <guid>http://flyblog.tech/posts/kafka/</guid>
+      <description>kafka 概念说明 topic 存储记录流，一个主题可以有多个消费者
+record 每个记录包含一个key, value, timestamp
+producer 生产者将记录发布到主题的某个分区中，可以简单的轮询方式实现负载均衡
+consumer 订阅一个或多个主题，并处理接收到的记录，消费者必须归属于一个消费者组，一条记录只会发送到消费者组里的一个消费者，这页可以实现简单的负载均衡
+partition 一个主题可以有多个分区，不同分区可以存储在不同的服务器上
+一个分区有一个leader服务器，和零个或多个follower服务器，leader负责读写分区，follower负责备份分区
+当leader服务器发生故障，follower会自动变成leader服务器
+kafka逻辑示意图
+上图显示：一个主题有4个分区，分布在两个服务器上，2个消费者组，6个消费者
+生产者可轮询发布记录到4个分区中实现负载均衡
+每个记录都会发送给2个消费者组，每个组中只有一个消费者接收到记录
+kafka作为消息系统使用 传统的消息系统一般有两种模型
+ 队列模型 发布-订阅模型  队列模型的特点是，消费者自己取，可以多个消费者同时消费一个队列，这也是一个负载均衡的例子，每个消费者处理不同的消息
+发布-订阅模型的特点是: 消息会广播给多个消费者，每个消费者处理相同的消息，这无法实现负载均衡
+这两种模型的对立的
+kafka的模型结合了这两种模型
+对于把消费者组看成一个消费者，那么多个消费者组都可以消费所有消息，这是发布-订阅模型
+在一个消费者组内，多个(子)消费者消费不同的消息，这是队列模型
+示例-golang </description>
+    </item>
+    
+    <item>
+      <title>linux standard signals</title>
+      <link>http://flyblog.tech/posts/linux-standard-signals/</link>
+      <pubDate>Fri, 23 Dec 2011 13:05:31 +0000</pubDate>
+      
+      <guid>http://flyblog.tech/posts/linux-standard-signals/</guid>
+      <description>linux standard signals 信号应该算是linux编程中比较复杂的东西了，这里是学习神书(TLPI)中关于linux标准信号的一些记录
+信号值定义 /usr/include/x86_64-linux-gnu/bits/signum-generic.h /usr/include/x86_64-linux-gnu/bits/signum.h #define SIGHUP 1 /* Hangup. */#define SIGINT 2 /* Interactive attention signal. */#define SIGQUIT 3 /* Quit. */#define SIGILL 4 /* Illegal instruction. */#define SIGTRAP 5 /* Trace/breakpoint trap. */#define SIGABRT 6 /* Abnormal termination. */#define SIGBUS 7 /* Bus error. */#define SIGFPE 8 /* Erroneous arithmetic operation. */#define SIGKILL 9 /* Killed. */#define SIGUSR1 10 /* User-defined signal 1. */#define SIGSEGV 11 /* Invalid access to storage.</description>
+    </item>
+    
+    <item>
+      <title>Linux Timer</title>
+      <link>http://flyblog.tech/posts/linux-timer/</link>
+      <pubDate>Fri, 23 Dec 2011 13:05:31 +0000</pubDate>
+      
+      <guid>http://flyblog.tech/posts/linux-timer/</guid>
+      <description>Linux Timer Classical UNIX API 1. setitimer #include &amp;lt;sys/time.h&amp;gt;int setitimer(int which, const struct itimerval *new_value, struct itimerval *old_value); int getitimer(int which, struct itimerval *curr_value); which参数说明  ITIMER_REAL: real time, At each expiration, a SIGALRM signal is generated. ITIMER_VIRTUAL: user-mode CPU time, At each expiration, a SIGVTALRM signal is generated. ITIMER_PROF: total (i.e., both user and system) CPU time, At each expiration, a SIGPROF signal is generated.  2. alarm #include &amp;lt;unistd.</description>
+    </item>
+    
+    <item>
+      <title>linux中的睡觉函数</title>
+      <link>http://flyblog.tech/posts/sleep/</link>
+      <pubDate>Fri, 23 Dec 2011 13:05:31 +0000</pubDate>
+      
+      <guid>http://flyblog.tech/posts/sleep/</guid>
+      <description>linux中的睡觉函数 1. sleep库函数 #include &amp;lt;unistd.h&amp;gt;unsigned int sleep(unsigned int seconds); sleep只能精确到秒，不推荐使用
+2. nanosleep系统调用 #include &amp;lt;time.h&amp;gt;int nanosleep(const struct timespec *req, struct timespec *rem); nanosleep精确到纳秒
+3. clock_nanosleep系统调用 #include &amp;lt;time.h&amp;gt;int clock_nanosleep(clockid_t clock_id, int flags, const struct timespec *request, struct timespec *remain); clock_id参数可以指定为
+ CLOCK_REALTIME 真实时间 CLOCK_MONOTONIC 单调时间  flags参数可以为
+ 0 指定相对时间 TIMER_ABSTIME 指定绝对时间  clock_nanosleep支持指定相对时间和绝对时间
+示例 sleep.c #include &amp;lt;errno.h&amp;gt;#include &amp;lt;signal.h&amp;gt;#include &amp;lt;stdio.h&amp;gt;#include &amp;lt;time.h&amp;gt; #define NANO (1LL)#define MICRO (1000 * NANO)#define MILLI (1000 * MICRO)#define SECOND (1000 * MILLI)#define MINUTE (60 * SECOND)#define HOUR (60 * Minute) long long nano_time() { struct timespec ts; clock_gettime(CLOCK_REALTIME, &amp;amp;ts); return ts.</description>
+    </item>
+    
+    <item>
+      <title>Posix Thread</title>
+      <link>http://flyblog.tech/posts/pthread/</link>
+      <pubDate>Fri, 23 Dec 2011 13:05:31 +0000</pubDate>
+      
+      <guid>http://flyblog.tech/posts/pthread/</guid>
+      <description>Posix Thread 线程栈布局 线程创建 #include &amp;lt;pthread.h&amp;gt;int pthread_create(pthread_t *thread, const pthread_attr_t *attr, void *(*start_routine)(void *), void *arg); 线程终止 #include &amp;lt;pthread.h&amp;gt;void pthread_exit(void *value_ptr); 等待线程终止 #include &amp;lt;pthread.h&amp;gt;int pthread_join(pthread_t thread, void **value_ptr); 默认情况下线程终止后会变成僵尸线程，需要由别的线程进行收尸(pthread_join)
+设置线程为detached #include &amp;lt;pthread.h&amp;gt;int pthread_detach(pthread_t thread); 将线程设置为detached，线程终止后不会变成僵尸线程
+获取线程id #include &amp;lt;pthread.h&amp;gt;pthread_t pthread_self(void); 比较线程id是否相等 #include &amp;lt;pthread.h&amp;gt;int pthread_equal(pthread_t t1, pthread_t t2); 线程属性 #include &amp;lt;pthread.h&amp;gt;int pthread_attr_init(pthread_attr_t *attr); int pthread_attr_destroy(pthread_attr_t *attr); int pthread_attr_setstack(pthread_attr_t *attr, void *stackaddr, size_t stacksize); int pthread_attr_getstack(const pthread_attr_t *restrict attr, void **restrict stackaddr, size_t *restrict stacksize); int pthread_attr_setstacksize(pthread_attr_t *attr, size_t stacksize); int pthread_attr_getstacksize(const pthread_attr_t *attr, size_t *stacksize); int pthread_attr_setguardsize(pthread_attr_t *attr, size_t guardsize); int pthread_attr_getguardsize(const pthread_attr_t *attr, size_t *guardsize); int pthread_attr_setstackaddr(pthread_attr_t *attr, void *stackaddr); int pthread_attr_getstackaddr(const pthread_attr_t *attr, void **stackaddr); int pthread_attr_setdetachstate(pthread_attr_t *attr, int detachstate); int pthread_attr_getdetachstate(const pthread_attr_t *attr, int *detachstate); int pthread_attr_setinheritsched(pthread_attr_t *attr, int inheritsched) int pthread_attr_getinheritsched(const pthread_attr_t *attr, int *inheritsched) int pthread_attr_setschedparam(pthread_attr_t *attr, const struct sched_param *param) int pthread_attr_getschedparam(const pthread_attr_t *attr, struct sched_param *param) int pthread_attr_setschedpolicy(pthread_attr_t *attr, int policy) int pthread_attr_getschedpolicy(const pthread_attr_t *attr, int *policy) int pthread_attr_setscope(pthread_attr_t *attr, int contentionscope) int pthread_attr_getscope(const pthread_attr_t *attr, int *contentionscope); 示例 // pthread.</description>
+    </item>
+    
+    <item>
+      <title>shell job control</title>
+      <link>http://flyblog.tech/posts/shell-job-control/</link>
+      <pubDate>Fri, 23 Dec 2011 13:05:31 +0000</pubDate>
+      
+      <guid>http://flyblog.tech/posts/shell-job-control/</guid>
+      <description>shell job control session和process group的设计是为了支持shell job control
+概念说明  process group: 一组进程的集合，又称为job; pgid等于process group leader的pid process group leader: 创建进程组的进程 session: 一些进程组的集合，sid等于session leader的pid session leader: 创建会话的进程 controlling terminal: 控制终端由session leader首次打开一个终端设备时建立，会话中的所有进程共享一个控制终端 controlling process: 控制终端建立后，session leader成为该控制终端的controlling process job control: 指用户同时执行多个job的能力，一个job在前台，其它job在后台  补充说明
+ 一个会话最多有一个foreground process group，其他进程组为background process group 当用户在终端上键入Ctl-C, Ctl-\, Ctl-Z时，相应信号发送给前台进程组的所有成员 当控制终端断开连接时，内核向session leader(即: 控制进程)发送SIGHUP和SIGCONT信号，此时分两种情况  如果控制进程捕获或忽略了SIGHUP信号，则内核不向前台进程组发送SIGHUP``SIGCONT信号 如果控制进程没有捕获或忽略SIGHUP信号，则内核向前台进程组发送SIGHUP和SIGCONT信号    上述第3点的第1小点的一个示例是shell，在shell退出之前会发送SIGHUP和SIGCONT信号给shell创建的所有进程组的成员
+nohup(1)命令忽略SIGHUP信号，从而避免被shell发送的SIGHUP信号杀掉
+上述第2点和第3点的第2小点的示例将在后面给出
+示意图 进程组 获取进程组id #include &amp;lt;unistd.h&amp;gt;pid_t getpgrp(void); /* equivalent to getpgid(0); */ pid_t getpgid(pid_t pid); /* obsolete */ 设置进程组id #include &amp;lt;unistd.</description>
+    </item>
+    
+    <item>
+      <title>SIGCHLD 信号处理器</title>
+      <link>http://flyblog.tech/posts/sigchld/</link>
+      <pubDate>Fri, 23 Dec 2011 13:05:31 +0000</pubDate>
+      
+      <guid>http://flyblog.tech/posts/sigchld/</guid>
+      <description>SIGCHLD信号处理器 示例 #include &amp;lt;errno.h&amp;gt;#include &amp;lt;signal.h&amp;gt;#include &amp;lt;stdio.h&amp;gt;#include &amp;lt;stdlib.h&amp;gt;#include &amp;lt;sys/wait.h&amp;gt;#include &amp;lt;unistd.h&amp;gt; static void handle_sigchld(int sig) { int saved_errno = errno; for (;;) { int pid = waitpid(-1, NULL, WNOHANG); if (pid &amp;lt;= 0) break; fprintf(stderr, &amp;#34;child(%d) reaped\n&amp;#34;, pid); // UNSAFE  } errno = saved_errno; } int main(int argc, char *argv[]) { struct sigaction sa; sa.sa_handler = handle_sigchld; sa.sa_flags = 0; sigemptyset(&amp;amp;sa.sa_mask); sigaction(SIGCHLD, &amp;amp;sa, NULL); for (int i = 1; i &amp;lt; argc; i++) { int sec = atoi(argv[i]); switch (fork()) { case -1: // error  exit(1); case 0: // child  fprintf(stderr, &amp;#34;child(%d) started, sleep %ds\n&amp;#34;, getpid(), sec); sleep(sec); _exit(0); default: // parent  break; } } for (;;) { pause(); } } $ .</description>
+    </item>
+    
+    <item>
+      <title>ss</title>
+      <link>http://flyblog.tech/posts/ss/</link>
+      <pubDate>Fri, 23 Dec 2011 13:05:31 +0000</pubDate>
+      
+      <guid>http://flyblog.tech/posts/ss/</guid>
+      <description>ss ss is used to dump socket statistics.
+SYNOPSIS ss [OPTIONS] [STATE-FILTER] [ADDRESS-FILTER] OPTIONS -n, --numeric Do not try to resolve service names. -r, --resolve Try to resolve numeric address/ports. -a, --all Display both listening and non-listening sockets. -l, --listening Display only listening sockets. -p, --processes Show process using socket. -K, --kill Attempts to forcibly close sockets. -4, --ipv4 Display only IP version 4 sockets (alias for -f inet). -6, --ipv6 Display only IP version 6 sockets (alias for -f inet6).</description>
+    </item>
+    
+    <item>
+      <title>stdio buffer</title>
+      <link>http://flyblog.tech/posts/stdio-buffer/</link>
+      <pubDate>Fri, 23 Dec 2011 13:05:31 +0000</pubDate>
+      
+      <guid>http://flyblog.tech/posts/stdio-buffer/</guid>
+      <description>stdio buffer 缓冲模式  _IONBF unbuffered _IOLBF line buffered _IOFBF fully buffered  库函数 #include &amp;lt;stdio.h&amp;gt;int setvbuf(FILE *stream, char *buf, int mode, size_t size); #include &amp;lt;stdio.h&amp;gt;void setbuf(FILE *stream, char *buf); void setbuffer(FILE *stream, char *buf, size_t size); void setlinebuf(FILE *stream); 后面这三个函数是setvbuf()的别名
+  setbuf(stream, buf) 等价于:
+setvbuf(stream, buf, buf ? _IOFBF : _IONBF, BUFSIZ);   setbuffer(stream, buf, size) 等价于:
+setvbuf(stream, buf, buf ? _IOFBF : _IONBF, size);   setlinebuf(stream) 等价于:</description>
+    </item>
+    
+    <item>
+      <title>tar 命令</title>
+      <link>http://flyblog.tech/posts/tar/</link>
+      <pubDate>Fri, 23 Dec 2011 13:05:31 +0000</pubDate>
+      
+      <guid>http://flyblog.tech/posts/tar/</guid>
+      <description>tar 命令 打包 tar -czf /path/to/ARCHIVE FILE tar -czf /path/to/ARCHIVE -C /path/from/ FILE 解包 tar -xf /path/from/ARCHIVE tar -xf /path/from/ARCHIVE -C /path/to/ list tar -tf /path/from/ARCHIVE 选项说明 -c, --create Create a new archive. -x, --extract, --get Extract files from an archive. -f, --file=ARCHIVE Use archive file or device ARCHIVE. -t, --list List the contents of an archive. -z, --gzip, --gunzip, --ungzip Filter the archive through gzip(1). -a, --auto-compress Use archive suffix to determine the compression program.</description>
+    </item>
+    
+    <item>
+      <title>The clone() System Call</title>
+      <link>http://flyblog.tech/posts/clone/</link>
+      <pubDate>Fri, 23 Dec 2011 13:05:31 +0000</pubDate>
+      
+      <guid>http://flyblog.tech/posts/clone/</guid>
+      <description>The clone() System Call clone()系统调用允许精细控制进程的创建
+函数原型 #define _GNU_SOURCE#include &amp;lt;sched.h&amp;gt;int clone(int (*func)(void *), void *child_stack, int flags, void *arg, /* pid_t *ptid, struct user_desc *tls, pid_t *ctid */ ); 参数说明  参数func指定子进程执行的函数 参数child_stack指定func的执行栈 参数flags指定父子进程共享的资源 参数arg指定调用func的参数 参数ptid提供一个变量(在父进程内存中)，用于保存子进程id 参数tls指定子线程的线程局部存储的描述符 参数ctid提供一个变量(在子进程内存中)，用于保存子进程id  flags说明  CLONE_FILES 父子进程共享打开的文件描述符表(POSIX threads要求此flag) CLONE_FS 父子进程共享文件系统相关属性，包括umask, root directory, current working directory(POSIX threads要求此flag) CLONE_SIGHAND 父子进程共享信号处理器表(POSIX threads要求此flag) CLONE_VM 父子进程共享页表，也即共享虚拟内存页(POSIX threads要求此flag) CLONE_THREAD 将子进程置于父进程所在的线程组中(POSIX threads要求此flag) CLONE_PARENT_SETTID 将子进程id写入参数ptid指向的变量中(在父进程内存空间)(NPTL线程实现使用这个flag) CLONE_CHILD_SETTID 将子进程id写入参数ctid指向的变量中(在子进程内存空间) CLONE_CHILD_CLEARTID 当子进程终止时清掉(zero)参数ctid指向的变量(NPTL线程实现使用这个flag) CLONE_SETTLS 参数tls描述的buffer作为子线程的线程局部存储(NPTL线程实现使用这个flag) CLONE_SYSVSEM 父子进程共享System V semaphore undo values CLONE_NEWNS 父子进程不共享挂载点名称空间 CLONE_PTRACE 子进程可以被追踪 CLONE_UNTRACED 子进程不能被追踪 CLONE_VFORK 挂起父进程，直到子进程调用exev或_exit  </description>
+    </item>
+    
+    <item>
+      <title>trace system calls and signals</title>
+      <link>http://flyblog.tech/posts/strace/</link>
+      <pubDate>Fri, 23 Dec 2011 13:05:31 +0000</pubDate>
+      
+      <guid>http://flyblog.tech/posts/strace/</guid>
+      <description>trace system calls and signals 用法 strace [options] command [args] 说明 strace运行命令，追踪命令调用的系统调用和收到的信号，默认输出到stderr
+输出的每行包括
+ system call name arguments return value  例如
+open(&amp;#34;/dev/null&amp;#34;, O_RDONLY) = 3 如果系统调用失败，还会输出errno符号和错误描述信息
+open(&amp;#34;/foo/bar&amp;#34;, O_RDONLY) = -1 ENOENT (No such file or directory) 选项 过滤选项 -e [qualifier=][!]value1[,value2]... -v 输出execve的envp参数以及结构类型的非压缩版本 qualifier可以为
+ trace 追踪指定的系统调用 abbrev 压缩指定的结构类型，默认值为all，如果指定-v选项，则abbrev=none verbose 解引用指定系统调用的结构参数，默认值为all raw 以十六进制输出指定系统调用的参数 signal 追踪指定的信号，默认值为all read dump指定的描述符的读数据 write dump指定的描述符的写数据 fault 使指定的系统调用失败  如果不指定qualifier，则默认为trace，例如:
+strace -e open date等价于strace -e trace=open date</description>
+    </item>
+    
+    <item>
+      <title>unix time</title>
+      <link>http://flyblog.tech/posts/unix-time/</link>
+      <pubDate>Fri, 23 Dec 2011 13:05:31 +0000</pubDate>
+      
+      <guid>http://flyblog.tech/posts/unix-time/</guid>
+      <description>unix time Calendar Time 1. time #include &amp;lt;time.h&amp;gt;time_t time(time_t *tloc); 这是一个系统调用，用来获取从1970-01-01 00:00:00 +0000 (UTC)至今的秒数，称为日历时间
+一般tloc传NULL
+2. gettimeofday #include &amp;lt;sys/time.h&amp;gt;int gettimeofday(struct timeval *tv, struct timezone *tz); 这也是一个系统调用，这个系统调用获取的时间精度更高。
+timeval 结构如下：
+struct timeval { time_t tv_sec; /* seconds */ suseconds_t tv_usec; /* microseconds */ }; tv_sec 的值跟time系统调用的返回值一样
+tv_usec 表示微秒
+第二个参数已经废弃，传NULL就行
+3. clock_gettime #include &amp;lt;time.h&amp;gt;int clock_gettime(clockid_t clk_id, struct timespec *tp); struct timespec { time_t tv_sec; /* seconds */ long tv_nsec; /* nanoseconds */ }; clock_gettime可以获取纳秒级时间</description>
+    </item>
+    
+    <item>
+      <title>互斥锁</title>
+      <link>http://flyblog.tech/posts/mutex/</link>
+      <pubDate>Fri, 23 Dec 2011 13:05:31 +0000</pubDate>
+      
+      <guid>http://flyblog.tech/posts/mutex/</guid>
+      <description>互斥锁 安装文档 debian 9上默认没有这个手册，需要自行安装
+sudo apt install glibc-doc $ dpkg-query -L glibc-doc | grep pthread /usr/share/man/man3/pthread_atfork.3.gz /usr/share/man/man3/pthread_cond_init.3.gz /usr/share/man/man3/pthread_condattr_init.3.gz /usr/share/man/man3/pthread_key_create.3.gz /usr/share/man/man3/pthread_mutex_init.3.gz /usr/share/man/man3/pthread_mutexattr_init.3.gz /usr/share/man/man3/pthread_mutexattr_setkind_np.3.gz /usr/share/man/man3/pthread_once.3.gz /usr/share/man/man3/pthread_cond_broadcast.3.gz /usr/share/man/man3/pthread_cond_destroy.3.gz /usr/share/man/man3/pthread_cond_signal.3.gz /usr/share/man/man3/pthread_cond_timedwait.3.gz /usr/share/man/man3/pthread_cond_wait.3.gz /usr/share/man/man3/pthread_condattr_destroy.3.gz /usr/share/man/man3/pthread_getspecific.3.gz /usr/share/man/man3/pthread_key_delete.3.gz /usr/share/man/man3/pthread_mutex_destroy.3.gz /usr/share/man/man3/pthread_mutex_lock.3.gz /usr/share/man/man3/pthread_mutex_trylock.3.gz /usr/share/man/man3/pthread_mutex_unlock.3.gz /usr/share/man/man3/pthread_mutexattr_destroy.3.gz /usr/share/man/man3/pthread_mutexattr_getkind_np.3.gz /usr/share/man/man3/pthread_mutexattr_gettype.3.gz /usr/share/man/man3/pthread_mutexattr_settype.3.gz /usr/share/man/man3/pthread_setspecific.3.gz 这个包包含了mutex, mutexattr, cond, condattr等手册
+互斥锁相关函数 #include &amp;lt;pthread.h&amp;gt; pthread_mutex_t fastmutex = PTHREAD_MUTEX_INITIALIZER; pthread_mutex_t recmutex = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP; pthread_mutex_t errchkmutex = PTHREAD_ERRORCHECK_MUTEX_INITIALIZER_NP; int pthread_mutex_init(pthread_mutex_t *mutex, const pthread_mutexattr_t *mutexattr); int pthread_mutex_destroy(pthread_mutex_t *mutex); int pthread_mutex_lock(pthread_mutex_t *mutex); int pthread_mutex_unlock(pthread_mutex_t *mutex); int pthread_mutex_trylock(pthread_mutex_t *mutex); 示例 // mutex.</description>
+    </item>
+    
+    <item>
+      <title>创建临时文件</title>
+      <link>http://flyblog.tech/posts/tmpfile/</link>
+      <pubDate>Fri, 23 Dec 2011 13:05:31 +0000</pubDate>
+      
+      <guid>http://flyblog.tech/posts/tmpfile/</guid>
+      <description>创建临时文件 推荐的函数 #include &amp;lt;stdio.h&amp;gt;FILE *tmpfile(void); 这个函数创建的临时文件在文件被关闭或进程退出时自动删除
+过时的函数 #include &amp;lt;stdio.h&amp;gt;char *tmpnam(char *s); char *tempnam(const char *dir, const char *pfx); </description>
+    </item>
+    
+    <item>
+      <title>动态库</title>
+      <link>http://flyblog.tech/posts/dynamic-library/</link>
+      <pubDate>Fri, 23 Dec 2011 13:05:31 +0000</pubDate>
+      
+      <guid>http://flyblog.tech/posts/dynamic-library/</guid>
+      <description>动态库 创建动态库 $ ls a.c b.c main.c $ gcc -c -fPIC a.c b.c $ gcc -shared -o libfoo.so.1.0.0 a.o b.o 使用动态库 $ gcc -c -fPIC main.c $ gcc -o main main.o libfoo.so.1.0.0 $ ls main main 运行 $ LD_LIBRARY_PATH=. ./main foo soname 创建动态库时可以指定别名，称作soname
+$ gcc -shared -Wl,-soname,libfoo.so.1 -o libfoo.so.1.0.0 a.o b.o $ ls libfoo.so libfoo.so 上述方法创建的动态库的soname为libfoo.so.1
+查看动态库的soname
+$ readelf -d libfoo.so.1.0.0 | grep SONAME 0x000000000000000e (SONAME) Library soname: [libfoo.so.1] 创建可执行程序</description>
+    </item>
+    
+    <item>
+      <title>多线程中信号处理方法</title>
+      <link>http://flyblog.tech/posts/thread-and-signal/</link>
+      <pubDate>Fri, 23 Dec 2011 13:05:31 +0000</pubDate>
+      
+      <guid>http://flyblog.tech/posts/thread-and-signal/</guid>
+      <description>多线程中信号处理方法 方法说明  在创建子线程之前，主线程阻塞所有信号，随后创建的子线程继承主线程的signal mask 创建一个专用线程，用于处理信号(使用sigwait, sigwaitinfo, sigtimedwait)  示例 #include &amp;#34;go.h&amp;#34;#include &amp;#34;log.h&amp;#34;#include &amp;lt;signal.h&amp;gt;#include &amp;lt;unistd.h&amp;gt; void sig_handler(void *arg) { int sig; sigset_t mask; sigfillset(&amp;amp;mask); for (;;) { sigwait(&amp;amp;mask, &amp;amp;sig); // 同步等待信号，将异步信号处理转换成多线程处理  debugf(&amp;#34;sig = %d&amp;#34;, sig); // debugf内部加锁了  if (sig == SIGINT) _exit(1); } } void foo(void *arg) { for (;;) { debugf(&amp;#34;foo&amp;#34;); sleep(1); } } int main() { sigset_t mask; sigfillset(&amp;amp;mask); sigprocmask(SIG_SETMASK, &amp;amp;mask, NULL); // 屏蔽所有信号  go(sig_handler, NULL); // 专用线程用于处理信号  go(foo, NULL); pause(); }  go.</description>
+    </item>
+    
+    <item>
+      <title>孤儿进程和僵尸进程</title>
+      <link>http://flyblog.tech/posts/orphans-and-zombies/</link>
+      <pubDate>Fri, 23 Dec 2011 13:05:31 +0000</pubDate>
+      
+      <guid>http://flyblog.tech/posts/orphans-and-zombies/</guid>
+      <description>孤儿进程和僵尸进程 孤儿进程 当父进程死了之后，子进程变成孤儿进程，并被pid为1的进程(init`/systemd)收养\ 孤儿进程只是一种称谓，并不是内核中有什么数据结构去标识一个进程是孤儿进程，判断一个进程是否是孤儿进程的一个方法是:\ 使用getppid系统调用获取父进程id，如果是1，则该进程是孤儿进程，前提是该进程的生父不是init\ 如果该进程的生父是init，那么该进程永远不会变成孤儿进程，因为init`进程是永远不死的
+僵尸进程 默认情况下当子进程死后会变成僵尸(活着的尸体)进程
+僵尸进程的大部分资源已经被回收，只有一个进程表项仍然在内核的进程表中
+当父进程调用wait执行收尸操作后，该表项会从进程表中移除
+如果父进程没有收尸，自己就死了，那么该僵尸进程变成孤儿僵尸进程，由init进程替其收尸
+僵尸进程就像电影里的僵尸一样，是杀不死的，即使用SIGKILL也杀不死
+前面说了默认情况下当子进程死后会变成僵尸进程，但是有两个方法可以避免子进程变成僵尸进程
+ 父进程显式忽略SIGCHLD信号 通过sigaction设置SIGCHLD信号处理器时，指定SA_NOCLDWAIT标志  这种情况下，父进程不能通过wait获取子进程的死因，但是wait会阻塞，直到所有子进程都终止后才返回且返回值为-1
+孤儿进程示例 // orphan.c #include &amp;lt;stdio.h&amp;gt;#include &amp;lt;stdlib.h&amp;gt;#include &amp;lt;unistd.h&amp;gt; int main() { int pid = fork(); switch (pid) { case -1: // error  exit(1); case 0: // child  pause(); _exit(0); default: // parent  break; } fprintf(stderr, &amp;#34;child(%d)\n&amp;#34;, pid); fprintf(stderr, &amp;#34;parent sleeping...\n&amp;#34;); sleep(10); fprintf(stderr, &amp;#34;parent(%d) exited\n&amp;#34;, getpid()); } $ cc orphan.c $ .</description>
+    </item>
+    
+    <item>
+      <title>封装net.Server</title>
+      <link>http://flyblog.tech/posts/golang-rpc/</link>
+      <pubDate>Fri, 23 Dec 2011 13:05:31 +0000</pubDate>
+      
+      <guid>http://flyblog.tech/posts/golang-rpc/</guid>
+      <description>封装net.Server 定义demo/server包 // Package server socket级别的server // // 使用方法： // srv := New(HandlerFunc(handleConn)) // err := srv.ListenAndServe(&amp;#34;tcp&amp;#34;, &amp;#34;:8888&amp;#34;) // if err != nil { // // 处理错误 // } // // func handleConn(rw io.ReadWriter) { // // 执行io操作 // } package server import ( &amp;#34;io&amp;#34; &amp;#34;log&amp;#34; &amp;#34;net&amp;#34; ) // Handler 连接处理器 type Handler interface { ServeConn(rw io.ReadWriter) } // HandlerFunc 连接处理函数 type HandlerFunc func(rw io.ReadWriter) // ServeConn 实现Handler接口 func (f HandlerFunc) ServeConn(rw io.</description>
+    </item>
+    
+    <item>
+      <title>文件介绍</title>
+      <link>http://flyblog.tech/posts/file/</link>
+      <pubDate>Fri, 23 Dec 2011 13:05:31 +0000</pubDate>
+      
+      <guid>http://flyblog.tech/posts/file/</guid>
+      <description>文件介绍 文件系统结构 文件  文件是由inode+data blocks组成 inode存储在inode table中 inode在inode table中的索引称为inode number 每个文件系统有一张inode table  inode存储文件状态(元)信息
+ file type uid, gid access permisstion last access time, last modify time, last inode change time inode link(ref) count file size data block count data block pointers  注意：inode中并不包含文件名，文件名和inode number存储在directory entry中
+如果用面向对象的思想来描述文件，那么把inode看成对象，inode number就是对象地址， link count就是对象的引用计数，directory entry是对象的引用
+创建文件 #include &amp;lt;sys/types.h&amp;gt;#include &amp;lt;sys/stat.h&amp;gt;#include &amp;lt;fcntl.h&amp;gt;int open(const char *pathname, int flags); int open(const char *pathname, int flags, mode_t mode); open函数创建inode，然后创建一个引用(directory entry)，其中包含inode number和引用名，此时该inode的引用计数为1 pathname为新的引用名</description>
+    </item>
+    
+    <item>
+      <title>文件描述符</title>
+      <link>http://flyblog.tech/posts/file-descriptor/</link>
+      <pubDate>Fri, 23 Dec 2011 13:05:31 +0000</pubDate>
+      
+      <guid>http://flyblog.tech/posts/file-descriptor/</guid>
+      <description>文件描述符 内核数据结构 内核维护三个数据结构:
+ the per-process file descriptor table; the system-wide table of open file descriptions; the system-wide file system i-node table.  如图所示:
+说明:
+ 一个进程对应一张文件描述符表 一张所有进程共享的打开文件表 一张所有进程共享的inode表  file descriptor table 文件描述符表项包含:
+ 一个fd flag, 目前只支持一个: close-on-exec flag 一个打开文件表项的引用  open file table 打开文件表项包含:
+ 一个引用计数，记录引用该表项的文件描述符个数 当前的文件偏移 打开文件时指定的status flags 文件的访问模式(ro,wo,rw) inode引用  inode table inode table是内核维护的一张全局表，这里的inode是从文件系统的inode table中拷贝来的 除此之外还包含:
+ 一个引用计数，记录引用该inode的打开文件表项数 major and minor device id, 记录该inode是从哪个设备拷贝来的 该inode持有的记录锁  用例分析 int fd1 = open(&amp;#34;/tmp/myfile&amp;#34;, O_RDWR|O_CLOEXEC); 通过open打开一个文件，执行:</description>
+    </item>
+    
+    <item>
+      <title>文件监控</title>
+      <link>http://flyblog.tech/posts/file-monitor/</link>
+      <pubDate>Fri, 23 Dec 2011 13:05:31 +0000</pubDate>
+      
+      <guid>http://flyblog.tech/posts/file-monitor/</guid>
+      <description>文件监控 用例 $ go install demo/fwatch $ $GOPATH/bin/fwatch /go/src/demo | xargs -L1 goreturns -l | xargs -L1 goreturns -w &amp;amp; [1] 29568 29569 29570 监控/go/src/demo目录及其子目录及未来创建的子目录下的文件修改动作 如果文件发生修改则对其执行格式化
+代码 package main import ( &amp;#34;fmt&amp;#34; &amp;#34;log&amp;#34; &amp;#34;os&amp;#34; &amp;#34;path/filepath&amp;#34; &amp;#34;github.com/fsnotify/fsnotify&amp;#34; ) func main() { if len(os.Args) != 2 { fmt.Fprintf(os.Stderr, &amp;#34;Usage: %s pathname\n&amp;#34;, os.Args[0]) os.Exit(1) } // 创建fsnotify.Watcher  watcher, err := fsnotify.NewWatcher() if err != nil { log.Fatal(err) } defer watcher.Close() // 遍历目录  err = walk(os.</description>
+    </item>
+    
+    <item>
+      <title>条件变量</title>
+      <link>http://flyblog.tech/posts/cond/</link>
+      <pubDate>Fri, 23 Dec 2011 13:05:31 +0000</pubDate>
+      
+      <guid>http://flyblog.tech/posts/cond/</guid>
+      <description>条件变量 函数原型 #include &amp;lt;pthread.h&amp;gt; pthread_cond_t cond = PTHREAD_COND_INITIALIZER; int pthread_cond_init(pthread_cond_t *cond, pthread_condattr_t *cond_attr); int pthread_cond_destroy(pthread_cond_t *cond); int pthread_cond_signal(pthread_cond_t *cond); int pthread_cond_broadcast(pthread_cond_t *cond); int pthread_cond_wait(pthread_cond_t *cond, pthread_mutex_t *mutex); int pthread_cond_timedwait(pthread_cond_t *cond, pthread_mutex_t *mutex, const struct timespec *abstime); 用条件变量实现golang的channel golang的channel是goroutine之间通信的通道
+要实现channel，需要先实现一个队列
+// queue.c #include &amp;#34;queue.h&amp;#34;#include &amp;lt;stdlib.h&amp;gt; struct node { void *value; // 用户数据  struct node *next; // 指向下一个结点 }; struct queue { struct node *front; // 指向队头  struct node *rear; // 指向队尾  int len; // 队列长度 }; // 新建空队列 struct queue *queue_new() { struct queue *q = calloc(1, sizeof(struct queue)); q-&amp;gt;front = NULL; q-&amp;gt;rear = NULL; q-&amp;gt;len = 0; return q; } // 什么也不做的删除器 static inline void _del(void *val) { } // 释放队列 void queue_free(struct queue *q, void (*del)(void *)) { del = del ?</description>
+    </item>
+    
+    <item>
+      <title>目录树遍历</title>
+      <link>http://flyblog.tech/posts/walk-dir-tree/</link>
+      <pubDate>Fri, 23 Dec 2011 13:05:31 +0000</pubDate>
+      
+      <guid>http://flyblog.tech/posts/walk-dir-tree/</guid>
+      <description>目录树遍历 示例 $ go install demo/walk $ walk -f /usr/include | grep stdio.h /usr/include/_stdio.h /usr/include/c++/4.2.1/tr1/stdio.h /usr/include/secure/_stdio.h /usr/include/stdio.h /usr/include/sys/stdio.h /usr/include/xlocale/_stdio.h 代码 $GOPATH/src/demo/walk/main.go package main import ( &amp;#34;flag&amp;#34; &amp;#34;fmt&amp;#34; &amp;#34;log&amp;#34; &amp;#34;os&amp;#34; &amp;#34;path/filepath&amp;#34; ) var ( f bool d bool ) func init() { flag.BoolVar(&amp;amp;f, &amp;#34;f&amp;#34;, false, &amp;#34;只显示文件&amp;#34;) flag.BoolVar(&amp;amp;d, &amp;#34;d&amp;#34;, false, &amp;#34;只显示目录&amp;#34;) flag.Usage = func() { fmt.Fprintf(os.Stderr, &amp;#34;Usage: %s [-d]|[-f] dirpath\n&amp;#34;, os.Args[0]) flag.PrintDefaults() } } func main() { flag.Parse() if flag.NArg() != 1 { flag.</description>
+    </item>
+    
+    <item>
+      <title>等待子进程</title>
+      <link>http://flyblog.tech/posts/wait/</link>
+      <pubDate>Fri, 23 Dec 2011 13:05:31 +0000</pubDate>
+      
+      <guid>http://flyblog.tech/posts/wait/</guid>
+      <description>等待子进程 系统调用 #include &amp;lt;sys/types.h&amp;gt;#include &amp;lt;sys/wait.h&amp;gt;pid_t wait(int *wstatus); pid_t waitpid(pid_t pid, int *wstatus, int options); int waitid(idtype_t idtype, id_t id, siginfo_t *infop, int options); #include &amp;lt;sys/types.h&amp;gt;#include &amp;lt;sys/time.h&amp;gt;#include &amp;lt;sys/resource.h&amp;gt;#include &amp;lt;sys/wait.h&amp;gt;pid_t wait3(int *wstatus, int options, struct rusage *rusage); pid_t wait4(pid_t pid, int *wstatus, int options, struct rusage *rusage); waitpid pid参数  pid &amp;gt; 0 指定等待的子进程id pid = 0 等待父进程所在进程组中的任意子进程 pid &amp;lt; -1 等待进程组id等于-pid中的任意子进程 pid = -1 等待任意子进程  options参数 options是位掩码参数
+ WUNTRACED 当等待的子进程停止运行时waitpid返回 WCONTINUED 当等待的子进程恢复运行时waitpid返回 WNOHANG 当参数pid指定的子进程未终止时，waitpid立即返回，且返回值为0  有两种方法停止一个进程:</description>
+    </item>
+    
+    <item>
+      <title>线程专用数据</title>
+      <link>http://flyblog.tech/posts/thread-specific-data/</link>
+      <pubDate>Fri, 23 Dec 2011 13:05:31 +0000</pubDate>
+      
+      <guid>http://flyblog.tech/posts/thread-specific-data/</guid>
+      <description>线程专用数据 函数原型 #include &amp;lt;pthread.h&amp;gt;int pthread_key_create(pthread_key_t *key, void (*destructor)(void *)); int pthread_key_delete(pthread_key_t key); int pthread_setspecific(pthread_key_t key, const void *pointer); void *pthread_getspecific(pthread_key_t key); 示例 // log.c #include &amp;#34;log.h&amp;#34;#include &amp;lt;pthread.h&amp;gt;#include &amp;lt;stdarg.h&amp;gt;#include &amp;lt;stdio.h&amp;gt;#include &amp;lt;stdlib.h&amp;gt;#include &amp;lt;string.h&amp;gt; static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER; static pthread_key_t key; __attribute__((constructor)) static void init() { pthread_key_create(&amp;amp;key, free); } static void output(const char *prefix, const char *format, va_list params) { pthread_mutex_lock(&amp;amp;mutex); const char *tag = pthread_getspecific(key); if (tag) fputs(tag, stderr); fputs(prefix, stderr); vfprintf(stderr, format, params); fputs(&amp;#34;\n&amp;#34;, stderr); pthread_mutex_unlock(&amp;amp;mutex); } void set_thread_tag(const char *tag) { char *buf = strdup(tag); pthread_setspecific(key, buf); } void debugf(const char *format, .</description>
+    </item>
+    
+    <item>
+      <title>终端</title>
+      <link>http://flyblog.tech/posts/terminal/</link>
+      <pubDate>Fri, 23 Dec 2011 13:05:31 +0000</pubDate>
+      
+      <guid>http://flyblog.tech/posts/terminal/</guid>
+      <description>终端 简介 终端是通过RS232串口连接到计算机的一种设备，它有一个黑白显示器(24*80)和一个键盘组成
+tty这个词是teletype的缩写，称为电传打字机，这是早期的终端设备，它有一个打印机和一个键盘组成
+上面所说的这种传统的终端已经灭绝了，取而代之的是虚拟终端(virtual terminal)和伪终端(pseudoterminal)
+virtual terminal 虚拟终端有时候也被称为虚拟控制台(virtual console)
+虚拟终端对应的设备文件为/dev/ttyn，n的范围是[1-63]，通常前6个虚拟终端可以通过快捷键来切换
+在X环境下可以通过Ctl+Alt+F[1-6]来切换到对应的虚拟终端，在虚拟终端环境下可以通过Alt+F[1-6]或Alt+&amp;lt;-和Alt+-&amp;gt;来切换
+其他虚拟终端可以通过如下命令来切换，以/dev/tty10为例:
+# openvt -c 10 agetty tty10 linux ; chvt 10 还有三个特殊的设备文件/dev/tty, /dev/tty0, /dev/console
+ /dev/tty指向进程的控制终端(如果有的话)，也就是进程的stdin`,stdout,stderr`指向的设备文件(如果没有重定向的话) /dev/tty0指向当前激活的虚拟终端 /dev/console 是system console，linux内核日志输出的地方，默认情况下是指向/dev/tty0，也就是指向当前激活的虚拟终端  示例验证
+# tty 查看当前所在的虚拟终端 /dev/tty1 # sleep 5; echo hello &amp;gt; /dev/tty0 执行上述命令后，立即用Alt+F2切换到第二个虚拟终端(/dev/tty2)，5s后可看到终端输入hello，这证明了/dev/tty0是指向当前的虚拟终端
+另一个查看当前/dev/console和/dev/tty0指向的终端的方法
+$ cat /sys/devices/virtual/tty/console/active tty0 $ cat /sys/devices/virtual/tty/tty0/active tty2 pseudoterminal 伪终端是一对设备，主设备文件为/dev/ptmx，从设备文件为/dev/pts/n，n的范围为[0-4096]
+最大值可通过/proc/sys/kernel/pty/max文件配置
+主设备文件是一个多路器，全称pty master multiplexer，多路器是一种注册机制，可通过打开/dev/ptmx文件来注册
+打开/dev/ptmx文件返回一个主设备的文件描述符，通过此描述符可以获取注册的从设备文件名
+#include &amp;lt;fcntl.h&amp;gt;#include &amp;lt;stdlib.h&amp;gt;int ptm_fd = open(&amp;#34;/dev/ptmx&amp;#34;, O_RDWR | O_NOCTTY); const char *pts_name = ptsname(ptm_fd); 打开从设备文件得到从设备文件的描述符，在主设备描述符上写数据，可以通过从设备描述符读出来，反之亦然。这类似双向管道</description>
+    </item>
+    
+    <item>
+      <title>读symbol link本身</title>
+      <link>http://flyblog.tech/posts/catsymlink/</link>
+      <pubDate>Fri, 23 Dec 2011 13:05:31 +0000</pubDate>
+      
+      <guid>http://flyblog.tech/posts/catsymlink/</guid>
+      <description>读symbol link本身 示例(mac os) $ go install demo/catsymlink $ $GOPATH/catsymlink /etc /private/etc 代码 package main import ( &amp;#34;fmt&amp;#34; &amp;#34;log&amp;#34; &amp;#34;os&amp;#34; &amp;#34;path/filepath&amp;#34; ) func main() { if len(os.Args) != 2 { fmt.Fprintf(os.Stderr, &amp;#34;Usage: %s link\n&amp;#34;, os.Args[0]) os.Exit(1) } pth, err := os.Readlink(os.Args[1]) if err != nil { log.Fatal(err) } pth, err = filepath.Abs(pth) if err != nil { log.Fatal(err) } fmt.Println(pth) } filepath.Abs函数相当于C的realpath函数</description>
+    </item>
+    
+    <item>
+      <title>调用sh(1)执行命令</title>
+      <link>http://flyblog.tech/posts/system/</link>
+      <pubDate>Fri, 23 Dec 2011 13:05:31 +0000</pubDate>
+      
+      <guid>http://flyblog.tech/posts/system/</guid>
+      <description>调用sh(1)执行命令 system()使用fork(2)创建子进程，然后调用execl(3)执行/bin/sh
+execl(&amp;quot;/bin/sh&amp;quot;, &amp;quot;sh&amp;quot;, &amp;quot;-c&amp;quot;, command, (char *) 0);
+然后调用waitpid(2)等待子进程(/bin/sh)终止
+函数原型 #include &amp;lt;stdlib.h&amp;gt;int system(const char *command); 返回值  如果参数command为NULL，system()返回非0表示sh(1)可用，返回0表示sh(1)不可用 如果fork(2)或waitpid(2)调用失败，返回-1 如果execl(3)调用失败，子进程用参数127调用_exit(2) 如果都成功，返回waitpid(2)的第二个参数，即wait status  有三种情况下system()返回0x7f00
+ execl(3)调用失败 command找不到 command调用_exit(127);  示例 // system.c #include &amp;lt;stdio.h&amp;gt;#include &amp;lt;stdlib.h&amp;gt;#include &amp;lt;string.h&amp;gt;#include &amp;lt;sys/types.h&amp;gt;#include &amp;lt;sys/wait.h&amp;gt; static void print_wait_status(int wstatus) { printf(&amp;#34;wstatus: 0x%04x\n&amp;#34;, wstatus); if (WIFEXITED(wstatus)) { printf(&amp;#34;child exited, status=%d\n&amp;#34;, WEXITSTATUS(wstatus)); return; } if (WIFSIGNALED(wstatus)) { int sig = WTERMSIG(wstatus); printf(&amp;#34;child killed by signal %d (%s)\n&amp;#34;, sig, strsignal(sig)); if (WCOREDUMP(wstatus)) printf(&amp;#34;core dumped\n&amp;#34;); return; } if (WIFSTOPPED(wstatus)) { int sig = WSTOPSIG(wstatus); printf(&amp;#34;child stopped by signal %d (%s)\n&amp;#34;, sig, strsignal(sig)); return; } if (WIFCONTINUED(wstatus)) { printf(&amp;#34;child continued\n&amp;#34;); return; } exit(1); } int main() { char line[1024]; for (;;) { printf(&amp;#34;==&amp;gt; &amp;#34;); char *r = fgets(line, sizeof(line), stdin); if (r == NULL) break; int status = system(line); if (status == -1) exit(1); print_wait_status(status); } } 演示 $ cc -o system system.</description>
+    </item>
+    
+    <item>
+      <title>进程</title>
+      <link>http://flyblog.tech/posts/process/</link>
+      <pubDate>Fri, 23 Dec 2011 13:05:31 +0000</pubDate>
+      
+      <guid>http://flyblog.tech/posts/process/</guid>
+      <description>进程 进程内存布局 页表 栈帧 命令行参数 环境列表 </description>
+    </item>
+    
+    <item>
+      <title>进程时间</title>
+      <link>http://flyblog.tech/posts/unix-process-time/</link>
+      <pubDate>Fri, 23 Dec 2011 13:05:31 +0000</pubDate>
+      
+      <guid>http://flyblog.tech/posts/unix-process-time/</guid>
+      <description>进程时间 概述 进程时间是指进程消耗的CPU时间，分为
+ user cpu time system cpu time  times系统调用 #include &amp;lt;sys/times.h&amp;gt;clock_t times(struct tms *buf); 示例 #include &amp;lt;stdio.h&amp;gt;#include &amp;lt;sys/times.h&amp;gt;#include &amp;lt;unistd.h&amp;gt; int main() { for (long long i = 0; i &amp;lt; 10000000; i++) { getpid(); } int CLK_TCK = sysconf(_SC_CLK_TCK); // USER_HZ  struct tms tms; times(&amp;amp;tms); double utime = (double)tms.tms_utime / CLK_TCK; double stime = (double)tms.tms_stime / CLK_TCK; printf( &amp;#34;user:\t%.3fs\n&amp;#34; &amp;#34;sys:\t%.3fs\n&amp;#34;, utime, stime); } 演示 $ cc time.</description>
+    </item>
+    
+    <item>
+      <title>进程终止</title>
+      <link>http://flyblog.tech/posts/process-termination/</link>
+      <pubDate>Fri, 23 Dec 2011 13:05:31 +0000</pubDate>
+      
+      <guid>http://flyblog.tech/posts/process-termination/</guid>
+      <description>进程终止 终止方式 进程终止的两种方式
+ 正常终止 非正常终止  正常终止 系统调用
+#include &amp;lt;linux/unistd.h&amp;gt;void exit_group(int status); #include &amp;lt;unistd.h&amp;gt;void _exit(int status); 库函数
+#include &amp;lt;stdlib.h&amp;gt;void exit(int status); exit和_exit的区别是exit会额外执行以下动作:
+ Call exit handlers, in reverse order of their registration Flush stdio stream  非正常终止 进程收到信号导致的终止称为非正常终止
+硬件产生的信号
+SIGILL, SIGBUS, SIGFPE, SIGSEGV
+终端驱动产生的信号
+SIGHUP, SIGINT, SIGQUIT
+系统调用
+#include &amp;lt;signal.h&amp;gt;int kill(pid_t pid, int sig); int tkill(int tid, int sig); int tgkill(int tgid, int tid, int sig); 库函数
+#include &amp;lt;signal.h&amp;gt;#include &amp;lt;pthread.</description>
+    </item>
+    
+    <item>
+      <title>静态库</title>
+      <link>http://flyblog.tech/posts/static-library/</link>
+      <pubDate>Fri, 23 Dec 2011 13:05:31 +0000</pubDate>
+      
+      <guid>http://flyblog.tech/posts/static-library/</guid>
+      <description>静态库 编译生成对象文件 $ ls a.c b.c c.c d.c $ cc -c *.c $ ls *.o a.o b.o c.o d.o 创建静态库 $ ar -r libdemo.a *.o $ ls libdemo.a libdemo.a 查看静态库里的对象模块 $ ar -t libdemo.a a.o b.o c.o d.o 使用静态库 方法1 $ rm *.o $ echo &amp;#39;int main() {}&amp;#39; &amp;gt; main.c $ ls a.c b.c c.c d.c libdemo.a main.c $ cc -c main.c $ cc -o main main.o libdemo.a $ ls main main 方法2 $ rm main $ cc -o main main.</description>
+    </item>
+    
+    <item>
+      <title>My First Post</title>
+      <link>http://flyblog.tech/posts/my-first-post/</link>
+      <pubDate>Fri, 23 Dec 2011 09:29:31 +0000</pubDate>
+      
+      <guid>http://flyblog.tech/posts/my-first-post/</guid>
+      <description></description>
+    </item>
+    
+  </channel>
+</rss>

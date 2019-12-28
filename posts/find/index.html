@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<title>find 命令 | 我的博客</title>
+<meta charset="utf-8">
+<meta name="generator" content="Hugo 0.60.1" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="canonical" href="http://flyblog.tech/posts/find/">
+<link rel="alternate" type="application/rss+xml" href="" title="我的博客">
+<link rel="stylesheet" href="http://flyblog.tech/css/theme.css">
+<link rel="stylesheet" href="http://flyblog.tech/css/classes.css">
+
+<header class="dark">
+  <h2><a href="http://flyblog.tech/">我的博客</a></h2>
+  <nav>
+    
+  </nav>
+</header>
+
+<article>
+  <header>
+    <h1>find 命令</h1>
+    <p><time datetime="2011-12-23T13:05:31Z">December 23, 2011</time></p>
+  </header>
+  <h1 id="find-">find 命令</h1>
+<h2 id="synopsis">SYNOPSIS</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">find DIR... EXPRESSION
+</code></pre></div><h2 id="expression">EXPRESSION</h2>
+<p>表达式返回一个布尔值(true或false)</p>
+<p>表达式由以下操作组成:</p>
+<ul>
+<li>TESTS</li>
+<li>ACTIONS</li>
+<li>OPERATORS</li>
+</ul>
+<h3 id="tests">TESTS</h3>
+<p>TESTS: 测试文件的属性，返回true或false</p>
+<p>常用的TESTS有:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">-name pattern
+        Base of file name <span style="color:#f92672">(</span>the path with the leading directories removed<span style="color:#f92672">)</span> matches shell pattern pattern.
+-iname pattern
+        Like -name, but the match is <span style="color:#66d9ef">case</span> insensitive.
+-path pattern
+        File name matches shell pattern pattern.
+-ipath pattern
+        Like -path. but the match is <span style="color:#66d9ef">case</span> insensitive.
+-regex pattern
+        File name matches regular expression pattern.
+-iregex pattern
+        Like -regex, but the match is <span style="color:#66d9ef">case</span> insensitive.
+-type c
+        File is of type c:
+        b block <span style="color:#f92672">(</span>buffered<span style="color:#f92672">)</span> special
+        c character <span style="color:#f92672">(</span>unbuffered<span style="color:#f92672">)</span> special
+        d directory
+        p named pipe <span style="color:#f92672">(</span>FIFO<span style="color:#f92672">)</span>
+        f regular file
+        l symbolic  link
+        s socket
+        D door <span style="color:#f92672">(</span>Solaris<span style="color:#f92672">)</span>
+-readable
+        Matches files which are readable by the current user.
+-writable
+        Matches files which are writable by the current user.
+-executable
+        Matches files which are executable and directories which are searchable.
+</code></pre></div><h3 id="actions">ACTIONS</h3>
+<p>ACTIONS: 执行指定动作，返回true或false</p>
+<p>常用的ACTIONS有:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">-ls
+        True; list current file in ls -dils format on standard output.
+-print
+        True; print the full file name on the standard output, followed by a newline.
+-print0
+        True; print the full file name on the standard output, followed by a null character.
+-printf format
+        True; print format on the standard output, interpreting <span style="color:#e6db74">&#39;\&#39;</span> escapes and <span style="color:#e6db74">&#39;%&#39;</span> directives.
+-fprint file
+        True; print the full file name into file file.
+-fprint0 file
+        True; like -print0 but write to file like -fprint.
+-fprintf file format
+        True; like -printf but write to file like -fprint.
+-prune
+        True; <span style="color:#66d9ef">if</span> the file is a directory, <span style="color:#66d9ef">do</span> not descend into it.
+</code></pre></div><h3 id="operators">OPERATORS</h3>
+<p>OPERATORS: 连接不同操作，返回true或false</p>
+<p>常用的OPERATORS有:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">expr1 expr2
+        Two expressions in a row are taken to be joined with an implied -a; expr2 is not evaluated <span style="color:#66d9ef">if</span> expr1 is false.
+expr1 -a expr2
+        Same as expr1 expr2.
+expr1 -o expr2
+        Or; expr2 is not evaluated <span style="color:#66d9ef">if</span> expr1 is true.
+! expr
+        True <span style="color:#66d9ef">if</span> expr is false.
+<span style="color:#f92672">(</span> expr <span style="color:#f92672">)</span>
+        Force  precedence.
+</code></pre></div><h2 id="examples">EXAMPLES</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ find /usr/include/ -name <span style="color:#e6db74">&#39;signal.h&#39;</span>
+/usr/include/asm-generic/signal.h
+/usr/include/linux/signal.h
+/usr/include/x86_64-linux-gnu/sys/signal.h
+/usr/include/x86_64-linux-gnu/asm/signal.h
+/usr/include/signal.h
+</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ find $GOROOT/src/ -path <span style="color:#e6db74">&#39;*syslog*.go&#39;</span>
+/usr/lib/go-1.10/src/log/syslog/syslog_test.go
+/usr/lib/go-1.10/src/log/syslog/doc.go
+/usr/lib/go-1.10/src/log/syslog/syslog.go
+/usr/lib/go-1.10/src/log/syslog/syslog_unix.go
+/usr/lib/go-1.10/src/log/syslog/example_test.go
+</code></pre></div>
+</article>
+
+
+
+</html>

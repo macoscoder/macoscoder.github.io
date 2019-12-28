@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<title>shell job control | 我的博客</title>
+<meta charset="utf-8">
+<meta name="generator" content="Hugo 0.60.1" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="canonical" href="http://flyblog.tech/posts/shell-job-control/">
+<link rel="alternate" type="application/rss+xml" href="" title="我的博客">
+<link rel="stylesheet" href="http://flyblog.tech/css/theme.css">
+<link rel="stylesheet" href="http://flyblog.tech/css/classes.css">
+
+<header class="dark">
+  <h2><a href="http://flyblog.tech/">我的博客</a></h2>
+  <nav>
+    
+  </nav>
+</header>
+
+<article>
+  <header>
+    <h1>shell job control</h1>
+    <p><time datetime="2011-12-23T13:05:31Z">December 23, 2011</time></p>
+  </header>
+  <h1 id="shell-job-control">shell job control</h1>
+<p><code>session</code>和<code>process group</code>的设计是为了支持<code>shell job control</code></p>
+<h2 id="heading">概念说明</h2>
+<ul>
+<li><code>process group</code>: 一组进程的集合，又称为<code>job</code>; <code>pgid</code>等于<code>process group leader</code>的<code>pid</code></li>
+<li><code>process group leader</code>: 创建进程组的进程</li>
+<li><code>session</code>: 一些进程组的集合，<code>sid</code>等于<code>session leader</code>的<code>pid</code></li>
+<li><code>session leader</code>: 创建会话的进程</li>
+<li><code>controlling terminal</code>: 控制终端由<code>session leader</code>首次打开一个终端设备时建立，会话中的所有进程共享一个控制终端</li>
+<li><code>controlling process</code>: 控制终端建立后，<code>session leader</code>成为该控制终端的<code>controlling process</code></li>
+<li><code>job control</code>: 指用户同时执行多个job的能力，一个job在前台，其它job在后台</li>
+</ul>
+<p>补充说明</p>
+<ol>
+<li>一个会话最多有一个<code>foreground process group</code>，其他进程组为<code>background process group</code></li>
+<li>当用户在终端上键入<code>Ctl-C</code>, <code>Ctl-\</code>, <code>Ctl-Z</code>时，相应信号发送给前台进程组的所有成员</li>
+<li>当控制终端断开连接时，内核向<code>session leader</code>(即: 控制进程)发送<code>SIGHUP</code>和<code>SIGCONT</code>信号，此时分两种情况
+<ol>
+<li>如果控制进程捕获或忽略了<code>SIGHUP</code>信号，则内核不向前台进程组发送<code>SIGHUP``SIGCONT</code>信号</li>
+<li>如果控制进程没有捕获或忽略<code>SIGHUP</code>信号，则内核向前台进程组发送<code>SIGHUP</code>和<code>SIGCONT</code>信号</li>
+</ol>
+</li>
+</ol>
+<p>上述第3点的第1小点的一个示例是<code>shell</code>，在<code>shell</code>退出之前会发送<code>SIGHUP</code>和<code>SIGCONT</code>信号给<code>shell</code>创建的所有进程组的成员<br>
+<code>nohup(1)</code>命令忽略<code>SIGHUP</code>信号，从而避免被<code>shell</code>发送的<code>SIGHUP</code>信号杀掉</p>
+<p>上述第2点和第3点的第2小点的示例将在后面给出</p>
+<h2 id="heading1">示意图</h2>
+<p><img src="/image/session.png" alt="session"></p>
+<h2 id="heading2">进程组</h2>
+<h3 id="id">获取进程组id</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;unistd.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>pid_t <span style="color:#a6e22e">getpgrp</span>(<span style="color:#66d9ef">void</span>); <span style="color:#75715e">/* equivalent to getpgid(0); */</span>
+pid_t <span style="color:#a6e22e">getpgid</span>(pid_t pid); <span style="color:#75715e">/* obsolete */</span>
+</code></pre></div><h3 id="id1">设置进程组id</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;unistd.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">setpgid</span>(pid_t pid, pid_t pgid);
+<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">setpgrp</span>(<span style="color:#66d9ef">void</span>); <span style="color:#75715e">/* equivalent to setpgid(0, 0); obsolete */</span>
+</code></pre></div><h2 id="heading3">会话</h2>
+<h3 id="id2">获取会话id</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;unistd.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>pid_t <span style="color:#a6e22e">getsid</span>(pid_t pid);
+</code></pre></div><h3 id="heading4">创建会话</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;unistd.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>pid_t <span style="color:#a6e22e">setsid</span>(<span style="color:#66d9ef">void</span>);
+</code></pre></div><ol>
+<li>当调用进程非进程组leader时，<code>setsid</code>创建会话，其中包含一个进程组，其中包含调用进程，<code>sid`,</code>pgid<code>等于调用进程的</code>pid`</li>
+<li>当调用进程是进程组leader时，<code>setsid</code>返回-1，并设置<code>errno</code>为<code>EPERM</code></li>
+</ol>
+<h2 id="heading5">控制终端</h2>
+<h3 id="heading6">获取控制终端描述符</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;fcntl.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> fd <span style="color:#f92672">=</span> open(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">/dev/tty</span><span style="color:#e6db74">&#34;</span>, O_RDWR);
+</code></pre></div><p>如果调用进程没有控制终端，则<code>open</code>返回-1，并设置<code>errno</code>为<code>ENXIO</code></p>
+<p>这个方法可以确保获取控制终端的描述符，而描述符0,1,2可能被重定向</p>
+<h3 id="heading7">移除调用进程的控制终端</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;fcntl.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;sys/ioctl.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> fd <span style="color:#f92672">=</span> open(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">/dev/tty</span><span style="color:#e6db74">&#34;</span>, O_RDWR);
+ioctl(fd, TIOCNOTTY);
+</code></pre></div><p>如果调用进程是控制进程，则内核向前台进程组发送<code>SIGHUP</code>和<code>SIGCONT</code>信号</p>
+<h2 id="heading8">前台进程组</h2>
+<p>前台进程组是由终端驱动维护(跟踪)的</p>
+<h3 id="heading9">获取控制终端的前台进程组</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;unistd.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>pid_t <span style="color:#a6e22e">tcgetpgrp</span>(<span style="color:#66d9ef">int</span> fd);
+<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">tcsetpgrp</span>(<span style="color:#66d9ef">int</span> fd, pid_t pgrp);
+</code></pre></div><h3 id="heading10">设置控制终端的前台进程组</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;unistd.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">tcsetpgrp</span>(<span style="color:#66d9ef">int</span> fd, pid_t pgrp);
+</code></pre></div><h2 id="heading11">示例</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&#34;log.h&#34;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;errno.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;fcntl.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;signal.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;string.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;unistd.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>
+<span style="color:#66d9ef">static</span> pid_t <span style="color:#a6e22e">create_child</span>(<span style="color:#66d9ef">void</span> (<span style="color:#f92672">*</span>func)()) {
+    pid_t pid <span style="color:#f92672">=</span> fork();
+    <span style="color:#66d9ef">switch</span> (pid) {
+    <span style="color:#66d9ef">case</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span><span style="color:#f92672">:</span>
+        fatalf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">fork</span><span style="color:#e6db74">&#34;</span>);
+    <span style="color:#66d9ef">case</span> <span style="color:#ae81ff">0</span><span style="color:#f92672">:</span>
+        func();
+        _exit(<span style="color:#ae81ff">0</span>);
+    <span style="color:#66d9ef">default</span><span style="color:#f92672">:</span>
+        <span style="color:#66d9ef">return</span> pid;
+    }
+}
+
+<span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">child</span>() {
+    setpgid(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>); <span style="color:#75715e">// 确保无论父进程先运行还是子进程先运行，子进程的pgid都会被设置
+</span><span style="color:#75715e"></span>
+    sigset_t mask;
+    sigfillset(<span style="color:#f92672">&amp;</span>mask);
+    sigprocmask(SIG_SETMASK, <span style="color:#f92672">&amp;</span>mask, NULL); <span style="color:#75715e">// 屏蔽所有信号
+</span><span style="color:#75715e"></span>
+    <span style="color:#66d9ef">for</span> (;;) {
+        <span style="color:#66d9ef">int</span> sig;
+        sigwait(<span style="color:#f92672">&amp;</span>mask, <span style="color:#f92672">&amp;</span>sig);
+        infof(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">child pid = %d, sig = %d (%s)</span><span style="color:#e6db74">&#34;</span>, getpid(), sig, strsignal(sig));
+    }
+}
+
+<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>() {
+    pid_t pid <span style="color:#f92672">=</span> create_child(child);
+    setpgid(pid, pid); <span style="color:#75715e">// 确保无论父进程先运行还是子进程先运行，子进程的pgid都会被设置
+</span><span style="color:#75715e"></span>
+    <span style="color:#66d9ef">int</span> fd <span style="color:#f92672">=</span> open(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">/dev/tty</span><span style="color:#e6db74">&#34;</span>, O_RDWR); <span style="color:#75715e">// 获取控制终端描述符
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">if</span> (fd <span style="color:#f92672">=</span><span style="color:#f92672">=</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>)
+        fatalf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">open: %s</span><span style="color:#e6db74">&#34;</span>, strerror(errno));
+
+    tcsetpgrp(fd, pid);         <span style="color:#75715e">// 将子进程所在的进程组设为前台进程组
+</span><span style="color:#75715e"></span>    pid_t pgid <span style="color:#f92672">=</span> tcgetpgrp(fd); <span style="color:#75715e">// 查看前台进程组id
+</span><span style="color:#75715e"></span>    infof(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">foreground pgid = %d</span><span style="color:#e6db74">&#34;</span>, pgid);
+
+    pause();
+}
+</code></pre></div><h3 id="sighup"><code>SIGHUP</code>信号的演示</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ tty
+/dev/pts/1
+$ cc -pthread log.c main.c
+$ exec ./a.out 2&gt; log.txt
+</code></pre></div><p>再开一个终端窗口</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ ps -t pts/1 -o sid,pgid,pid,tty,comm
+  SID  PGID   PID TTY      COMMAND
+ <span style="color:#ae81ff">7234</span>  <span style="color:#ae81ff">7234</span>  <span style="color:#ae81ff">7234</span> pts/1    a.out
+ <span style="color:#ae81ff">7234</span>  <span style="color:#ae81ff">7274</span>  <span style="color:#ae81ff">7274</span> pts/1    a.out
+$ cat log.txt
+info: foreground pgid <span style="color:#f92672">=</span> <span style="color:#ae81ff">7274</span>
+</code></pre></div><p>从上面的输出看到，pid为7234的进程为控制进程，前台进程组id为7274<br>
+根据前面补充说明的第3点的第2小点可知，当关掉<code>pts/1</code>终端窗口时，内核将发送<code>SIGHUP</code>和<code>SIGCONT</code>给前台进程组</p>
+<p>关掉<code>pts/1</code>终端窗口后，查看log.txt</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ cat log.txt
+info: foreground pgid <span style="color:#f92672">=</span> <span style="color:#ae81ff">7274</span>
+info: child pid <span style="color:#f92672">=</span> 7274, sig <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span> <span style="color:#f92672">(</span>Hangup<span style="color:#f92672">)</span>
+info: child pid <span style="color:#f92672">=</span> 7274, sig <span style="color:#f92672">=</span> <span style="color:#ae81ff">18</span> <span style="color:#f92672">(</span>Continued<span style="color:#f92672">)</span>
+</code></pre></div><p>从上面的输出看到，前台进程组中的进程收到了<code>SIGHUP</code>和<code>SIGCONT</code>信号</p>
+<h3 id="sigint-sigquit-sigtstp"><code>SIGINT</code>, <code>SIGQUIT</code>, <code>SIGTSTP</code>演示</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ ./a.out
+^Cinfo: child pid <span style="color:#f92672">=</span> 7481, sig <span style="color:#f92672">=</span> <span style="color:#ae81ff">2</span> <span style="color:#f92672">(</span>Interrupt<span style="color:#f92672">)</span>
+^<span style="color:#ae81ff">\i</span>nfo: child pid <span style="color:#f92672">=</span> 7481, sig <span style="color:#f92672">=</span> <span style="color:#ae81ff">3</span> <span style="color:#f92672">(</span>Quit<span style="color:#f92672">)</span>
+^Zinfo: child pid <span style="color:#f92672">=</span> 7481, sig <span style="color:#f92672">=</span> <span style="color:#ae81ff">20</span> <span style="color:#f92672">(</span>Stopped<span style="color:#f92672">)</span>
+</code></pre></div><p>从上面输出看到，前台进程组中的进程收到了<code>SIGINT</code>, <code>SIGQUIT</code>, <code>SIGTSTP</code>等信号</p>
+<h2 id="job-control">job control</h2>
+<h3 id="heading12">在后台执行命令(或管道命令)</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ sleep <span style="color:#ae81ff">1000</span> &amp;
+<span style="color:#f92672">[</span>1<span style="color:#f92672">]</span> <span style="color:#ae81ff">7636</span>
+$ sleep <span style="color:#ae81ff">1000</span> &amp;
+<span style="color:#f92672">[</span>2<span style="color:#f92672">]</span> <span style="color:#ae81ff">7637</span>
+$ sleep <span style="color:#ae81ff">1000</span> &amp;
+<span style="color:#f92672">[</span>3<span style="color:#f92672">]</span> <span style="color:#ae81ff">7638</span>
+$ jobs
+<span style="color:#f92672">[</span>1<span style="color:#f92672">]</span>   Running                 sleep <span style="color:#ae81ff">1000</span> &amp;
+<span style="color:#f92672">[</span>2<span style="color:#f92672">]</span>-  Running                 sleep <span style="color:#ae81ff">1000</span> &amp;
+<span style="color:#f92672">[</span>3<span style="color:#f92672">]</span>+  Running                 sleep <span style="color:#ae81ff">1000</span> &amp;
+</code></pre></div><p>说明</p>
+<ul>
+<li>方括号里的号码是任务号</li>
+<li>方括号后面的是进程id(或管道中最后一个命令的进程id)</li>
+<li><code>jobs</code>输出所有后台任务</li>
+<li><code>+</code>表示当前任务</li>
+<li><code>-</code>表示上一个当前任务</li>
+</ul>
+<h3 id="fg-bg">fg, bg</h3>
+<p><code>fg</code>命令将指定任务设为前台任务
+<code>bg</code>命令恢复指定的已停止的后台任务</p>
+<p>任务号的引用</p>
+<ul>
+<li>%+ 引用当前任务(默认情况)</li>
+<li>%- 引用上一个当前任务</li>
+<li>%n 引用指定的任务</li>
+</ul>
+<h3 id="job-control1">job control示意图</h3>
+<p><img src="/image/job_control.png" alt="job control"></p>
+<h3 id="job-controlsigtstp-sigttin-sigttousigint-sigquit-sighup">job control信号(SIGTSTP, SIGTTIN, SIGTTOU)和终端生成信号（SIGINT, SIGQUIT, SIGHUP）的处理</h3>
+<p>处理job control信号和终端生成信号的一般规则是，如果这些信号的当前动作是忽略，则不处理</p>
+<p>一个例子是：当命令是使用<code>nohup(1)</code>执行时，<code>nohup(1)</code>会忽略<code>SIGHUP</code>信号，这种情况下，调用者的意图就是忽略(不处理)<code>SIGHUP</code>信号<br>
+也就是当终端断开连接时，进程继续执行</p>
+<p>处理上述的一般规则外，对于<code>SIGTSTP</code>信号的处理还需特殊处理</p>
+<p>大多数命令行程序都不需要处理<code>SIGTSTP</code>信号，但是执行屏幕处理的程序(e.g., vi)需要处理<code>SIGTSTP</code>信号<br>
+因为这类程序需要修改终端属性，当进程被挂起时，需要恢复终端设置</p>
+<p><code>SIGTSTP</code>信号的设计方法是:</p>
+<ol>
+<li>保存当前终端设置</li>
+<li>恢复原来的终端设置</li>
+<li>重置<code>SIGTSTP</code>的动作为<code>SIG_DFL</code></li>
+<li>raise(SIGTSTP)</li>
+<li>unblock <code>SIGTSTP</code></li>
+<li>reblock <code>SIGTSTP</code></li>
+<li>重建<code>SIGTSTP</code>的信号处理器</li>
+<li>恢复步骤1保存的终端设置</li>
+</ol>
+<p>说明</p>
+<ul>
+<li>重置<code>SIGTSTP</code>的动作为<code>SIG_DFL</code>，以便再次发送SIGTSTP信号后，停止进程</li>
+<li>raise(SIGTSTP)后，并不会立即是进程停止，而是信号被pending</li>
+<li>在执行信号处理器时，默认当前信号被屏蔽，unblock <code>SIGTSTP</code>后，pending的信号立即递送给进程，进程立即停止</li>
+<li>在进程恢复执行后，reblock <code>SIGTSTP</code>，以便后续代码的执行不会再次被<code>SIGTSTP</code>中断</li>
+</ul>
+<h3 id="heading13">孤儿进程组</h3>
+<p>当一个进程组里的所有成员与当前会话中其它进程组都没有血缘关系时，该进程组为孤儿进程组<br>
+这里的血缘关系仅指父关系，即没有父进程，所以称为孤儿进程组</p>
+<p>进程组变为孤儿进程组的发生情况: 当该进程组的成员与当前会话中其他进程组最后的血缘关系断掉时发生，也即:</p>
+<ol>
+<li>该进程组中最后一个有父进程(在当前会话的其他进程组中)的成员终止时</li>
+<li>该进程组中最后一个有父进程(在当前会话的其他进程组中)的成员的父亲终止时</li>
+</ol>
+<p>要注意的是，孤儿进程组里的成员并不一定都是孤儿进程，有可能父进程在别的会话中，例如:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ ps -o stat,sid,pgid,pid,ppid,comm -s <span style="color:#e6db74">`</span>echo $$<span style="color:#e6db74">`</span>
+STAT   SID  PGID   PID  PPID COMMAND
+Ss   <span style="color:#ae81ff">16173</span> <span style="color:#ae81ff">16173</span> <span style="color:#ae81ff">16173</span> <span style="color:#ae81ff">16172</span> bash
+R+   <span style="color:#ae81ff">16173</span> <span style="color:#ae81ff">16188</span> <span style="color:#ae81ff">16188</span> <span style="color:#ae81ff">16173</span> ps
+</code></pre></div><p>这里的<code>bash</code>所在的进程组即为孤儿进程组，<code>bash</code>有父进程(16172)，但是不在当前会话(16173)中</p>
+<p>当一个进程组变为孤儿进程组时，如果该进程组内有进程处于stop状态，那么内核向该孤儿进程组内所有成员发送一个<code>SIGHUP</code>和<code>SIGCONT</code>信号<br>
+如果内核不这么做，那些停止的成员可能永远都不会恢复运行</p>
+<p>孤儿进程组中的进程读写控制终端时返回<code>EIO</code>，而不是收到<code>SIGTTIN</code>或<code>SIGTTOU</code>信号，这两个信号会导致进程停止，一旦停止，并不能通过job control<br>
+恢复运行</p>
+<p>通过<code>kill(1)</code>命令显式向孤儿进程组内的进程发送<code>SIGTSTP</code>, <code>SIGTTIN</code>, <code>SIGTTOU</code>信号时：</p>
+<ol>
+<li>如果接受进程捕获或忽略了信号，则信号被递送</li>
+<li>否则信号不会被递送，而是被内核丢弃</li>
+</ol>
+
+</article>
+
+
+
+</html>

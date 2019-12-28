@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<title>孤儿进程和僵尸进程 | 我的博客</title>
+<meta charset="utf-8">
+<meta name="generator" content="Hugo 0.60.1" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="canonical" href="http://flyblog.tech/posts/orphans-and-zombies/">
+<link rel="alternate" type="application/rss+xml" href="" title="我的博客">
+<link rel="stylesheet" href="http://flyblog.tech/css/theme.css">
+<link rel="stylesheet" href="http://flyblog.tech/css/classes.css">
+
+<header class="dark">
+  <h2><a href="http://flyblog.tech/">我的博客</a></h2>
+  <nav>
+    
+  </nav>
+</header>
+
+<article>
+  <header>
+    <h1>孤儿进程和僵尸进程</h1>
+    <p><time datetime="2011-12-23T13:05:31Z">December 23, 2011</time></p>
+  </header>
+  <h1 id="heading">孤儿进程和僵尸进程</h1>
+<h2 id="heading1">孤儿进程</h2>
+<p>当父进程死了之后，子进程变成孤儿进程，并被pid为1的进程(<code>init`/</code>systemd<code>)收养\ 孤儿进程只是一种称谓，并不是内核中有什么数据结构去标识一个进程是孤儿进程，判断一个进程是否是孤儿进程的一个方法是:\ 使用</code>getppid<code>系统调用获取父进程id，如果是1，则该进程是孤儿进程，前提是该进程的生父不是</code>init<code>\ 如果该进程的生父是</code>init<code>，那么该进程永远不会变成孤儿进程，因为</code>init`进程是永远不死的</p>
+<h2 id="heading2">僵尸进程</h2>
+<p>默认情况下当子进程死后会变成僵尸(活着的尸体)进程<br>
+僵尸进程的大部分资源已经被回收，只有一个进程表项仍然在内核的进程表中<br>
+当父进程调用<code>wait</code>执行收尸操作后，该表项会从进程表中移除<br>
+如果父进程没有收尸，自己就死了，那么该僵尸进程变成孤儿僵尸进程，由<code>init</code>进程替其收尸</p>
+<p>僵尸进程就像电影里的僵尸一样，是杀不死的，即使用<code>SIGKILL</code>也杀不死</p>
+<p>前面说了默认情况下当子进程死后会变成僵尸进程，但是有两个方法可以避免子进程变成僵尸进程</p>
+<ul>
+<li>父进程显式忽略<code>SIGCHLD</code>信号</li>
+<li>通过<code>sigaction</code>设置<code>SIGCHLD</code>信号处理器时，指定<code>SA_NOCLDWAIT</code>标志</li>
+</ul>
+<p>这种情况下，父进程不能通过<code>wait</code>获取子进程的死因，但是<code>wait</code>会阻塞，直到所有子进程都终止后才返回且返回值为-1</p>
+<h2 id="heading3">孤儿进程示例</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">// orphan.c
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;stdio.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;stdlib.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;unistd.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>
+<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>() {
+    <span style="color:#66d9ef">int</span> pid <span style="color:#f92672">=</span> fork();
+    <span style="color:#66d9ef">switch</span> (pid) {
+    <span style="color:#66d9ef">case</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span><span style="color:#f92672">:</span> <span style="color:#75715e">// error
+</span><span style="color:#75715e"></span>        exit(<span style="color:#ae81ff">1</span>);
+    <span style="color:#66d9ef">case</span> <span style="color:#ae81ff">0</span><span style="color:#f92672">:</span> <span style="color:#75715e">// child
+</span><span style="color:#75715e"></span>        pause();
+        _exit(<span style="color:#ae81ff">0</span>);
+    <span style="color:#66d9ef">default</span><span style="color:#f92672">:</span> <span style="color:#75715e">// parent
+</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">break</span>;
+    }
+    fprintf(stderr, <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">child(%d)</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, pid);
+    fprintf(stderr, <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">parent sleeping...</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+    sleep(<span style="color:#ae81ff">10</span>);
+    fprintf(stderr, <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">parent(%d) exited</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, getpid());
+}
+</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ cc orphan.c
+$ ./a.out
+child<span style="color:#f92672">(</span>1427<span style="color:#f92672">)</span>
+parent sleeping...
+parent<span style="color:#f92672">(</span>1426<span style="color:#f92672">)</span> exited
+$
+</code></pre></div><p>另开一个会话，在父进程退出之前查看进程树</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ pstree -ps <span style="color:#ae81ff">1427</span>
+systemd<span style="color:#f92672">(</span>1<span style="color:#f92672">)</span>───sshd<span style="color:#f92672">(</span>512<span style="color:#f92672">)</span>───sshd<span style="color:#f92672">(</span>22582<span style="color:#f92672">)</span>───sshd<span style="color:#f92672">(</span>22600<span style="color:#f92672">)</span>───zsh<span style="color:#f92672">(</span>22601<span style="color:#f92672">)</span>───a.out<span style="color:#f92672">(</span>1426<span style="color:#f92672">)</span>───a.out<span style="color:#f92672">(</span>1427<span style="color:#f92672">)</span>
+</code></pre></div><p>在父进程退出之后查看进程树</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ pstree -ps <span style="color:#ae81ff">1427</span>
+systemd<span style="color:#f92672">(</span>1<span style="color:#f92672">)</span>───a.out<span style="color:#f92672">(</span>1427<span style="color:#f92672">)</span>
+</code></pre></div><p>可以看到子进程变成孤儿进程，被<code>systemd</code>进程收养了</p>
+<h2 id="heading4">僵尸进程示例</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">// zombie.c
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;stdio.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;stdlib.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;unistd.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>
+<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>() {
+    <span style="color:#66d9ef">int</span> pid <span style="color:#f92672">=</span> fork();
+    <span style="color:#66d9ef">switch</span> (pid) {
+    <span style="color:#66d9ef">case</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span><span style="color:#f92672">:</span> <span style="color:#75715e">// error
+</span><span style="color:#75715e"></span>        exit(<span style="color:#ae81ff">1</span>);
+    <span style="color:#66d9ef">case</span> <span style="color:#ae81ff">0</span><span style="color:#f92672">:</span> <span style="color:#75715e">// child
+</span><span style="color:#75715e"></span>        fprintf(stderr, <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">child(%d) exited</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, getpid());
+        _exit(<span style="color:#ae81ff">0</span>);
+    <span style="color:#66d9ef">default</span><span style="color:#f92672">:</span> <span style="color:#75715e">// parent
+</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">break</span>;
+    }
+    pause();
+}
+</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ cc zombie.c
+$ ./a.out&amp;
+<span style="color:#f92672">[</span>1<span style="color:#f92672">]</span> <span style="color:#ae81ff">1886</span>
+child<span style="color:#f92672">(</span>1889<span style="color:#f92672">)</span> exited
+</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ ps -eo ppid,pid,s,comm | grep -E <span style="color:#e6db74">&#39;PPID|a.out&#39;</span>
+ PPID   PID S COMMAND
+<span style="color:#ae81ff">22601</span>  <span style="color:#ae81ff">1886</span> S a.out
+ <span style="color:#ae81ff">1886</span>  <span style="color:#ae81ff">1889</span> Z a.out &lt;defunct&gt;
+</code></pre></div><p>从上面的演示可以看出，子进程退出后，父进程没有收尸(<code>wait</code>)，子进程变为僵尸状态(状态列<code>Z</code>和命令列的<code>&lt;defunct&gt;</code>)</p>
+<p>尝试强行杀掉僵尸进程</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ kill -KILL <span style="color:#ae81ff">1889</span>
+$ ps -eo ppid,pid,s,comm | grep -E <span style="color:#e6db74">&#39;PPID|a.out&#39;</span>
+ PPID   PID S COMMAND
+<span style="color:#ae81ff">22601</span>  <span style="color:#ae81ff">1886</span> S a.out
+ <span style="color:#ae81ff">1886</span>  <span style="color:#ae81ff">1889</span> Z a.out &lt;defunct&gt;
+</code></pre></div><p>从上面的输出看出，僵尸进程还在，也就是<code>SIGKILL</code>也是杀不死僵尸进程的</p>
+<p>杀掉父进程</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ kill <span style="color:#ae81ff">1886</span>
+<span style="color:#f92672">[</span>1<span style="color:#f92672">]</span>  + <span style="color:#ae81ff">1886</span> terminated  ./a.out
+$ ps -e | grep a.out
+$
+</code></pre></div><p>从上面看到，当父进程被杀掉后，僵尸子进程不见了，僵尸子进程是被<code>init</code>进程收尸了</p>
+
+</article>
+
+
+
+</html>

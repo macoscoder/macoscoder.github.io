@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<title>条件变量 | 我的博客</title>
+<meta charset="utf-8">
+<meta name="generator" content="Hugo 0.60.1" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="canonical" href="http://flyblog.tech/posts/cond/">
+<link rel="alternate" type="application/rss+xml" href="" title="我的博客">
+<link rel="stylesheet" href="http://flyblog.tech/css/theme.css">
+<link rel="stylesheet" href="http://flyblog.tech/css/classes.css">
+
+<header class="dark">
+  <h2><a href="http://flyblog.tech/">我的博客</a></h2>
+  <nav>
+    
+  </nav>
+</header>
+
+<article>
+  <header>
+    <h1>条件变量</h1>
+    <p><time datetime="2011-12-23T13:05:31Z">December 23, 2011</time></p>
+  </header>
+  <h1 id="heading">条件变量</h1>
+<h2 id="heading1">函数原型</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;pthread.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>
+pthread_cond_t cond <span style="color:#f92672">=</span> PTHREAD_COND_INITIALIZER;
+
+<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">pthread_cond_init</span>(pthread_cond_t <span style="color:#f92672">*</span>cond, pthread_condattr_t <span style="color:#f92672">*</span>cond_attr);
+<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">pthread_cond_destroy</span>(pthread_cond_t <span style="color:#f92672">*</span>cond);
+<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">pthread_cond_signal</span>(pthread_cond_t <span style="color:#f92672">*</span>cond);
+<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">pthread_cond_broadcast</span>(pthread_cond_t <span style="color:#f92672">*</span>cond);
+<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">pthread_cond_wait</span>(pthread_cond_t <span style="color:#f92672">*</span>cond, pthread_mutex_t <span style="color:#f92672">*</span>mutex);
+<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">pthread_cond_timedwait</span>(pthread_cond_t <span style="color:#f92672">*</span>cond, pthread_mutex_t <span style="color:#f92672">*</span>mutex, <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">struct</span> timespec <span style="color:#f92672">*</span>abstime);
+</code></pre></div><h2 id="golangchannel">用条件变量实现golang的channel</h2>
+<p>golang的<code>channel</code>是goroutine之间通信的通道</p>
+<p>要实现<code>channel</code>，需要先实现一个队列</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">// queue.c
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&#34;queue.h&#34;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;stdlib.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>
+<span style="color:#66d9ef">struct</span> node {
+    <span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>value;        <span style="color:#75715e">// 用户数据
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">struct</span> node <span style="color:#f92672">*</span>next;  <span style="color:#75715e">// 指向下一个结点
+</span><span style="color:#75715e"></span>};
+
+<span style="color:#66d9ef">struct</span> queue {
+    <span style="color:#66d9ef">struct</span> node <span style="color:#f92672">*</span>front; <span style="color:#75715e">// 指向队头
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">struct</span> node <span style="color:#f92672">*</span>rear;  <span style="color:#75715e">// 指向队尾
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">int</span> len;            <span style="color:#75715e">// 队列长度
+</span><span style="color:#75715e"></span>};
+
+<span style="color:#75715e">// 新建空队列
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">struct</span> queue <span style="color:#f92672">*</span><span style="color:#a6e22e">queue_new</span>() {
+    <span style="color:#66d9ef">struct</span> queue <span style="color:#f92672">*</span>q <span style="color:#f92672">=</span> calloc(<span style="color:#ae81ff">1</span>, <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">struct</span> queue));
+    q<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>front <span style="color:#f92672">=</span> NULL;
+    q<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>rear <span style="color:#f92672">=</span> NULL;
+    q<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>len <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+    <span style="color:#66d9ef">return</span> q;
+}
+
+<span style="color:#75715e">// 什么也不做的删除器
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">inline</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">_del</span>(<span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>val) {
+}
+
+<span style="color:#75715e">// 释放队列
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">queue_free</span>(<span style="color:#66d9ef">struct</span> queue <span style="color:#f92672">*</span>q, <span style="color:#66d9ef">void</span> (<span style="color:#f92672">*</span>del)(<span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>)) {
+    del <span style="color:#f92672">=</span> del <span style="color:#f92672">?</span><span style="color:#f92672">:</span> _del;
+    <span style="color:#66d9ef">while</span> (q<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>len <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">0</span>)
+        del(queue_dequeue(q));
+    free(q);
+}
+
+<span style="color:#75715e">// 向队尾添加结点
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">queue_enqueue</span>(<span style="color:#66d9ef">struct</span> queue <span style="color:#f92672">*</span>q, <span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>val) {
+    <span style="color:#66d9ef">struct</span> node <span style="color:#f92672">*</span>node <span style="color:#f92672">=</span> calloc(<span style="color:#ae81ff">1</span>, <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">struct</span> node));
+    node<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>value <span style="color:#f92672">=</span> val;
+    node<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>next <span style="color:#f92672">=</span> NULL;
+    <span style="color:#66d9ef">if</span> (q<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>len <span style="color:#f92672">=</span><span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>) {
+        q<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>front <span style="color:#f92672">=</span> node;
+        q<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>rear <span style="color:#f92672">=</span> node;
+    } <span style="color:#66d9ef">else</span> {
+        q<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>rear<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>next <span style="color:#f92672">=</span> node;
+        q<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>rear <span style="color:#f92672">=</span> node;
+    }
+    q<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>len<span style="color:#f92672">+</span><span style="color:#f92672">+</span>;
+}
+
+<span style="color:#75715e">// 从队头删除结点
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">queue_dequeue</span>(<span style="color:#66d9ef">struct</span> queue <span style="color:#f92672">*</span>q) {
+    <span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>val <span style="color:#f92672">=</span> q<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>front<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>value;
+    <span style="color:#66d9ef">struct</span> node <span style="color:#f92672">*</span>front <span style="color:#f92672">=</span> q<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>front<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>next;
+    free(q<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>front);
+    q<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>front <span style="color:#f92672">=</span> front;
+    q<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>len<span style="color:#f92672">-</span><span style="color:#f92672">-</span>;
+    <span style="color:#66d9ef">if</span> (q<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>len <span style="color:#f92672">=</span><span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>)
+        q<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>rear <span style="color:#f92672">=</span> NULL;
+    <span style="color:#66d9ef">return</span> val;
+}
+
+<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">queue_len</span>(<span style="color:#66d9ef">struct</span> queue <span style="color:#f92672">*</span>q) {
+    <span style="color:#66d9ef">return</span> q<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>len;
+}
+</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">// queue.h
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">ifndef QUEUE_H</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">define QUEUE_H</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>
+<span style="color:#66d9ef">typedef</span> <span style="color:#66d9ef">struct</span> queue queue;
+
+<span style="color:#66d9ef">extern</span> queue <span style="color:#f92672">*</span><span style="color:#a6e22e">queue_new</span>();
+<span style="color:#66d9ef">extern</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">queue_free</span>(queue <span style="color:#f92672">*</span>q, <span style="color:#66d9ef">void</span> (<span style="color:#f92672">*</span>del)(<span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>));
+<span style="color:#66d9ef">extern</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">queue_enqueue</span>(queue <span style="color:#f92672">*</span>q, <span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>val);
+<span style="color:#66d9ef">extern</span> <span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">queue_dequeue</span>(queue <span style="color:#f92672">*</span>q);
+<span style="color:#66d9ef">extern</span> <span style="color:#66d9ef">int</span> <span style="color:#a6e22e">queue_len</span>(queue <span style="color:#f92672">*</span>q);
+
+<span style="color:#75715e">#</span><span style="color:#75715e">endif </span><span style="color:#75715e">// QUEUE_H
+</span></code></pre></div><p>有了<code>queue</code>之后可以实现<code>channel</code></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">// channel.c
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&#34;channel.h&#34;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&#34;queue.h&#34;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;pthread.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;stdlib.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;time.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>
+<span style="color:#75715e">// 超时时间
+</span><span style="color:#75715e"></span><span style="color:#75715e">// 接收线程定时醒来查看channel是否有数据
+</span><span style="color:#75715e"></span><span style="color:#75715e">// 发送线程定时醒来查看channel是否有容量
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">ifndef TIMEOUT</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">define TIMEOUT 100000000 </span><span style="color:#75715e">// 100ms
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">endif</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>
+<span style="color:#66d9ef">struct</span> channel {
+    pthread_cond_t cond_send; <span style="color:#75715e">// 条件变量，发送线程等待条件
+</span><span style="color:#75715e"></span>    pthread_cond_t cond_recv; <span style="color:#75715e">// 条件变量，接收线程等待条件
+</span><span style="color:#75715e"></span>    pthread_mutex_t mutex;    <span style="color:#75715e">// 互斥锁，负责保护q
+</span><span style="color:#75715e"></span>    queue <span style="color:#f92672">*</span>q;                 <span style="color:#75715e">// 保存数据的队列
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">int</span> cap;                  <span style="color:#75715e">// 最大容量
+</span><span style="color:#75715e"></span>};
+
+<span style="color:#75715e">// 创建channel
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">struct</span> channel <span style="color:#f92672">*</span><span style="color:#a6e22e">channel_make</span>(<span style="color:#66d9ef">int</span> cap) {
+    <span style="color:#66d9ef">struct</span> channel <span style="color:#f92672">*</span>c <span style="color:#f92672">=</span> calloc(<span style="color:#ae81ff">1</span>, <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">struct</span> channel));
+    pthread_cond_init(<span style="color:#f92672">&amp;</span>c<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>cond_send, NULL);
+    pthread_cond_init(<span style="color:#f92672">&amp;</span>c<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>cond_recv, NULL);
+    pthread_mutex_init(<span style="color:#f92672">&amp;</span>c<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>mutex, NULL);
+    c<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>q <span style="color:#f92672">=</span> queue_new();
+    c<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>cap <span style="color:#f92672">=</span> cap;
+    <span style="color:#66d9ef">return</span> c;
+}
+
+<span style="color:#75715e">// 释放channel
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">channel_release</span>(<span style="color:#66d9ef">struct</span> channel <span style="color:#f92672">*</span>c, <span style="color:#66d9ef">void</span> (<span style="color:#f92672">*</span>del)(<span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>)) {
+    pthread_cond_destroy(<span style="color:#f92672">&amp;</span>c<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>cond_send);
+    pthread_cond_destroy(<span style="color:#f92672">&amp;</span>c<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>cond_recv);
+    pthread_mutex_destroy(<span style="color:#f92672">&amp;</span>c<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>mutex);
+    queue_free(c<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>q, del);
+    free(c);
+}
+
+<span style="color:#66d9ef">static</span> <span style="color:#66d9ef">struct</span> timespec <span style="color:#a6e22e">make_abstime</span>() {
+    <span style="color:#66d9ef">struct</span> timespec ts;
+    clock_gettime(CLOCK_REALTIME, <span style="color:#f92672">&amp;</span>ts);
+    ts.tv_sec <span style="color:#f92672">+</span><span style="color:#f92672">=</span> TIMEOUT <span style="color:#f92672">/</span> <span style="color:#ae81ff">1000000000</span>;
+    ts.tv_nsec <span style="color:#f92672">+</span><span style="color:#f92672">=</span> TIMEOUT <span style="color:#f92672">%</span> <span style="color:#ae81ff">1000000000</span>;
+    <span style="color:#66d9ef">return</span> ts;
+}
+
+<span style="color:#75715e">// 发送数据到channel里
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">channel_send</span>(<span style="color:#66d9ef">struct</span> channel <span style="color:#f92672">*</span>c, <span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>val) {
+    pthread_mutex_lock(<span style="color:#f92672">&amp;</span>c<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>mutex);
+    queue_enqueue(c<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>q, val);
+    <span style="color:#66d9ef">while</span> (queue_len(c<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>q) <span style="color:#f92672">&gt;</span> c<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>cap) { <span style="color:#75715e">// 当队列满时通知接收线程
+</span><span style="color:#75715e"></span>        pthread_cond_signal(<span style="color:#f92672">&amp;</span>c<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>cond_recv);
+        <span style="color:#66d9ef">struct</span> timespec ts <span style="color:#f92672">=</span> make_abstime();
+        pthread_cond_timedwait(<span style="color:#f92672">&amp;</span>c<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>cond_send, <span style="color:#f92672">&amp;</span>c<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>mutex, <span style="color:#f92672">&amp;</span>ts);
+    }
+    pthread_mutex_unlock(<span style="color:#f92672">&amp;</span>c<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>mutex);
+}
+
+<span style="color:#75715e">// 从channel接收数据
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">channel_receive</span>(<span style="color:#66d9ef">struct</span> channel <span style="color:#f92672">*</span>c) {
+    pthread_mutex_lock(<span style="color:#f92672">&amp;</span>c<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>mutex);
+    <span style="color:#66d9ef">while</span> (queue_len(c<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>q) <span style="color:#f92672">=</span><span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>) { <span style="color:#75715e">// 当队列空时通知发送线程
+</span><span style="color:#75715e"></span>        pthread_cond_signal(<span style="color:#f92672">&amp;</span>c<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>cond_send);
+        <span style="color:#66d9ef">struct</span> timespec ts <span style="color:#f92672">=</span> make_abstime();
+        pthread_cond_timedwait(<span style="color:#f92672">&amp;</span>c<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>cond_recv, <span style="color:#f92672">&amp;</span>c<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>mutex, <span style="color:#f92672">&amp;</span>ts);
+    }
+    <span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>val <span style="color:#f92672">=</span> queue_dequeue(c<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>q);
+    pthread_mutex_unlock(<span style="color:#f92672">&amp;</span>c<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>mutex);
+    <span style="color:#66d9ef">return</span> val;
+}
+
+<span style="color:#75715e">// channel当前数据量
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">channel_len</span>(<span style="color:#66d9ef">struct</span> channel <span style="color:#f92672">*</span>c) {
+    pthread_mutex_lock(<span style="color:#f92672">&amp;</span>c<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>mutex);
+    <span style="color:#66d9ef">int</span> len <span style="color:#f92672">=</span> queue_len(c<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>q);
+    pthread_mutex_unlock(<span style="color:#f92672">&amp;</span>c<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>mutex);
+    <span style="color:#66d9ef">return</span> len;
+}
+
+<span style="color:#75715e">// channel最大容量
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">channel_cap</span>(<span style="color:#66d9ef">struct</span> channel <span style="color:#f92672">*</span>c) {
+    <span style="color:#66d9ef">return</span> c<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>cap;
+}
+</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">// channel.h
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">ifndef CHANNEL_H</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">define CHANNEL_H</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>
+<span style="color:#66d9ef">typedef</span> <span style="color:#66d9ef">struct</span> channel channel;
+
+<span style="color:#66d9ef">extern</span> channel <span style="color:#f92672">*</span><span style="color:#a6e22e">channel_make</span>(<span style="color:#66d9ef">int</span> cap);
+<span style="color:#66d9ef">extern</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">channel_release</span>(channel <span style="color:#f92672">*</span>c, <span style="color:#66d9ef">void</span> (<span style="color:#f92672">*</span>del)(<span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>));
+<span style="color:#66d9ef">extern</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">channel_send</span>(channel <span style="color:#f92672">*</span>c, <span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>val);
+<span style="color:#66d9ef">extern</span> <span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">channel_receive</span>(channel <span style="color:#f92672">*</span>c);
+<span style="color:#66d9ef">extern</span> <span style="color:#66d9ef">int</span> <span style="color:#a6e22e">channel_len</span>(channel <span style="color:#f92672">*</span>c);
+<span style="color:#66d9ef">extern</span> <span style="color:#66d9ef">int</span> <span style="color:#a6e22e">channel_cap</span>(channel <span style="color:#f92672">*</span>c);
+
+<span style="color:#75715e">#</span><span style="color:#75715e">endif </span><span style="color:#75715e">// CHANNEL_H
+</span></code></pre></div><p>用线程代替goroutine</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">// go.c
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&#34;go.h&#34;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;pthread.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;stdlib.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>
+<span style="color:#66d9ef">struct</span> start_arg {
+    <span style="color:#66d9ef">void</span> (<span style="color:#f92672">*</span>func)(<span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>);
+    <span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>arg;
+};
+
+<span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">start</span>(<span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>arg) {
+    pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
+    pthread_detach(pthread_self());
+    <span style="color:#66d9ef">struct</span> start_arg <span style="color:#f92672">*</span>sa <span style="color:#f92672">=</span> arg;
+    sa<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>func(sa<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>arg);
+    free(sa);
+    <span style="color:#66d9ef">return</span> NULL;
+}
+
+<span style="color:#66d9ef">void</span> <span style="color:#a6e22e">go</span>(<span style="color:#66d9ef">void</span> (<span style="color:#f92672">*</span>func)(<span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>arg), <span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>arg) {
+    <span style="color:#66d9ef">struct</span> start_arg <span style="color:#f92672">*</span>sa <span style="color:#f92672">=</span> malloc(<span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">struct</span> start_arg));
+    sa<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>func <span style="color:#f92672">=</span> func;
+    sa<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>arg <span style="color:#f92672">=</span> arg;
+    pthread_t tid;
+    pthread_create(<span style="color:#f92672">&amp;</span>tid, NULL, start, sa);
+}
+</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">// go.h
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">ifndef GO_H</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">define GO_H</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>
+<span style="color:#66d9ef">extern</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">go</span>(<span style="color:#66d9ef">void</span> (<span style="color:#f92672">*</span>func)(<span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>arg), <span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>arg);
+
+<span style="color:#75715e">#</span><span style="color:#75715e">endif </span><span style="color:#75715e">// GO_H
+</span></code></pre></div><p>用例</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">// main.c
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&#34;channel.h&#34;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&#34;go.h&#34;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;stdio.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;stdlib.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;time.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>
+<span style="color:#75715e">// 准备放在channel中的元素
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">struct</span> element {
+    <span style="color:#66d9ef">int</span> val;
+};
+
+<span style="color:#66d9ef">static</span> <span style="color:#66d9ef">struct</span> element <span style="color:#f92672">*</span><span style="color:#a6e22e">element_new</span>(<span style="color:#66d9ef">int</span> val) {
+    <span style="color:#66d9ef">struct</span> element <span style="color:#f92672">*</span>e <span style="color:#f92672">=</span> malloc(<span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">struct</span> element));
+    e<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>val <span style="color:#f92672">=</span> val;
+    <span style="color:#66d9ef">return</span> e;
+}
+
+<span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">element_free</span>(<span style="color:#66d9ef">struct</span> element <span style="color:#f92672">*</span>e) {
+    free(e);
+}
+
+<span style="color:#75715e">// 生产者线程
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">run</span>(<span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>arg) {
+    channel <span style="color:#f92672">*</span>c <span style="color:#f92672">=</span> arg;
+    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;; i<span style="color:#f92672">+</span><span style="color:#f92672">+</span>) {
+        <span style="color:#66d9ef">struct</span> element <span style="color:#f92672">*</span>e <span style="color:#f92672">=</span> element_new(i); <span style="color:#75715e">// 由生产者线程创建
+</span><span style="color:#75715e"></span>        channel_send(c, e);
+        printf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">send %d</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, e<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>val);
+        <span style="color:#75715e">// 睡眠一会儿，降低生产速度
+</span><span style="color:#75715e"></span>        <span style="color:#75715e">// 如果生产速度太快，就会填满channel才会通知消费者线程
+</span><span style="color:#75715e"></span>        <span style="color:#75715e">// 如果生产速度太慢，消费者线程会自己醒来主动查看channel是否有数据
+</span><span style="color:#75715e"></span>        <span style="color:#75715e">// 同理，对于消费者
+</span><span style="color:#75715e"></span>        <span style="color:#75715e">// 如果消费速度太快，就会清空channel才会通知生产者线程
+</span><span style="color:#75715e"></span>        <span style="color:#75715e">// 如果消费速度太慢，生产者线程会自己醒来主动查看channel是否有容量
+</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">struct</span> timespec ts <span style="color:#f92672">=</span> {.tv_sec <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>, .tv_nsec <span style="color:#f92672">=</span> <span style="color:#ae81ff">50000000</span>}; <span style="color:#75715e">// 50ms
+</span><span style="color:#75715e"></span>        nanosleep(<span style="color:#f92672">&amp;</span>ts, NULL);
+    }
+}
+
+<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>() {
+    <span style="color:#75715e">// 创建一个容量为10的channel
+</span><span style="color:#75715e"></span>    channel <span style="color:#f92672">*</span>c <span style="color:#f92672">=</span> channel_make(<span style="color:#ae81ff">10</span>);
+
+    <span style="color:#75715e">// 启动生产者线程
+</span><span style="color:#75715e"></span>    go(run, c);
+
+    <span style="color:#75715e">// 主线程作为消费者
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">for</span> (;;) {
+        <span style="color:#66d9ef">struct</span> element <span style="color:#f92672">*</span>e <span style="color:#f92672">=</span> channel_receive(c);
+        printf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">receive %d</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, e<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>val);
+        element_free(e); <span style="color:#75715e">// 由消费者线程释放
+</span><span style="color:#75715e"></span>    }
+}
+</code></pre></div><p>运行log</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ cc -pthread queue.c channel.c go.c main.c
+$ ./a.out
+send <span style="color:#ae81ff">0</span>
+send <span style="color:#ae81ff">1</span>
+receive <span style="color:#ae81ff">0</span>
+receive <span style="color:#ae81ff">1</span>
+send <span style="color:#ae81ff">2</span>
+send <span style="color:#ae81ff">3</span>
+receive <span style="color:#ae81ff">2</span>
+receive <span style="color:#ae81ff">3</span>
+send <span style="color:#ae81ff">4</span>
+^C
+$
+</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ cc -pthread -DTIMEOUT<span style="color:#f92672">=</span><span style="color:#ae81ff">1000000000</span> queue.c channel.c go.c main.c
+$ ./a.out
+send <span style="color:#ae81ff">0</span>
+send <span style="color:#ae81ff">1</span>
+send <span style="color:#ae81ff">2</span>
+send <span style="color:#ae81ff">3</span>
+send <span style="color:#ae81ff">4</span>
+send <span style="color:#ae81ff">5</span>
+send <span style="color:#ae81ff">6</span>
+send <span style="color:#ae81ff">7</span>
+send <span style="color:#ae81ff">8</span>
+send <span style="color:#ae81ff">9</span>
+receive <span style="color:#ae81ff">0</span>
+receive <span style="color:#ae81ff">1</span>
+receive <span style="color:#ae81ff">2</span>
+receive <span style="color:#ae81ff">3</span>
+receive <span style="color:#ae81ff">4</span>
+receive <span style="color:#ae81ff">5</span>
+receive <span style="color:#ae81ff">6</span>
+receive <span style="color:#ae81ff">7</span>
+receive <span style="color:#ae81ff">8</span>
+receive <span style="color:#ae81ff">9</span>
+receive <span style="color:#ae81ff">10</span>
+send <span style="color:#ae81ff">10</span>
+send <span style="color:#ae81ff">11</span>
+send <span style="color:#ae81ff">12</span>
+send <span style="color:#ae81ff">13</span>
+send <span style="color:#ae81ff">14</span>
+send <span style="color:#ae81ff">15</span>
+send <span style="color:#ae81ff">16</span>
+send <span style="color:#ae81ff">17</span>
+^C
+</code></pre></div>
+</article>
+
+
+
+</html>

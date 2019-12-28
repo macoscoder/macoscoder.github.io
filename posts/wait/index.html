@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<title>等待子进程 | 我的博客</title>
+<meta charset="utf-8">
+<meta name="generator" content="Hugo 0.60.1" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="canonical" href="http://flyblog.tech/posts/wait/">
+<link rel="alternate" type="application/rss+xml" href="" title="我的博客">
+<link rel="stylesheet" href="http://flyblog.tech/css/theme.css">
+<link rel="stylesheet" href="http://flyblog.tech/css/classes.css">
+
+<header class="dark">
+  <h2><a href="http://flyblog.tech/">我的博客</a></h2>
+  <nav>
+    
+  </nav>
+</header>
+
+<article>
+  <header>
+    <h1>等待子进程</h1>
+    <p><time datetime="2011-12-23T13:05:31Z">December 23, 2011</time></p>
+  </header>
+  <h1 id="heading">等待子进程</h1>
+<h2 id="heading1">系统调用</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;sys/types.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;sys/wait.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>pid_t <span style="color:#a6e22e">wait</span>(<span style="color:#66d9ef">int</span> <span style="color:#f92672">*</span>wstatus);
+pid_t <span style="color:#a6e22e">waitpid</span>(pid_t pid, <span style="color:#66d9ef">int</span> <span style="color:#f92672">*</span>wstatus, <span style="color:#66d9ef">int</span> options);
+<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">waitid</span>(idtype_t idtype, id_t id, siginfo_t <span style="color:#f92672">*</span>infop, <span style="color:#66d9ef">int</span> options);
+</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;sys/types.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;sys/time.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;sys/resource.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;sys/wait.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>pid_t <span style="color:#a6e22e">wait3</span>(<span style="color:#66d9ef">int</span> <span style="color:#f92672">*</span>wstatus, <span style="color:#66d9ef">int</span> options, <span style="color:#66d9ef">struct</span> rusage <span style="color:#f92672">*</span>rusage);
+pid_t <span style="color:#a6e22e">wait4</span>(pid_t pid, <span style="color:#66d9ef">int</span> <span style="color:#f92672">*</span>wstatus, <span style="color:#66d9ef">int</span> options, <span style="color:#66d9ef">struct</span> rusage <span style="color:#f92672">*</span>rusage);
+</code></pre></div><h2 id="waitpid">waitpid</h2>
+<h3 id="pid">pid参数</h3>
+<ul>
+<li>pid &gt; 0 指定等待的子进程id</li>
+<li>pid = 0 等待父进程所在进程组中的任意子进程</li>
+<li>pid &lt; -1 等待进程组id等于-pid中的任意子进程</li>
+<li>pid = -1 等待任意子进程</li>
+</ul>
+<h3 id="options">options参数</h3>
+<p>options是位掩码参数</p>
+<ul>
+<li><code>WUNTRACED</code> 当等待的子进程停止运行时<code>waitpid</code>返回</li>
+<li><code>WCONTINUED</code> 当等待的子进程恢复运行时<code>waitpid</code>返回</li>
+<li><code>WNOHANG</code> 当参数<code>pid</code>指定的子进程未终止时，<code>waitpid</code>立即返回，且返回值为0</li>
+</ul>
+<p>有两种方法停止一个进程:</p>
+<ul>
+<li>通过ptrace(2)系统调用</li>
+<li>通过信号(SIGSTOP, SIGTSTP, SIGTTIN, SIGTTOU)</li>
+</ul>
+<p>当一个进程没有被追踪时，如果指定<code>WUNTRACED</code>选项，当进程停止时 <code>waitpid</code> 会返回<br>
+当一个进程被追踪时，无论是否指定<code>WUNTRACED</code>选项，当进程停止时 <code>waitpid</code> 会返回</p>
+<p><code>wait(&amp;wstatus)</code>等价于<code>waitpid(-1, &amp;wstatus, 0)</code></p>
+<h3 id="wstatus-wait-status">wstatus参数 (wait status)</h3>
+<p>结果参数<code>wstatus</code>用来获取当前进程所处的状态:</p>
+<ul>
+<li>正常终止状态</li>
+<li>非正常终止状态</li>
+<li>停止运行状态</li>
+<li>恢复运行状态</li>
+</ul>
+<p>术语 <code>wait status</code> 包含上述四种情况<br>
+术语 <code>termination status</code> 包含上述前两种情况<br>
+术语 <code>exit status</code> 指的是上述第一种情况</p>
+<p><code>shell</code>变量<code>$?</code>获取的是最后执行的命令的<code>termination status</code></p>
+<p>尽管<code>wstatus</code>是指向<code>int</code>类型，但是只使用了低16位，如下图所示</p>
+<p><img src="/image/ws.png" alt="file system"></p>
+<p>检查<code>wstatus</code>内容的标准宏，注意下面的<code>wstatus</code>参数是<code>int</code>类型，不是<code>int*</code>类型</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;sys/wait.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>WIFEXITED(wstatus)
+WIFSIGNALED(wstatus)
+WIFSTOPPED(wstatus)
+WIFCONTINUED(wstatus)
+</code></pre></div><ul>
+<li><code>WIFEXITED</code> 返回是否是正常终止状态</li>
+<li><code>WIFSIGNALED</code> 返回是否是非正常终止状态</li>
+<li><code>WIFSTOPPED</code> 返回是否是停止状态</li>
+<li><code>WIFCONTINUED</code> 返回是否是恢复状态</li>
+</ul>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;sys/wait.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>WEXITSTATUS(wstatus)
+WTERMSIG(wstatus)
+WCOREDUMP(wstatus)
+WSTOPSIG(wstatus)
+</code></pre></div><ul>
+<li><code>WEXITSTATUS</code> 当进程正常终止时，获取进程的退出状态值</li>
+<li><code>WTERMSIG</code> 当进程异常终止时，获取导致进程终止的信号值</li>
+<li><code>WCOREDUMP</code> 当进程异常终止时，获取是否产生核心转储文件</li>
+<li><code>WSTOPSIG</code> 当进程停止时，获取导致进程停止的信号值</li>
+</ul>
+<h3 id="waitpid1">waitpid示例</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&#34;log.h&#34;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;string.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;sys/wait.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;unistd.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>
+<span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">print_wait_status</span>(<span style="color:#66d9ef">int</span> wstatus) {
+    debugf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">wstatus: 0x%x</span><span style="color:#e6db74">&#34;</span>, wstatus);
+    <span style="color:#66d9ef">if</span> (WIFEXITED(wstatus)) {
+        debugf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">child exited, status=%d</span><span style="color:#e6db74">&#34;</span>, WEXITSTATUS(wstatus));
+        <span style="color:#66d9ef">return</span>;
+    }
+    <span style="color:#66d9ef">if</span> (WIFSIGNALED(wstatus)) {
+        <span style="color:#66d9ef">int</span> sig <span style="color:#f92672">=</span> WTERMSIG(wstatus);
+        debugf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">child killed by signal %d (%s)</span><span style="color:#e6db74">&#34;</span>, sig, strsignal(sig));
+        <span style="color:#66d9ef">if</span> (WCOREDUMP(wstatus))
+            debugf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">core dumped</span><span style="color:#e6db74">&#34;</span>);
+        <span style="color:#66d9ef">return</span>;
+    }
+    <span style="color:#66d9ef">if</span> (WIFSTOPPED(wstatus)) {
+        <span style="color:#66d9ef">int</span> sig <span style="color:#f92672">=</span> WSTOPSIG(wstatus);
+        debugf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">child stopped by signal %d (%s)</span><span style="color:#e6db74">&#34;</span>, sig, strsignal(sig));
+        <span style="color:#66d9ef">return</span>;
+    }
+    <span style="color:#66d9ef">if</span> (WIFCONTINUED(wstatus)) {
+        debugf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">child continued</span><span style="color:#e6db74">&#34;</span>);
+        <span style="color:#66d9ef">return</span>;
+    }
+    fatalf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">print_wait_status</span><span style="color:#e6db74">&#34;</span>);
+}
+
+<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>() {
+    <span style="color:#66d9ef">int</span> pid <span style="color:#f92672">=</span> fork();
+    <span style="color:#66d9ef">switch</span> (pid) {
+    <span style="color:#66d9ef">case</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span><span style="color:#f92672">:</span> <span style="color:#75715e">// error
+</span><span style="color:#75715e"></span>        fatalf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">fork</span><span style="color:#e6db74">&#34;</span>);
+    <span style="color:#66d9ef">case</span> <span style="color:#ae81ff">0</span><span style="color:#f92672">:</span> <span style="color:#75715e">// child
+</span><span style="color:#75715e"></span>        sleep(<span style="color:#ae81ff">30</span>);
+        _exit(<span style="color:#ae81ff">0</span>);
+    <span style="color:#66d9ef">default</span><span style="color:#f92672">:</span> <span style="color:#75715e">// parent
+</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">break</span>;
+    }
+    debugf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">child pid %d</span><span style="color:#e6db74">&#34;</span>, pid);
+    <span style="color:#66d9ef">int</span> wstatus;
+    <span style="color:#66d9ef">for</span> (;;) {
+        <span style="color:#66d9ef">int</span> pid <span style="color:#f92672">=</span> waitpid(pid, <span style="color:#f92672">&amp;</span>wstatus, WUNTRACED <span style="color:#f92672">|</span> WCONTINUED);
+        <span style="color:#66d9ef">if</span> (pid <span style="color:#f92672">=</span><span style="color:#f92672">=</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>)
+            <span style="color:#66d9ef">break</span>;
+        print_wait_status(wstatus);
+    }
+}
+</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ ./a.out&amp;
+<span style="color:#f92672">[</span>2<span style="color:#f92672">]</span> <span style="color:#ae81ff">31707</span>
+debug: child pid <span style="color:#ae81ff">31710</span>
+$ kill -stop <span style="color:#ae81ff">31710</span>
+debug: wstatus: 0x137f
+debug: child stopped by signal <span style="color:#ae81ff">19</span> <span style="color:#f92672">(</span>Stopped <span style="color:#f92672">(</span>signal<span style="color:#f92672">)</span><span style="color:#f92672">)</span>
+$ kill -cont <span style="color:#ae81ff">31710</span>
+debug: wstatus: 0xffff
+debug: child continued
+$ kill <span style="color:#ae81ff">31710</span>
+debug: wstatus: 0xf
+debug: child killed by signal <span style="color:#ae81ff">15</span> <span style="color:#f92672">(</span>Terminated<span style="color:#f92672">)</span>
+<span style="color:#f92672">[</span>2<span style="color:#f92672">]</span>  + <span style="color:#ae81ff">31707</span> <span style="color:#66d9ef">done</span>       ./a.out
+</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ ./a.out
+debug: child pid <span style="color:#ae81ff">31756</span>
+debug: wstatus: 0x0
+debug: child exited, status<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>
+</code></pre></div><h2 id="waitid">waitid</h2>
+<h3 id="idtypeid">idtype参数与id参数</h3>
+<p><code>idtype</code>参数:</p>
+<ul>
+<li><code>P_ALL</code> 等待任意子进程，忽略<code>id</code>参数</li>
+<li><code>P_PID</code> 等待<code>id</code>指定的子进程</li>
+<li><code>P_PGID</code> 等待<code>id</code>指定的进程组中的任意子进程</li>
+</ul>
+<p><code>getpgrp(2)</code>可以获取调用进程的进程组id</p>
+<h3 id="options-">options 选项参数</h3>
+<ul>
+<li><code>WEXITED</code> 当等待的子进程正常终止，非正常终止时，<code>waitid</code> 返回</li>
+<li><code>WSTOPPED</code> 当等待的子进程停止运行时，<code>waitid</code>返回</li>
+<li><code>WCONTINUED</code> 当等待的子进程恢复运行时，<code>waitid</code>返回</li>
+<li><code>WNOHANG</code> 当等待的子进程无状态变化时，<code>waitpid</code>立即返回，且返回值为0</li>
+<li><code>WNOWAIT</code> 只收集子进程的状态信息，子进程继续保持可等待状态</li>
+</ul>
+<h3 id="infop">infop结果参数</h3>
+<p><code>waitid</code>收集的子进程状态信息写入参数infop指向的结构中，写入的字段有:</p>
+<ul>
+<li><code>si_code</code> 状态码
+<ul>
+<li><code>CLD_EXITED</code> 指示子进程正常终止</li>
+<li><code>CLD_KILLED</code> 指示子进程非正常终止</li>
+<li><code>CLD_DUMPED</code> 指示子进程非正常终止，并产生核心转储</li>
+<li><code>CLD_STOPPED</code> 指示子进程停止运行</li>
+<li><code>CLD_CONTINUED</code> 指示子进程恢复运行</li>
+<li><code>CLD_TRAPPED</code> 指示被追踪的子进程停止运行</li>
+</ul>
+</li>
+<li><code>si_pid</code> 子进程id</li>
+<li><code>si_signo</code> 设置为<code>SIGCHLD</code></li>
+<li><code>si_status</code> 退出状态或信号值</li>
+<li><code>si_uid</code> 子进程的真实用户id</li>
+</ul>
+<p>两种情况下<code>waitid</code>返回0</p>
+<ul>
+<li>成功收集子进程的状态信息</li>
+<li>当指定<code>WNOHANG</code>选项时，子进程无状态变化时</li>
+</ul>
+<p>要区分这两种情况的一个办法是:<br>
+在调用<code>waitid</code>函数前，将<code>infop</code>指向的结构清零，在函数返回后，根据结构是否被填充值来区分</p>
+<h3 id="waitid1">waitid示例</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&#34;log.h&#34;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;string.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;sys/wait.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;unistd.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>
+<span style="color:#66d9ef">void</span> <span style="color:#a6e22e">print_wait_siginfo</span>(siginfo_t <span style="color:#f92672">*</span>infop) {
+    <span style="color:#66d9ef">switch</span> (infop<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>si_code) {
+    <span style="color:#66d9ef">case</span> CLD_EXITED:
+        debugf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">child exited, status=%d</span><span style="color:#e6db74">&#34;</span>, infop<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>si_status);
+        <span style="color:#66d9ef">break</span>;
+    <span style="color:#66d9ef">case</span> CLD_KILLED:
+        debugf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">child killed by signal %d (%s)</span><span style="color:#e6db74">&#34;</span>, infop<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>si_status,
+               strsignal(infop<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>si_status));
+        <span style="color:#66d9ef">break</span>;
+    <span style="color:#66d9ef">case</span> CLD_DUMPED:
+        debugf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">child killed by signal %d (%s) core dumped</span><span style="color:#e6db74">&#34;</span>, infop<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>si_status,
+               strsignal(infop<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>si_status));
+        <span style="color:#66d9ef">break</span>;
+    <span style="color:#66d9ef">case</span> CLD_STOPPED:
+        debugf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">child stopped by signal %d (%s)</span><span style="color:#e6db74">&#34;</span>, infop<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>si_status,
+               strsignal(infop<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>si_status));
+        <span style="color:#66d9ef">break</span>;
+    <span style="color:#66d9ef">case</span> CLD_CONTINUED:
+        debugf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">child continued by signal %d (%s)</span><span style="color:#e6db74">&#34;</span>, infop<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>si_status,
+               strsignal(infop<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>si_status));
+        <span style="color:#66d9ef">break</span>;
+    <span style="color:#66d9ef">case</span> CLD_TRAPPED:
+        debugf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">child trapped by signal %d (%s)</span><span style="color:#e6db74">&#34;</span>, infop<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>si_status,
+               strsignal(infop<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>si_status));
+        <span style="color:#66d9ef">break</span>;
+    <span style="color:#66d9ef">default</span><span style="color:#f92672">:</span>
+        fatalf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">print_wait_siginfo</span><span style="color:#e6db74">&#34;</span>);
+        <span style="color:#66d9ef">break</span>;
+    }
+}
+
+<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>() {
+    <span style="color:#66d9ef">int</span> pid <span style="color:#f92672">=</span> fork();
+    <span style="color:#66d9ef">switch</span> (pid) {
+    <span style="color:#66d9ef">case</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span><span style="color:#f92672">:</span> <span style="color:#75715e">// error
+</span><span style="color:#75715e"></span>        fatalf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">fork</span><span style="color:#e6db74">&#34;</span>);
+    <span style="color:#66d9ef">case</span> <span style="color:#ae81ff">0</span><span style="color:#f92672">:</span> <span style="color:#75715e">// child
+</span><span style="color:#75715e"></span>        sleep(<span style="color:#ae81ff">30</span>);
+        _exit(<span style="color:#ae81ff">0</span>);
+    <span style="color:#66d9ef">default</span><span style="color:#f92672">:</span> <span style="color:#75715e">// parent
+</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">break</span>;
+    }
+    debugf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">child pid %d</span><span style="color:#e6db74">&#34;</span>, pid);
+    <span style="color:#66d9ef">for</span> (;;) {
+        siginfo_t si;
+        bzero(<span style="color:#f92672">&amp;</span>si, <span style="color:#66d9ef">sizeof</span>(siginfo_t));
+        <span style="color:#66d9ef">int</span> r <span style="color:#f92672">=</span> waitid(P_PID, pid, <span style="color:#f92672">&amp;</span>si, WEXITED <span style="color:#f92672">|</span> WSTOPPED <span style="color:#f92672">|</span> WCONTINUED);
+        <span style="color:#66d9ef">if</span> (r <span style="color:#f92672">=</span><span style="color:#f92672">=</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>)
+            <span style="color:#66d9ef">break</span>;
+        print_wait_siginfo(<span style="color:#f92672">&amp;</span>si);
+    }
+}
+</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ ./a.out&amp;
+<span style="color:#f92672">[</span>1<span style="color:#f92672">]</span> <span style="color:#ae81ff">32205</span>
+debug: child pid <span style="color:#ae81ff">32208</span>
+$ kill -stop <span style="color:#ae81ff">32208</span>
+debug: child stopped by signal <span style="color:#ae81ff">19</span> <span style="color:#f92672">(</span>Stopped <span style="color:#f92672">(</span>signal<span style="color:#f92672">)</span><span style="color:#f92672">)</span>
+$ kill -cont <span style="color:#ae81ff">32208</span>
+debug: child continued by signal <span style="color:#ae81ff">18</span> <span style="color:#f92672">(</span>Continued<span style="color:#f92672">)</span>
+$ kill <span style="color:#ae81ff">32208</span>
+debug: child killed by signal <span style="color:#ae81ff">15</span> <span style="color:#f92672">(</span>Terminated<span style="color:#f92672">)</span>
+<span style="color:#f92672">[</span>1<span style="color:#f92672">]</span>  + <span style="color:#ae81ff">32205</span> <span style="color:#66d9ef">done</span>       ./a.out
+</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ ./a.out
+debug: child pid <span style="color:#ae81ff">32286</span>
+debug: child exited, status<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>
+</code></pre></div><h2 id="wait3wait4">wait3和wait4</h2>
+<p>除了rusage参数外</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">wait3(<span style="color:#f92672">&amp;</span>wstatus, options, NULL);
+</code></pre></div><p>等价于</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">waitpid(<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>, <span style="color:#f92672">&amp;</span>wstatus, options);
+</code></pre></div><p>除了rusage参数外</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">wait4(pid, <span style="color:#f92672">&amp;</span>wstatus, options, NULL);
+</code></pre></div><p>等价于</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">waitpid(pid, wstatus, options);
+</code></pre></div><p>这两个系统调用是<strong>非标准的</strong>，<strong>不推荐使用</strong></p>
+<p>关于进程的资源使用信息可以通过<code>getrusage(2)</code>获取</p>
+
+</article>
+
+
+
+</html>

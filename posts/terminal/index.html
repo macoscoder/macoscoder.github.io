@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<title>终端 | 我的博客</title>
+<meta charset="utf-8">
+<meta name="generator" content="Hugo 0.60.1" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="canonical" href="http://flyblog.tech/posts/terminal/">
+<link rel="alternate" type="application/rss+xml" href="" title="我的博客">
+<link rel="stylesheet" href="http://flyblog.tech/css/theme.css">
+<link rel="stylesheet" href="http://flyblog.tech/css/classes.css">
+
+<header class="dark">
+  <h2><a href="http://flyblog.tech/">我的博客</a></h2>
+  <nav>
+    
+  </nav>
+</header>
+
+<article>
+  <header>
+    <h1>终端</h1>
+    <p><time datetime="2011-12-23T13:05:31Z">December 23, 2011</time></p>
+  </header>
+  <h1 id="heading">终端</h1>
+<h2 id="heading1">简介</h2>
+<p>终端是通过RS232串口连接到计算机的一种设备，它有一个黑白显示器(24*80)和一个键盘组成<br>
+<code>tty</code>这个词是<code>teletype</code>的缩写，称为电传打字机，这是早期的终端设备，它有一个打印机和一个键盘组成</p>
+<p>上面所说的这种传统的终端已经灭绝了，取而代之的是虚拟终端(virtual terminal)和伪终端(pseudoterminal)</p>
+<h3 id="virtual-terminal">virtual terminal</h3>
+<p>虚拟终端有时候也被称为虚拟控制台(virtual console)</p>
+<p>虚拟终端对应的设备文件为<code>/dev/ttyn</code>，n的范围是[1-63]，通常前6个虚拟终端可以通过快捷键来切换<br>
+在X环境下可以通过<code>Ctl+Alt+F[1-6]</code>来切换到对应的虚拟终端，在虚拟终端环境下可以通过<code>Alt+F[1-6]</code>或<code>Alt+&lt;-</code>和<code>Alt+-&gt;</code>来切换<br>
+其他虚拟终端可以通过如下命令来切换，以<code>/dev/tty10</code>为例:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh"><span style="color:#75715e"># openvt -c 10 agetty tty10 linux ; chvt 10</span>
+</code></pre></div><p>还有三个特殊的设备文件<code>/dev/tty</code>, <code>/dev/tty0</code>, <code>/dev/console</code></p>
+<ul>
+<li><code>/dev/tty</code>指向进程的控制终端(如果有的话)，也就是进程的<code>stdin`,</code>stdout<code>,</code>stderr`指向的设备文件(如果没有重定向的话)</li>
+<li><code>/dev/tty0</code>指向当前激活的虚拟终端</li>
+<li><code>/dev/console</code> 是system console，linux内核日志输出的地方，默认情况下是指向<code>/dev/tty0</code>，也就是指向当前激活的虚拟终端</li>
+</ul>
+<p>示例验证</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh"><span style="color:#75715e"># tty                       查看当前所在的虚拟终端</span>
+/dev/tty1
+<span style="color:#75715e"># sleep 5; echo hello &gt; /dev/tty0</span>
+</code></pre></div><p>执行上述命令后，立即用<code>Alt+F2</code>切换到第二个虚拟终端(<code>/dev/tty2</code>)，5s后可看到终端输入hello，这证明了<code>/dev/tty0</code>是指向当前的虚拟终端</p>
+<p>另一个查看当前<code>/dev/console</code>和<code>/dev/tty0</code>指向的终端的方法</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ cat /sys/devices/virtual/tty/console/active
+tty0
+$ cat /sys/devices/virtual/tty/tty0/active
+tty2
+</code></pre></div><h3 id="pseudoterminal">pseudoterminal</h3>
+<p>伪终端是一对设备，主设备文件为<code>/dev/ptmx</code>，从设备文件为<code>/dev/pts/n</code>，n的范围为[0-4096]<br>
+最大值可通过<code>/proc/sys/kernel/pty/max</code>文件配置</p>
+<p>主设备文件是一个多路器，全称<code>pty master multiplexer</code>，多路器是一种注册机制，可通过打开<code>/dev/ptmx</code>文件来注册<br>
+打开<code>/dev/ptmx</code>文件返回一个主设备的文件描述符，通过此描述符可以获取注册的从设备文件名</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;fcntl.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;stdlib.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> ptm_fd <span style="color:#f92672">=</span> open(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">/dev/ptmx</span><span style="color:#e6db74">&#34;</span>, O_RDWR <span style="color:#f92672">|</span> O_NOCTTY);
+<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>pts_name <span style="color:#f92672">=</span> ptsname(ptm_fd);
+</code></pre></div><p>打开从设备文件得到从设备文件的描述符，在主设备描述符上写数据，可以通过从设备描述符读出来，反之亦然。这类似双向管道</p>
+<p>示意图</p>
+<p><img src="/image/pty.png" alt="pty"></p>
+<p>上图中<code>driver program</code>是父进程，<code>terminal-oriented program</code>是子进程</p>
+<p>从图中看到，伪终端对是一种进程间通信的技术，其中的从设备相当于传统的终端设备，主设备与从设备连接形成一个通信通道</p>
+<p>进程间通信技术有很多，为什么需要使用伪终端技术来进行通信呢？</p>
+<p>原因是已有的面向终端的程序必须在终端上使用，在不修改已有程序的的情况下要想与之通信，必须提供一种终端支持传统终端的功能，<br>
+而且能将对终端的IO导向另一个进程，基于此原因，内核引入了伪终端对，面向终端的程序与从设备交互，<code>driver program</code>与主设备交互</p>
+<p>典型的<code>driver program</code>有<code>terminal emulator</code>和<code>sshd</code></p>
+<p>ssd使用伪终端示意图</p>
+<p><img src="/image/ssh.png" alt="ssh"></p>
+<p>示例(在mac上执行)</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ ssh -t fly@192.168.0.112 vi
+fly@192.168.0.112<span style="color:#960050;background-color:#1e0010">&#39;</span>s password:
+</code></pre></div><p>上述命令在我的<code>debian</code>系统上打开vi程序</p>
+<p>在<code>debian</code>上执行下列命令</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ ps -e | grep vi
+Sl     <span style="color:#ae81ff">514</span>   <span style="color:#ae81ff">514</span>   <span style="color:#ae81ff">516</span> ?        VBoxService
+Sl     <span style="color:#ae81ff">748</span>   <span style="color:#ae81ff">748</span>  <span style="color:#ae81ff">1268</span> ?        dconf-service
+Ss+   <span style="color:#ae81ff">1525</span>  <span style="color:#ae81ff">1525</span>  <span style="color:#ae81ff">1525</span> pts/0    vi
+$ pstree -ps <span style="color:#ae81ff">1525</span>
+systemd<span style="color:#f92672">(</span>1<span style="color:#f92672">)</span>───sshd<span style="color:#f92672">(</span>483<span style="color:#f92672">)</span>───sshd<span style="color:#f92672">(</span>1518<span style="color:#f92672">)</span>───sshd<span style="color:#f92672">(</span>1524<span style="color:#f92672">)</span>───vi<span style="color:#f92672">(</span>1525<span style="color:#f92672">)</span>
+</code></pre></div><p>从上述输出看到，<code>vi(1525)</code>的父进程是<code>sshd(1524)</code>，<code>sshd(1524)</code>和<code>vi(1525)</code>这两个进程通过伪终端通信，也就是上面示意图的右图</p>
+<p>在我的debian系统桌面环境下执行下列命令</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ pstree -ps <span style="color:#e6db74">`</span>echo $$<span style="color:#e6db74">`</span>
+systemd<span style="color:#f92672">(</span>1<span style="color:#f92672">)</span>───systemd<span style="color:#f92672">(</span>579<span style="color:#f92672">)</span>───gnome-terminal-<span style="color:#f92672">(</span>1627<span style="color:#f92672">)</span>───bash<span style="color:#f92672">(</span>1633<span style="color:#f92672">)</span>───pstree<span style="color:#f92672">(</span>1646<span style="color:#f92672">)</span>
+</code></pre></div><p><code>gnome-terminal-</code>和<code>bash(1633)</code>这对父子进程也是通过伪终端通信的</p>
+<p>上述的<code>gnome-terminal-</code>显示不全，全称为<code>gnome-terminal-server</code></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ ps -e -o cmd | grep gnome-terminal
+/usr/lib/gnome-terminal/gnome-terminal-server
+grep --color<span style="color:#f92672">=</span>auto gnome-terminal
+</code></pre></div><p>下面是我手绘的一张图，包含了终端模拟器</p>
+<p><img src="/image/terminal.png" alt="terimal emulator"></p>
+<p>M表示伪终端主设备，S表示伪终端从设备</p>
+<p>左侧的S是bash和ssh的控制终端，gnome-terminal没有控制终端，它是一个gui应用<br>
+右侧的S是bash的控制终端，sshd没有控制终端，它是一个daemon</p>
+
+</article>
+
+
+
+</html>

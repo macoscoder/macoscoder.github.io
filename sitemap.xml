@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  
+  <url>
+    <loc>http://flyblog.tech/posts/c&#43;&#43;-notes/</loc>
+    <lastmod>2011-12-23T13:05:31+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://flyblog.tech/posts/golang-mysql/</loc>
+    <lastmod>2011-12-23T13:05:31+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://flyblog.tech/posts/find/</loc>
+    <lastmod>2011-12-23T13:05:31+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://flyblog.tech/posts/golang-websocket/</loc>
+    <lastmod>2011-12-23T13:05:31+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://flyblog.tech/posts/git/</loc>
+    <lastmod>2011-12-23T13:05:31+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://flyblog.tech/posts/golang-panic/</loc>
+    <lastmod>2011-12-23T13:05:31+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://flyblog.tech/posts/grep/</loc>
+    <lastmod>2011-12-23T13:05:31+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://flyblog.tech/posts/kafka/</loc>
+    <lastmod>2011-12-23T13:05:31+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://flyblog.tech/posts/linux-standard-signals/</loc>
+    <lastmod>2011-12-23T13:05:31+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://flyblog.tech/posts/linux-timer/</loc>
+    <lastmod>2011-12-23T13:05:31+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://flyblog.tech/posts/sleep/</loc>
+    <lastmod>2011-12-23T13:05:31+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://flyblog.tech/posts/pthread/</loc>
+    <lastmod>2011-12-23T13:05:31+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://flyblog.tech/posts/</loc>
+    <lastmod>2011-12-23T13:05:31+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://flyblog.tech/posts/shell-job-control/</loc>
+    <lastmod>2011-12-23T13:05:31+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://flyblog.tech/posts/sigchld/</loc>
+    <lastmod>2011-12-23T13:05:31+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://flyblog.tech/posts/ss/</loc>
+    <lastmod>2011-12-23T13:05:31+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://flyblog.tech/posts/stdio-buffer/</loc>
+    <lastmod>2011-12-23T13:05:31+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://flyblog.tech/posts/tar/</loc>
+    <lastmod>2011-12-23T13:05:31+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://flyblog.tech/posts/clone/</loc>
+    <lastmod>2011-12-23T13:05:31+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://flyblog.tech/posts/strace/</loc>
+    <lastmod>2011-12-23T13:05:31+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://flyblog.tech/posts/unix-time/</loc>
+    <lastmod>2011-12-23T13:05:31+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://flyblog.tech/posts/mutex/</loc>
+    <lastmod>2011-12-23T13:05:31+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://flyblog.tech/posts/tmpfile/</loc>
+    <lastmod>2011-12-23T13:05:31+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://flyblog.tech/posts/dynamic-library/</loc>
+    <lastmod>2011-12-23T13:05:31+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://flyblog.tech/posts/thread-and-signal/</loc>
+    <lastmod>2011-12-23T13:05:31+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://flyblog.tech/posts/orphans-and-zombies/</loc>
+    <lastmod>2011-12-23T13:05:31+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://flyblog.tech/posts/golang-rpc/</loc>
+    <lastmod>2011-12-23T13:05:31+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://flyblog.tech/</loc>
+    <lastmod>2011-12-23T13:05:31+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://flyblog.tech/posts/file/</loc>
+    <lastmod>2011-12-23T13:05:31+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://flyblog.tech/posts/file-descriptor/</loc>
+    <lastmod>2011-12-23T13:05:31+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://flyblog.tech/posts/file-monitor/</loc>
+    <lastmod>2011-12-23T13:05:31+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://flyblog.tech/posts/cond/</loc>
+    <lastmod>2011-12-23T13:05:31+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://flyblog.tech/posts/walk-dir-tree/</loc>
+    <lastmod>2011-12-23T13:05:31+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://flyblog.tech/posts/wait/</loc>
+    <lastmod>2011-12-23T13:05:31+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://flyblog.tech/posts/thread-specific-data/</loc>
+    <lastmod>2011-12-23T13:05:31+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://flyblog.tech/posts/terminal/</loc>
+    <lastmod>2011-12-23T13:05:31+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://flyblog.tech/posts/catsymlink/</loc>
+    <lastmod>2011-12-23T13:05:31+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://flyblog.tech/posts/system/</loc>
+    <lastmod>2011-12-23T13:05:31+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://flyblog.tech/posts/process/</loc>
+    <lastmod>2011-12-23T13:05:31+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://flyblog.tech/posts/unix-process-time/</loc>
+    <lastmod>2011-12-23T13:05:31+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://flyblog.tech/posts/process-termination/</loc>
+    <lastmod>2011-12-23T13:05:31+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://flyblog.tech/posts/static-library/</loc>
+    <lastmod>2011-12-23T13:05:31+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://flyblog.tech/posts/my-first-post/</loc>
+    <lastmod>2011-12-23T09:29:31+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://flyblog.tech/categories/</loc>
+  </url>
+  
+  <url>
+    <loc>http://flyblog.tech/tags/</loc>
+  </url>
+  
+</urlset>

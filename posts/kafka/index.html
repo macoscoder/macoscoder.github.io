@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<title>kafka | 我的博客</title>
+<meta charset="utf-8">
+<meta name="generator" content="Hugo 0.60.1" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="canonical" href="http://flyblog.tech/posts/kafka/">
+<link rel="alternate" type="application/rss+xml" href="" title="我的博客">
+<link rel="stylesheet" href="http://flyblog.tech/css/theme.css">
+<link rel="stylesheet" href="http://flyblog.tech/css/classes.css">
+
+<header class="dark">
+  <h2><a href="http://flyblog.tech/">我的博客</a></h2>
+  <nav>
+    
+  </nav>
+</header>
+
+<article>
+  <header>
+    <h1>kafka</h1>
+    <p><time datetime="2011-12-23T13:05:31Z">December 23, 2011</time></p>
+  </header>
+  <h1 id="kafka">kafka</h1>
+<p><img src="/image/kafka1.png" alt="kafka1"></p>
+<h2 id="heading">概念说明</h2>
+<h3 id="topic">topic</h3>
+<p>存储记录流，一个主题可以有多个消费者</p>
+<h3 id="record">record</h3>
+<p>每个记录包含一个key, value, timestamp</p>
+<h3 id="producer">producer</h3>
+<p>生产者将记录发布到主题的某个分区中，可以简单的轮询方式实现负载均衡</p>
+<h3 id="consumer">consumer</h3>
+<p>订阅一个或多个主题，并处理接收到的记录，消费者必须归属于一个消费者组，一条记录只会发送到消费者组里的一个消费者，这页可以实现简单的负载均衡</p>
+<h3 id="partition">partition</h3>
+<p>一个主题可以有多个分区，不同分区可以存储在不同的服务器上</p>
+<p>一个分区有一个<code>leader</code>服务器，和零个或多个<code>follower</code>服务器，<code>leader</code>负责读写分区，<code>follower</code>负责备份分区<br>
+当<code>leader</code>服务器发生故障，<code>follower</code>会自动变成<code>leader</code>服务器</p>
+<p>kafka逻辑示意图</p>
+<p><img src="/image/kafka2.png" alt="kafka2"></p>
+<p>上图显示：一个主题有4个分区，分布在两个服务器上，2个消费者组，6个消费者</p>
+<p>生产者可轮询发布记录到4个分区中实现负载均衡</p>
+<p>每个记录都会发送给2个消费者组，每个组中只有一个消费者接收到记录</p>
+<h2 id="kafka1">kafka作为消息系统使用</h2>
+<p>传统的消息系统一般有两种模型</p>
+<ul>
+<li>队列模型</li>
+<li>发布-订阅模型</li>
+</ul>
+<p>队列模型的特点是，消费者自己取，可以多个消费者同时消费一个队列，这也是一个负载均衡的例子，每个消费者处理不同的消息</p>
+<p>发布-订阅模型的特点是: 消息会广播给多个消费者，每个消费者处理相同的消息，这无法实现负载均衡</p>
+<p>这两种模型的对立的</p>
+<p>kafka的模型结合了这两种模型</p>
+<p>对于把消费者组看成一个消费者，那么多个消费者组都可以消费所有消息，这是发布-订阅模型</p>
+<p>在一个消费者组内，多个(子)消费者消费不同的消息，这是队列模型</p>
+<h2 id="golang">示例-golang</h2>
+
+</article>
+
+
+
+</html>

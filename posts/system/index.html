@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<title>调用sh(1)执行命令 | 我的博客</title>
+<meta charset="utf-8">
+<meta name="generator" content="Hugo 0.60.1" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="canonical" href="http://flyblog.tech/posts/system/">
+<link rel="alternate" type="application/rss+xml" href="" title="我的博客">
+<link rel="stylesheet" href="http://flyblog.tech/css/theme.css">
+<link rel="stylesheet" href="http://flyblog.tech/css/classes.css">
+
+<header class="dark">
+  <h2><a href="http://flyblog.tech/">我的博客</a></h2>
+  <nav>
+    
+  </nav>
+</header>
+
+<article>
+  <header>
+    <h1>调用sh(1)执行命令</h1>
+    <p><time datetime="2011-12-23T13:05:31Z">December 23, 2011</time></p>
+  </header>
+  <h1 id="sh1">调用sh(1)执行命令</h1>
+<p><code>system()</code>使用<code>fork(2)</code>创建子进程，然后调用<code>execl(3)</code>执行<code>/bin/sh</code></p>
+<p><code>execl(&quot;/bin/sh&quot;, &quot;sh&quot;, &quot;-c&quot;, command, (char *) 0);</code></p>
+<p>然后调用<code>waitpid(2)</code>等待子进程(<code>/bin/sh</code>)终止</p>
+<h2 id="heading">函数原型</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;stdlib.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">system</span>(<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>command);
+</code></pre></div><h2 id="heading1">返回值</h2>
+<ul>
+<li>如果参数<code>command</code>为<code>NULL</code>，<code>system()</code>返回非0表示<code>sh(1)</code>可用，返回0表示<code>sh(1)</code>不可用</li>
+<li>如果<code>fork(2)</code>或<code>waitpid(2)</code>调用失败，返回-1</li>
+<li>如果<code>execl(3)</code>调用失败，子进程用参数127调用<code>_exit(2)</code></li>
+<li>如果都成功，返回<code>waitpid(2)</code>的第二个参数，即<code>wait status</code></li>
+</ul>
+<p>有三种情况下<code>system()</code>返回<code>0x7f00</code></p>
+<ol>
+<li><code>execl(3)</code>调用失败</li>
+<li><code>command</code>找不到</li>
+<li><code>command</code>调用<code>_exit(127);</code></li>
+</ol>
+<h2 id="heading2">示例</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">// system.c
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;stdio.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;stdlib.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;string.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;sys/types.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;sys/wait.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>
+<span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">print_wait_status</span>(<span style="color:#66d9ef">int</span> wstatus) {
+    printf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">wstatus: 0x%04x</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, wstatus);
+    <span style="color:#66d9ef">if</span> (WIFEXITED(wstatus)) {
+        printf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">child exited, status=%d</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, WEXITSTATUS(wstatus));
+        <span style="color:#66d9ef">return</span>;
+    }
+    <span style="color:#66d9ef">if</span> (WIFSIGNALED(wstatus)) {
+        <span style="color:#66d9ef">int</span> sig <span style="color:#f92672">=</span> WTERMSIG(wstatus);
+        printf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">child killed by signal %d (%s)</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, sig, strsignal(sig));
+        <span style="color:#66d9ef">if</span> (WCOREDUMP(wstatus))
+            printf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">core dumped</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+        <span style="color:#66d9ef">return</span>;
+    }
+    <span style="color:#66d9ef">if</span> (WIFSTOPPED(wstatus)) {
+        <span style="color:#66d9ef">int</span> sig <span style="color:#f92672">=</span> WSTOPSIG(wstatus);
+        printf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">child stopped by signal %d (%s)</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, sig, strsignal(sig));
+        <span style="color:#66d9ef">return</span>;
+    }
+    <span style="color:#66d9ef">if</span> (WIFCONTINUED(wstatus)) {
+        printf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">child continued</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+        <span style="color:#66d9ef">return</span>;
+    }
+    exit(<span style="color:#ae81ff">1</span>);
+}
+
+<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>() {
+    <span style="color:#66d9ef">char</span> line[<span style="color:#ae81ff">1024</span>];
+    <span style="color:#66d9ef">for</span> (;;) {
+        printf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">==&gt; </span><span style="color:#e6db74">&#34;</span>);
+        <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>r <span style="color:#f92672">=</span> fgets(line, <span style="color:#66d9ef">sizeof</span>(line), stdin);
+        <span style="color:#66d9ef">if</span> (r <span style="color:#f92672">=</span><span style="color:#f92672">=</span> NULL)
+            <span style="color:#66d9ef">break</span>;
+        <span style="color:#66d9ef">int</span> status <span style="color:#f92672">=</span> system(line);
+        <span style="color:#66d9ef">if</span> (status <span style="color:#f92672">=</span><span style="color:#f92672">=</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>)
+            exit(<span style="color:#ae81ff">1</span>);
+        print_wait_status(status);
+    }
+}
+</code></pre></div><h3 id="heading3">演示</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ cc -o system system.c
+$ ./system
+<span style="color:#f92672">=</span><span style="color:#f92672">=</span>&gt; xxx
+sh: 1: xxx: not found           // command找不到情况
+wstatus: 0x7f00
+child exited, status<span style="color:#f92672">=</span>127
+<span style="color:#f92672">=</span><span style="color:#f92672">=</span>&gt; exit <span style="color:#ae81ff">127</span>                    // command调用_exit<span style="color:#f92672">(</span>127<span style="color:#f92672">)</span>情况
+wstatus: 0x7f00
+child exited, status<span style="color:#f92672">=</span>127
+<span style="color:#f92672">=</span><span style="color:#f92672">=</span>&gt; sudo mv /bin/sh /bin/sh2    // 改名
+wstatus: 0x0000
+child exited, status<span style="color:#f92672">=</span>0
+<span style="color:#f92672">=</span><span style="color:#f92672">=</span>&gt; ls                          // execl调用失败情况
+wstatus: 0x7f00
+child exited, status<span style="color:#f92672">=</span>127
+<span style="color:#f92672">=</span><span style="color:#f92672">=</span>&gt; ^C
+$ sudo mv /bin/sh2 /bin/sh
+$
+</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ ./system
+<span style="color:#f92672">=</span><span style="color:#f92672">=</span>&gt; sleep <span style="color:#ae81ff">1000</span>
+^Z
+<span style="color:#f92672">[</span>1<span style="color:#f92672">]</span>  + <span style="color:#ae81ff">715</span> suspended  ./system
+$ ps
+  PID TTY          TIME CMD
+  <span style="color:#ae81ff">477</span> pts/0    00:00:00 zsh
+  <span style="color:#ae81ff">715</span> pts/0    00:00:00 system
+  <span style="color:#ae81ff">716</span> pts/0    00:00:00 sh
+  <span style="color:#ae81ff">717</span> pts/0    00:00:00 sleep
+  <span style="color:#ae81ff">726</span> pts/0    00:00:00 ps
+$ pstree -ps <span style="color:#ae81ff">717</span>
+systemd<span style="color:#f92672">(</span>1<span style="color:#f92672">)</span>───sshd<span style="color:#f92672">(</span>395<span style="color:#f92672">)</span>───sshd<span style="color:#f92672">(</span>467<span style="color:#f92672">)</span>───sshd<span style="color:#f92672">(</span>476<span style="color:#f92672">)</span>───zsh<span style="color:#f92672">(</span>477<span style="color:#f92672">)</span>───system<span style="color:#f92672">(</span>715<span style="color:#f92672">)</span>───sh<span style="color:#f92672">(</span>716<span style="color:#f92672">)</span>───sleep<span style="color:#f92672">(</span>717<span style="color:#f92672">)</span>
+$ kill <span style="color:#ae81ff">717</span>
+$ fg
+<span style="color:#f92672">[</span>1<span style="color:#f92672">]</span>  + <span style="color:#ae81ff">715</span> continued  ./system
+Terminated
+wstatus: 0x8f00
+child exited, status<span style="color:#f92672">=</span><span style="color:#ae81ff">143</span>        // 128+15
+<span style="color:#f92672">=</span><span style="color:#f92672">=</span>&gt; sleep <span style="color:#ae81ff">1000</span>
+^Z
+<span style="color:#f92672">[</span>1<span style="color:#f92672">]</span>  + <span style="color:#ae81ff">715</span> suspended  ./system
+$ ps
+  PID TTY          TIME CMD
+  <span style="color:#ae81ff">477</span> pts/0    00:00:00 zsh
+  <span style="color:#ae81ff">715</span> pts/0    00:00:00 system
+  <span style="color:#ae81ff">772</span> pts/0    00:00:00 sh
+  <span style="color:#ae81ff">773</span> pts/0    00:00:00 sleep
+  <span style="color:#ae81ff">782</span> pts/0    00:00:00 ps
+$ kill <span style="color:#ae81ff">772</span>
+$ fg
+<span style="color:#f92672">[</span>1<span style="color:#f92672">]</span>  + <span style="color:#ae81ff">715</span> continued  ./system
+wstatus: 0x000f
+child killed by signal <span style="color:#ae81ff">15</span> <span style="color:#f92672">(</span>Terminated<span style="color:#f92672">)</span>
+<span style="color:#f92672">=</span><span style="color:#f92672">=</span>&gt;
+</code></pre></div><p>从上面的输出看出</p>
+<ul>
+<li>当kill掉sleep时，sh的退出状态为<code>_exit(128+SIGTERM);</code></li>
+<li>当kill掉sh时，<code>waitpid</code>获取的等待状态为0x000f，这表示sh被<code>SIGTERM</code>终止</li>
+</ul>
+<p>也就是说<code>system(3)</code>的返回值反映了了<code>sh(1)</code>的终止状态，<code>sh(1)</code>的终止状态反映了<code>command</code>的终止状态</p>
+<h2 id="setuseridsetgroupidsystem">不要在set-user-ID和set-group-ID程序中使用<code>system()</code></h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ id
+uid<span style="color:#f92672">=</span>1000<span style="color:#f92672">(</span>fly<span style="color:#f92672">)</span> gid<span style="color:#f92672">=</span>1000<span style="color:#f92672">(</span>fly<span style="color:#f92672">)</span> groups<span style="color:#f92672">=</span>1000<span style="color:#f92672">(</span>fly<span style="color:#f92672">)</span>,24<span style="color:#f92672">(</span>cdrom<span style="color:#f92672">)</span>,25<span style="color:#f92672">(</span>floppy<span style="color:#f92672">)</span>,27<span style="color:#f92672">(</span>sudo<span style="color:#f92672">)</span>,29<span style="color:#f92672">(</span>audio<span style="color:#f92672">)</span>,30<span style="color:#f92672">(</span>dip<span style="color:#f92672">)</span>,44<span style="color:#f92672">(</span>video<span style="color:#f92672">)</span>,46<span style="color:#f92672">(</span>plugdev<span style="color:#f92672">)</span>,108<span style="color:#f92672">(</span>netdev<span style="color:#f92672">)</span>,999<span style="color:#f92672">(</span>vboxsf<span style="color:#f92672">)</span>
+$ ls -n ./system
+-rwxr-xr-x <span style="color:#ae81ff">1</span> <span style="color:#ae81ff">1000</span> <span style="color:#ae81ff">1000</span> <span style="color:#ae81ff">8984</span> Jan <span style="color:#ae81ff">26</span> 12:56 system
+$ chmod u+s system                                  // 设置成set-user-ID程序
+$ ls -n ./system
+-rwsr-xr-x <span style="color:#ae81ff">1</span> <span style="color:#ae81ff">1000</span> <span style="color:#ae81ff">1000</span> <span style="color:#ae81ff">8984</span> Jan <span style="color:#ae81ff">26</span> 12:56 system
+$ touch foo
+$ ls -n ./foo
+-rw-r--r-- <span style="color:#ae81ff">1</span> <span style="color:#ae81ff">1000</span> <span style="color:#ae81ff">1000</span>    <span style="color:#ae81ff">0</span> Jan <span style="color:#ae81ff">26</span> 12:56 foo        // 只有所有者可写
+$ su jhm                                            // 切换用户
+Password:
+$ id
+uid<span style="color:#f92672">=</span>1001<span style="color:#f92672">(</span>jhm<span style="color:#f92672">)</span> gid<span style="color:#f92672">=</span>1001<span style="color:#f92672">(</span>jhm<span style="color:#f92672">)</span> groups<span style="color:#f92672">=</span>1001<span style="color:#f92672">(</span>jhm<span style="color:#f92672">)</span>,27<span style="color:#f92672">(</span>sudo<span style="color:#f92672">)</span>
+$ ./system
+<span style="color:#f92672">=</span><span style="color:#f92672">=</span>&gt; id
+uid<span style="color:#f92672">=</span>1001<span style="color:#f92672">(</span>jhm<span style="color:#f92672">)</span> gid<span style="color:#f92672">=</span>1001<span style="color:#f92672">(</span>jhm<span style="color:#f92672">)</span> euid<span style="color:#f92672">=</span>1000<span style="color:#f92672">(</span>fly<span style="color:#f92672">)</span> groups<span style="color:#f92672">=</span>1001<span style="color:#f92672">(</span>jhm<span style="color:#f92672">)</span>,27<span style="color:#f92672">(</span>sudo<span style="color:#f92672">)</span>
+wstatus: 0x0000
+child exited, status<span style="color:#f92672">=</span>0
+<span style="color:#f92672">=</span><span style="color:#f92672">=</span>&gt; echo xxx &gt;&gt; foo                                 // 用户jhm写foo文件
+wstatus: 0x0000
+child exited, status<span style="color:#f92672">=</span>0
+<span style="color:#f92672">=</span><span style="color:#f92672">=</span>&gt; cat foo
+xxx
+wstatus: 0x0000
+child exited, status<span style="color:#f92672">=</span>0
+<span style="color:#f92672">=</span><span style="color:#f92672">=</span>&gt;
+</code></pre></div><p>从上面的演示看出，使用了<code>system()</code>函数的set-user-ID程序，可以执行用户<code>fly</code>可以执行的所有操作</p>
+<p>下面看下<code>bash(1)</code>与<code>sh(1)</code>的不同之处</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ su jhm
+Password:
+jhm@debian:/tmp$ id
+uid<span style="color:#f92672">=</span>1001<span style="color:#f92672">(</span>jhm<span style="color:#f92672">)</span> gid<span style="color:#f92672">=</span>1001<span style="color:#f92672">(</span>jhm<span style="color:#f92672">)</span> groups<span style="color:#f92672">=</span>1001<span style="color:#f92672">(</span>jhm<span style="color:#f92672">)</span>,27<span style="color:#f92672">(</span>sudo<span style="color:#f92672">)</span>
+jhm@debian:/tmp$ ./system
+<span style="color:#f92672">=</span><span style="color:#f92672">=</span>&gt; id
+uid<span style="color:#f92672">=</span>1001<span style="color:#f92672">(</span>jhm<span style="color:#f92672">)</span> gid<span style="color:#f92672">=</span>1001<span style="color:#f92672">(</span>jhm<span style="color:#f92672">)</span> euid<span style="color:#f92672">=</span>1000<span style="color:#f92672">(</span>fly<span style="color:#f92672">)</span> groups<span style="color:#f92672">=</span>1001<span style="color:#f92672">(</span>jhm<span style="color:#f92672">)</span>,27<span style="color:#f92672">(</span>sudo<span style="color:#f92672">)</span>
+wstatus: 0x0000
+child exited, status<span style="color:#f92672">=</span>0
+<span style="color:#f92672">=</span><span style="color:#f92672">=</span>&gt; bash
+bash-4.4$ id                                                // bash重置了euid/egid为ruid/rgid
+uid<span style="color:#f92672">=</span>1001<span style="color:#f92672">(</span>jhm<span style="color:#f92672">)</span> gid<span style="color:#f92672">=</span>1001<span style="color:#f92672">(</span>jhm<span style="color:#f92672">)</span> groups<span style="color:#f92672">=</span>1001<span style="color:#f92672">(</span>jhm<span style="color:#f92672">)</span>,27<span style="color:#f92672">(</span>sudo<span style="color:#f92672">)</span>
+bash-4.4$ echo yyy &gt;&gt; foo
+bash: foo: Permission denied
+</code></pre></div><p>在我的系统(debian)上,/bin/sh是/bin/dash的符号链接</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ ls -l /bin/sh
+lrwxrwxrwx <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">4</span> Jan <span style="color:#ae81ff">24</span>  <span style="color:#ae81ff">2017</span> /bin/sh -&gt; dash
+</code></pre></div><p>dash是一个符合POSIX标准的轻量级的shell实现，执行效率比bash高，通常用来执行脚本。</p>
+<h2 id="system">system()对信号的处理</h2>
+<p>以下面的进程树说明</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">system───sh───sleep
+</code></pre></div><h3 id="sigchld">阻塞SIGCHLD</h3>
+<p>假如<code>system</code>进程建立了<code>SIGCHLD</code>信号处理器，并在信号处理器中调用<code>wait(2)</code>，那么当<code>sh</code>进程结束时，<code>system</code>进程建立的信号处理器会执行<br>
+并收集了<code>sh</code>进程的终止状态，之后<code>system()</code>函数里调用的<code>waitpid()</code>函数会返回-1并设置<code>errno</code>为<code>EINTR</code>，指示被信号中断，在这种情况下<br>
+<code>system()</code>会重启<code>waitpid()</code>调用，然而<code>waitpid()</code>会再次返回-1并设置<code>errno</code>为<code>ECHILD</code>，指示子进程不存在(已在信号处理器里<code>wait</code>)</p>
+<p>基于这个原因，<code>system()</code>函数必须第一时间阻塞<code>SIGCHLD</code>，从而确保<code>waitpid()</code>可以收集到<code>sh</code>的终止状态</p>
+<h3 id="sigintsigquit">忽略SIGINT和SIGQUIT</h3>
+<p>因为<code>system</code>, <code>sh</code>, <code>sleep</code>三个进程在同一个前台进程组中</p>
+<p>当在终端上输入<code>Ctl-C</code>或<code>Ctl-\</code>时，信号会被分别发送到这三个进程</p>
+<p><code>sh</code>对<code>SIGINT</code>和<code>SIGQUIT</code>的处理比较复杂，姑且认为<code>sh</code>是忽略这两个信号</p>
+<p>忽略<code>SIGINT</code>和<code>SIGQUIT</code>的意义在于，在终端上键入<code>Ctl-C</code>或<code>Ctl-\</code>时，这三个进程可以同步<br>
+首先<code>sleep</code>进程收到信号后退出,<code>sh</code>进程从<code>wait()</code>返回退出，<code>system</code>进程从<code>waitpid()</code>返回继续下一次循环</p>
+
+</article>
+
+
+
+</html>

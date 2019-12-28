@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<title>stdio buffer | 我的博客</title>
+<meta charset="utf-8">
+<meta name="generator" content="Hugo 0.60.1" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="canonical" href="http://flyblog.tech/posts/stdio-buffer/">
+<link rel="alternate" type="application/rss+xml" href="" title="我的博客">
+<link rel="stylesheet" href="http://flyblog.tech/css/theme.css">
+<link rel="stylesheet" href="http://flyblog.tech/css/classes.css">
+
+<header class="dark">
+  <h2><a href="http://flyblog.tech/">我的博客</a></h2>
+  <nav>
+    
+  </nav>
+</header>
+
+<article>
+  <header>
+    <h1>stdio buffer</h1>
+    <p><time datetime="2011-12-23T13:05:31Z">December 23, 2011</time></p>
+  </header>
+  <h1 id="stdio-buffer">stdio buffer</h1>
+<h2 id="heading">缓冲模式</h2>
+<ul>
+<li>_IONBF unbuffered</li>
+<li>_IOLBF line buffered</li>
+<li>_IOFBF fully buffered</li>
+</ul>
+<h2 id="heading1">库函数</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;stdio.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">setvbuf</span>(FILE <span style="color:#f92672">*</span>stream, <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>buf, <span style="color:#66d9ef">int</span> mode, size_t size);
+</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;stdio.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">setbuf</span>(FILE <span style="color:#f92672">*</span>stream, <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>buf);
+<span style="color:#66d9ef">void</span> <span style="color:#a6e22e">setbuffer</span>(FILE <span style="color:#f92672">*</span>stream, <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>buf, size_t size);
+<span style="color:#66d9ef">void</span> <span style="color:#a6e22e">setlinebuf</span>(FILE <span style="color:#f92672">*</span>stream);
+</code></pre></div><p>后面这三个函数是<code>setvbuf()</code>的别名</p>
+<ul>
+<li>
+<p><code>setbuf(stream, buf)</code> 等价于:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">setvbuf(stream, buf, buf <span style="color:#f92672">?</span> _IOFBF : _IONBF, BUFSIZ);
+</code></pre></div></li>
+<li>
+<p><code>setbuffer(stream, buf, size)</code> 等价于:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">setvbuf(stream, buf, buf <span style="color:#f92672">?</span> _IOFBF : _IONBF, size);
+</code></pre></div></li>
+<li>
+<p><code>setlinebuf(stream)</code> 等价于:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">setvbuf(stream, NULL, _IOLBF, <span style="color:#ae81ff">0</span>);
+</code></pre></div></li>
+</ul>
+<h2 id="heading2">示例</h2>
+<ul>
+<li>
+<p>全缓冲</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">setvbuf(stream, NULL, _IOFBF, <span style="color:#ae81ff">0</span>)
+</code></pre></div></li>
+<li>
+<p>行缓冲</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">setvbuf(stream, NULL, _IOLBF, <span style="color:#ae81ff">0</span>)
+setlinebuf(stream)
+</code></pre></div></li>
+<li>
+<p>无缓冲</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">setvbuf(stream, NULL, _IONBF, <span style="color:#ae81ff">0</span>)
+setbuf(stream, NULL)
+setbuffer(stream, NULL, <span style="color:#ae81ff">0</span>)
+</code></pre></div></li>
+</ul>
+<h2 id="flush">flush</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;stdio.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">fflush</span>(FILE <span style="color:#f92672">*</span>stream);
+</code></pre></div>
+</article>
+
+
+
+</html>

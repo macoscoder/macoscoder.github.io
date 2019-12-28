@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<title>Posix Thread | 我的博客</title>
+<meta charset="utf-8">
+<meta name="generator" content="Hugo 0.60.1" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="canonical" href="http://flyblog.tech/posts/pthread/">
+<link rel="alternate" type="application/rss+xml" href="" title="我的博客">
+<link rel="stylesheet" href="http://flyblog.tech/css/theme.css">
+<link rel="stylesheet" href="http://flyblog.tech/css/classes.css">
+
+<header class="dark">
+  <h2><a href="http://flyblog.tech/">我的博客</a></h2>
+  <nav>
+    
+  </nav>
+</header>
+
+<article>
+  <header>
+    <h1>Posix Thread</h1>
+    <p><time datetime="2011-12-23T13:05:31Z">December 23, 2011</time></p>
+  </header>
+  <h1 id="posix-thread">Posix Thread</h1>
+<h2 id="heading">线程栈布局</h2>
+<p><img src="/image/thread.png" alt="thread"></p>
+<h2 id="heading1">线程创建</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;pthread.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">pthread_create</span>(pthread_t <span style="color:#f92672">*</span><span style="color:#66d9ef">thread</span>, <span style="color:#66d9ef">const</span> pthread_attr_t <span style="color:#f92672">*</span>attr, <span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>(<span style="color:#f92672">*</span>start_routine)(<span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>), <span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>arg);
+</code></pre></div><h2 id="heading2">线程终止</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;pthread.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">pthread_exit</span>(<span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>value_ptr);
+</code></pre></div><h2 id="heading3">等待线程终止</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;pthread.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">pthread_join</span>(pthread_t <span style="color:#66d9ef">thread</span>, <span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span><span style="color:#f92672">*</span>value_ptr);
+</code></pre></div><p>默认情况下线程终止后会变成僵尸线程，需要由别的线程进行收尸(<code>pthread_join</code>)</p>
+<h2 id="detached">设置线程为detached</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;pthread.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">pthread_detach</span>(pthread_t <span style="color:#66d9ef">thread</span>);
+</code></pre></div><p>将线程设置为detached，线程终止后不会变成僵尸线程</p>
+<h2 id="id">获取线程id</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;pthread.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>pthread_t <span style="color:#a6e22e">pthread_self</span>(<span style="color:#66d9ef">void</span>);
+</code></pre></div><h2 id="id1">比较线程id是否相等</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;pthread.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">pthread_equal</span>(pthread_t t1, pthread_t t2);
+</code></pre></div><h2 id="heading4">线程属性</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;pthread.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">pthread_attr_init</span>(pthread_attr_t <span style="color:#f92672">*</span>attr);
+<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">pthread_attr_destroy</span>(pthread_attr_t <span style="color:#f92672">*</span>attr);
+<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">pthread_attr_setstack</span>(pthread_attr_t <span style="color:#f92672">*</span>attr, <span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>stackaddr, size_t stacksize);
+<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">pthread_attr_getstack</span>(<span style="color:#66d9ef">const</span> pthread_attr_t <span style="color:#f92672">*</span><span style="color:#66d9ef">restrict</span> attr, <span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span><span style="color:#f92672">*</span><span style="color:#66d9ef">restrict</span> stackaddr, size_t <span style="color:#f92672">*</span><span style="color:#66d9ef">restrict</span> stacksize);
+<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">pthread_attr_setstacksize</span>(pthread_attr_t <span style="color:#f92672">*</span>attr, size_t stacksize);
+<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">pthread_attr_getstacksize</span>(<span style="color:#66d9ef">const</span> pthread_attr_t <span style="color:#f92672">*</span>attr, size_t <span style="color:#f92672">*</span>stacksize);
+<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">pthread_attr_setguardsize</span>(pthread_attr_t <span style="color:#f92672">*</span>attr, size_t guardsize);
+<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">pthread_attr_getguardsize</span>(<span style="color:#66d9ef">const</span> pthread_attr_t <span style="color:#f92672">*</span>attr, size_t <span style="color:#f92672">*</span>guardsize);
+<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">pthread_attr_setstackaddr</span>(pthread_attr_t <span style="color:#f92672">*</span>attr, <span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>stackaddr);
+<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">pthread_attr_getstackaddr</span>(<span style="color:#66d9ef">const</span> pthread_attr_t <span style="color:#f92672">*</span>attr, <span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span><span style="color:#f92672">*</span>stackaddr);
+<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">pthread_attr_setdetachstate</span>(pthread_attr_t <span style="color:#f92672">*</span>attr, <span style="color:#66d9ef">int</span> detachstate);
+<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">pthread_attr_getdetachstate</span>(<span style="color:#66d9ef">const</span> pthread_attr_t <span style="color:#f92672">*</span>attr, <span style="color:#66d9ef">int</span> <span style="color:#f92672">*</span>detachstate);
+<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">pthread_attr_setinheritsched</span>(pthread_attr_t <span style="color:#f92672">*</span>attr, <span style="color:#66d9ef">int</span> inheritsched)
+<span style="color:#66d9ef">int</span> pthread_attr_getinheritsched(<span style="color:#66d9ef">const</span> pthread_attr_t <span style="color:#f92672">*</span>attr, <span style="color:#66d9ef">int</span> <span style="color:#f92672">*</span>inheritsched)
+<span style="color:#66d9ef">int</span> pthread_attr_setschedparam(pthread_attr_t <span style="color:#f92672">*</span>attr, <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">struct</span> sched_param <span style="color:#f92672">*</span>param)
+<span style="color:#66d9ef">int</span> pthread_attr_getschedparam(<span style="color:#66d9ef">const</span> pthread_attr_t <span style="color:#f92672">*</span>attr, <span style="color:#66d9ef">struct</span> sched_param <span style="color:#f92672">*</span>param)
+<span style="color:#66d9ef">int</span> pthread_attr_setschedpolicy(pthread_attr_t <span style="color:#f92672">*</span>attr, <span style="color:#66d9ef">int</span> policy)
+<span style="color:#66d9ef">int</span> pthread_attr_getschedpolicy(<span style="color:#66d9ef">const</span> pthread_attr_t <span style="color:#f92672">*</span>attr, <span style="color:#66d9ef">int</span> <span style="color:#f92672">*</span>policy)
+<span style="color:#66d9ef">int</span> pthread_attr_setscope(pthread_attr_t <span style="color:#f92672">*</span>attr, <span style="color:#66d9ef">int</span> contentionscope)
+<span style="color:#66d9ef">int</span> pthread_attr_getscope(<span style="color:#66d9ef">const</span> pthread_attr_t <span style="color:#f92672">*</span>attr, <span style="color:#66d9ef">int</span> <span style="color:#f92672">*</span>contentionscope);
+</code></pre></div><h2 id="heading5">示例</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">// pthread.c
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;pthread.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;stdio.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;unistd.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>
+<span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">thread_func</span>(<span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>arg) {
+    printf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">thread id = %d</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, pthread_self());
+    sleep(<span style="color:#ae81ff">100</span>);
+}
+
+<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>() {
+    pthread_attr_t attr;
+    pthread_attr_init(<span style="color:#f92672">&amp;</span>attr);
+    pthread_attr_setdetachstate(<span style="color:#f92672">&amp;</span>attr, PTHREAD_CREATE_JOINABLE); <span style="color:#75715e">// 需收尸
+</span><span style="color:#75715e"></span>
+    pthread_t tid;
+    pthread_create(<span style="color:#f92672">&amp;</span>tid, <span style="color:#f92672">&amp;</span>attr, thread_func, NULL);
+
+    pthread_attr_destroy(<span style="color:#f92672">&amp;</span>attr);
+
+    pthread_join(tid, NULL); <span style="color:#75715e">// 收尸
+</span><span style="color:#75715e"></span>}
+</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ cc -pthread pthread.c
+$ ./a.out &amp;
+<span style="color:#f92672">[</span>1<span style="color:#f92672">]</span> <span style="color:#ae81ff">15358</span>
+$ thread id <span style="color:#f92672">=</span> <span style="color:#ae81ff">1947428608</span>
+$ pstree -ps <span style="color:#ae81ff">15358</span>
+systemd<span style="color:#f92672">(</span>1<span style="color:#f92672">)</span>───sshd<span style="color:#f92672">(</span>430<span style="color:#f92672">)</span>───sshd<span style="color:#f92672">(</span>14633<span style="color:#f92672">)</span>───sshd<span style="color:#f92672">(</span>14642<span style="color:#f92672">)</span>───bash<span style="color:#f92672">(</span>14643<span style="color:#f92672">)</span>───a.out<span style="color:#f92672">(</span>15358<span style="color:#f92672">)</span>───<span style="color:#f92672">{</span>a.out<span style="color:#f92672">}</span><span style="color:#f92672">(</span>15359<span style="color:#f92672">)</span>
+</code></pre></div><p>花括号里的是线程</p>
+
+</article>
+
+
+
+</html>

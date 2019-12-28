@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<title>The clone() System Call | 我的博客</title>
+<meta charset="utf-8">
+<meta name="generator" content="Hugo 0.60.1" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="canonical" href="http://flyblog.tech/posts/clone/">
+<link rel="alternate" type="application/rss+xml" href="" title="我的博客">
+<link rel="stylesheet" href="http://flyblog.tech/css/theme.css">
+<link rel="stylesheet" href="http://flyblog.tech/css/classes.css">
+
+<header class="dark">
+  <h2><a href="http://flyblog.tech/">我的博客</a></h2>
+  <nav>
+    
+  </nav>
+</header>
+
+<article>
+  <header>
+    <h1>The clone() System Call</h1>
+    <p><time datetime="2011-12-23T13:05:31Z">December 23, 2011</time></p>
+  </header>
+  <h1 id="the-clone-system-call">The clone() System Call</h1>
+<p>clone()系统调用允许精细控制进程的创建</p>
+<h2 id="heading">函数原型</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">define _GNU_SOURCE</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;sched.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">clone</span>(<span style="color:#66d9ef">int</span> (<span style="color:#f92672">*</span>func)(<span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>), <span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>child_stack, <span style="color:#66d9ef">int</span> flags, <span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>arg, <span style="color:#75715e">/* pid_t *ptid, struct user_desc *tls, pid_t *ctid */</span> );
+</code></pre></div><h3 id="heading1">参数说明</h3>
+<ul>
+<li>参数<code>func</code>指定子进程执行的函数</li>
+<li>参数<code>child_stack</code>指定<code>func</code>的执行栈</li>
+<li>参数<code>flags</code>指定父子进程共享的资源</li>
+<li>参数<code>arg</code>指定调用<code>func</code>的参数</li>
+<li>参数<code>ptid</code>提供一个变量(在父进程内存中)，用于保存子进程id</li>
+<li>参数<code>tls</code>指定子线程的线程局部存储的描述符</li>
+<li>参数<code>ctid</code>提供一个变量(在子进程内存中)，用于保存子进程id</li>
+</ul>
+<h3 id="flags">flags说明</h3>
+<ul>
+<li><code>CLONE_FILES</code> 父子进程共享打开的文件描述符表(POSIX threads要求此flag)</li>
+<li><code>CLONE_FS</code> 父子进程共享文件系统相关属性，包括<code>umask</code>, <code>root directory</code>, <code>current working directory</code>(POSIX threads要求此flag)</li>
+<li><code>CLONE_SIGHAND</code> 父子进程共享信号处理器表(POSIX threads要求此flag)</li>
+<li><code>CLONE_VM</code> 父子进程共享页表，也即共享虚拟内存页(POSIX threads要求此flag)</li>
+<li><code>CLONE_THREAD</code> 将子进程置于父进程所在的线程组中(POSIX threads要求此flag)</li>
+<li><code>CLONE_PARENT_SETTID</code> 将子进程id写入参数<code>ptid</code>指向的变量中(在父进程内存空间)(NPTL线程实现使用这个flag)</li>
+<li><code>CLONE_CHILD_SETTID</code> 将子进程id写入参数<code>ctid</code>指向的变量中(在子进程内存空间)</li>
+<li><code>CLONE_CHILD_CLEARTID</code> 当子进程终止时清掉(zero)参数<code>ctid</code>指向的变量(NPTL线程实现使用这个flag)</li>
+<li><code>CLONE_SETTLS</code> 参数<code>tls</code>描述的buffer作为子线程的线程局部存储(NPTL线程实现使用这个flag)</li>
+<li><code>CLONE_SYSVSEM</code> 父子进程共享System V semaphore undo values</li>
+<li><code>CLONE_NEWNS</code> 父子进程不共享挂载点名称空间</li>
+<li><code>CLONE_PTRACE</code> 子进程可以被追踪</li>
+<li><code>CLONE_UNTRACED</code> 子进程不能被追踪</li>
+<li><code>CLONE_VFORK</code> 挂起父进程，直到子进程调用<code>exev</code>或<code>_exit</code></li>
+</ul>
+
+</article>
+
+
+
+</html>

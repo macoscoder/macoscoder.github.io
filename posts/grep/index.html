@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<title>grep 命令 | 我的博客</title>
+<meta charset="utf-8">
+<meta name="generator" content="Hugo 0.60.1" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="canonical" href="http://flyblog.tech/posts/grep/">
+<link rel="alternate" type="application/rss+xml" href="" title="我的博客">
+<link rel="stylesheet" href="http://flyblog.tech/css/theme.css">
+<link rel="stylesheet" href="http://flyblog.tech/css/classes.css">
+
+<header class="dark">
+  <h2><a href="http://flyblog.tech/">我的博客</a></h2>
+  <nav>
+    
+  </nav>
+</header>
+
+<article>
+  <header>
+    <h1>grep 命令</h1>
+    <p><time datetime="2011-12-23T13:05:31Z">December 23, 2011</time></p>
+  </header>
+  <h1 id="grep-">grep 命令</h1>
+<h2 id="synopsis">SYNOPSIS</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">grep <span style="color:#f92672">[</span>OPTIONS<span style="color:#f92672">]</span> PATTERN <span style="color:#f92672">[</span>FILE...<span style="color:#f92672">]</span>
+grep <span style="color:#f92672">[</span>OPTIONS<span style="color:#f92672">]</span> -R PATTERN <span style="color:#f92672">[</span>FILE_OR_DIR...<span style="color:#f92672">]</span>
+grep <span style="color:#f92672">[</span>OPTIONS<span style="color:#f92672">]</span> -e PATTERN ... <span style="color:#f92672">[</span>FILE...<span style="color:#f92672">]</span>
+</code></pre></div><h2 id="options">OPTIONS</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">-E, --extended-regexp
+        Interpret PATTERN as an extended regular expression.
+-e PATTERN, --regexp<span style="color:#f92672">=</span>PATTERN
+        Use PATTERN as the pattern.
+-i, --ignore-case
+        Ignore <span style="color:#66d9ef">case</span> distinctions, so that characters that differ only in <span style="color:#66d9ef">case</span> match each other.
+-v, --invert-match
+        Invert the sense of matching, to <span style="color:#66d9ef">select</span> non-matching lines.
+-w, --word-regexp
+        Select only those lines containing matches that form whole words.
+-n, --line-number
+        Prefix each line of output with the 1-based line number within its input file.
+-l, --files-with-matches
+        Suppress normal output.
+--include<span style="color:#f92672">=</span>GLOB
+        Search only files whose base name matches GLOB.
+-R, --dereference-recursive
+        Read all files under each directory, recursively. Follow all symbolic links.
+</code></pre></div><h2 id="examples">EXAMPLES</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ grep -nR <span style="color:#e6db74">&#39;SIG_DFL&#39;</span> /usr/include
+/usr/include/asm-generic/signal-defs.h:24:#define SIG_DFL <span style="color:#f92672">(</span><span style="color:#f92672">(</span>__sighandler_t<span style="color:#f92672">)</span>0<span style="color:#f92672">)</span> /* default signal handling */
+/usr/include/x86_64-linux-gnu/bits/sigaction.h:64:#define SA_RESETHAND 0x80000000 /* Reset to SIG_DFL on entry to handler.  */
+/usr/include/x86_64-linux-gnu/bits/signum-generic.h:29:#define SIG_DFL <span style="color:#f92672">(</span><span style="color:#f92672">(</span>__sighandler_t<span style="color:#f92672">)</span>0<span style="color:#f92672">)</span> /* Default action.  */
+</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ grep -nRw <span style="color:#e6db74">&#39;printf&#39;</span> /usr/include/stdio.h
+318:extern int printf <span style="color:#f92672">(</span>const char *__restrict __format, ...<span style="color:#f92672">)</span>;
+</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ grep -nRi <span style="color:#e6db74">&#39;func readall&#39;</span> $GOROOT/src
+/usr/lib/go-1.10/src/io/ioutil/ioutil.go:18:func readAll<span style="color:#f92672">(</span>r io.Reader, capacity int64<span style="color:#f92672">)</span> <span style="color:#f92672">(</span>b <span style="color:#f92672">[</span><span style="color:#f92672">]</span>byte, err error<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+/usr/lib/go-1.10/src/io/ioutil/ioutil.go:44:func ReadAll<span style="color:#f92672">(</span>r io.Reader<span style="color:#f92672">)</span> <span style="color:#f92672">(</span><span style="color:#f92672">[</span><span style="color:#f92672">]</span>byte, error<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ grep -nR --include<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;file*&#39;</span> <span style="color:#e6db74">&#39;func Open(&#39;</span> $GOROOT/src
+/usr/lib/go-1.10/src/debug/plan9obj/file.go:98:func Open<span style="color:#f92672">(</span>name string<span style="color:#f92672">)</span> <span style="color:#f92672">(</span>*File, error<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+/usr/lib/go-1.10/src/debug/pe/file.go:32:func Open<span style="color:#f92672">(</span>name string<span style="color:#f92672">)</span> <span style="color:#f92672">(</span>*File, error<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+/usr/lib/go-1.10/src/debug/elf/file.go:196:func Open<span style="color:#f92672">(</span>name string<span style="color:#f92672">)</span> <span style="color:#f92672">(</span>*File, error<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+/usr/lib/go-1.10/src/debug/macho/file.go:198:func Open<span style="color:#f92672">(</span>name string<span style="color:#f92672">)</span> <span style="color:#f92672">(</span>*File, error<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+/usr/lib/go-1.10/src/os/file.go:249:func Open<span style="color:#f92672">(</span>name string<span style="color:#f92672">)</span> <span style="color:#f92672">(</span>*File, error<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+</code></pre></div>
+</article>
+
+
+
+</html>

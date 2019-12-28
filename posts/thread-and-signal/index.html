@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<title>多线程中信号处理方法 | 我的博客</title>
+<meta charset="utf-8">
+<meta name="generator" content="Hugo 0.60.1" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="canonical" href="http://flyblog.tech/posts/thread-and-signal/">
+<link rel="alternate" type="application/rss+xml" href="" title="我的博客">
+<link rel="stylesheet" href="http://flyblog.tech/css/theme.css">
+<link rel="stylesheet" href="http://flyblog.tech/css/classes.css">
+
+<header class="dark">
+  <h2><a href="http://flyblog.tech/">我的博客</a></h2>
+  <nav>
+    
+  </nav>
+</header>
+
+<article>
+  <header>
+    <h1>多线程中信号处理方法</h1>
+    <p><time datetime="2011-12-23T13:05:31Z">December 23, 2011</time></p>
+  </header>
+  <h1 id="heading">多线程中信号处理方法</h1>
+<h2 id="heading1">方法说明</h2>
+<ul>
+<li>在创建子线程之前，主线程阻塞所有信号，随后创建的子线程继承主线程的<code>signal mask</code></li>
+<li>创建一个专用线程，用于处理信号(使用<code>sigwait</code>, <code>sigwaitinfo</code>, <code>sigtimedwait</code>)</li>
+</ul>
+<h2 id="heading2">示例</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&#34;go.h&#34;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&#34;log.h&#34;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;signal.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;unistd.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>
+<span style="color:#66d9ef">void</span> <span style="color:#a6e22e">sig_handler</span>(<span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>arg) {
+    <span style="color:#66d9ef">int</span> sig;
+    sigset_t mask;
+    sigfillset(<span style="color:#f92672">&amp;</span>mask);
+    <span style="color:#66d9ef">for</span> (;;) {
+        sigwait(<span style="color:#f92672">&amp;</span>mask, <span style="color:#f92672">&amp;</span>sig);    <span style="color:#75715e">// 同步等待信号，将异步信号处理转换成多线程处理
+</span><span style="color:#75715e"></span>        debugf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">sig = %d</span><span style="color:#e6db74">&#34;</span>, sig); <span style="color:#75715e">// debugf内部加锁了
+</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">if</span> (sig <span style="color:#f92672">=</span><span style="color:#f92672">=</span> SIGINT)
+            _exit(<span style="color:#ae81ff">1</span>);
+    }
+}
+
+<span style="color:#66d9ef">void</span> <span style="color:#a6e22e">foo</span>(<span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>arg) {
+    <span style="color:#66d9ef">for</span> (;;) {
+        debugf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">foo</span><span style="color:#e6db74">&#34;</span>);
+        sleep(<span style="color:#ae81ff">1</span>);
+    }
+}
+
+<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>() {
+    sigset_t mask;
+    sigfillset(<span style="color:#f92672">&amp;</span>mask);
+    sigprocmask(SIG_SETMASK, <span style="color:#f92672">&amp;</span>mask, NULL); <span style="color:#75715e">// 屏蔽所有信号
+</span><span style="color:#75715e"></span>    go(sig_handler, NULL);                 <span style="color:#75715e">// 专用线程用于处理信号
+</span><span style="color:#75715e"></span>    go(foo, NULL);
+    pause();
+}
+</code></pre></div><ul>
+<li><code>go.h</code> 参考<a href="http://www.flyblog.tech/cond">cond</a></li>
+<li><code>log.h</code> 参考<a href="http://www.flyblog.tech/thread%20specific%20data">thread specific data</a></li>
+</ul>
+<h2 id="heading3">演示</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ ./a.out
+DEBUG: foo
+DEBUG: foo
+^<span style="color:#ae81ff">\D</span>EBUG: sig <span style="color:#f92672">=</span> <span style="color:#ae81ff">3</span>
+DEBUG: foo
+^<span style="color:#ae81ff">\D</span>EBUG: sig <span style="color:#f92672">=</span> <span style="color:#ae81ff">3</span>
+^<span style="color:#ae81ff">\D</span>EBUG: sig <span style="color:#f92672">=</span> <span style="color:#ae81ff">3</span>
+DEBUG: foo
+^CDEBUG: sig <span style="color:#f92672">=</span> <span style="color:#ae81ff">2</span>
+</code></pre></div>
+</article>
+
+
+
+</html>

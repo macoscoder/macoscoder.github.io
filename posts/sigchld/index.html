@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<title>SIGCHLD 信号处理器 | 我的博客</title>
+<meta charset="utf-8">
+<meta name="generator" content="Hugo 0.60.1" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="canonical" href="http://flyblog.tech/posts/sigchld/">
+<link rel="alternate" type="application/rss+xml" href="" title="我的博客">
+<link rel="stylesheet" href="http://flyblog.tech/css/theme.css">
+<link rel="stylesheet" href="http://flyblog.tech/css/classes.css">
+
+<header class="dark">
+  <h2><a href="http://flyblog.tech/">我的博客</a></h2>
+  <nav>
+    
+  </nav>
+</header>
+
+<article>
+  <header>
+    <h1>SIGCHLD 信号处理器</h1>
+    <p><time datetime="2011-12-23T13:05:31Z">December 23, 2011</time></p>
+  </header>
+  <h1 id="sigchld"><code>SIGCHLD</code>信号处理器</h1>
+<h2 id="heading">示例</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;errno.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;signal.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;stdio.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;stdlib.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;sys/wait.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;unistd.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>
+<span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">handle_sigchld</span>(<span style="color:#66d9ef">int</span> sig) {
+    <span style="color:#66d9ef">int</span> saved_errno <span style="color:#f92672">=</span> errno;
+
+    <span style="color:#66d9ef">for</span> (;;) {
+        <span style="color:#66d9ef">int</span> pid <span style="color:#f92672">=</span> waitpid(<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>, NULL, WNOHANG);
+        <span style="color:#66d9ef">if</span> (pid <span style="color:#f92672">&lt;</span><span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>)
+            <span style="color:#66d9ef">break</span>;
+        fprintf(stderr, <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">child(%d) reaped</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, pid); <span style="color:#75715e">// UNSAFE
+</span><span style="color:#75715e"></span>    }
+
+    errno <span style="color:#f92672">=</span> saved_errno;
+}
+
+<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>(<span style="color:#66d9ef">int</span> argc, <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>argv[]) {
+    <span style="color:#66d9ef">struct</span> sigaction sa;
+    sa.sa_handler <span style="color:#f92672">=</span> handle_sigchld;
+    sa.sa_flags <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+    sigemptyset(<span style="color:#f92672">&amp;</span>sa.sa_mask);
+    sigaction(SIGCHLD, <span style="color:#f92672">&amp;</span>sa, NULL);
+
+    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>; i <span style="color:#f92672">&lt;</span> argc; i<span style="color:#f92672">+</span><span style="color:#f92672">+</span>) {
+        <span style="color:#66d9ef">int</span> sec <span style="color:#f92672">=</span> atoi(argv[i]);
+        <span style="color:#66d9ef">switch</span> (fork()) {
+        <span style="color:#66d9ef">case</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span><span style="color:#f92672">:</span> <span style="color:#75715e">// error
+</span><span style="color:#75715e"></span>            exit(<span style="color:#ae81ff">1</span>);
+        <span style="color:#66d9ef">case</span> <span style="color:#ae81ff">0</span><span style="color:#f92672">:</span> <span style="color:#75715e">// child
+</span><span style="color:#75715e"></span>            fprintf(stderr, <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">child(%d) started, sleep %ds</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, getpid(), sec);
+            sleep(sec);
+            _exit(<span style="color:#ae81ff">0</span>);
+        <span style="color:#66d9ef">default</span><span style="color:#f92672">:</span> <span style="color:#75715e">// parent
+</span><span style="color:#75715e"></span>            <span style="color:#66d9ef">break</span>;
+        }
+    }
+
+    <span style="color:#66d9ef">for</span> (;;) {
+        pause();
+    }
+}
+</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ ./a.out <span style="color:#ae81ff">1</span> <span style="color:#ae81ff">2</span> <span style="color:#ae81ff">3</span>
+child<span style="color:#f92672">(</span>4193<span style="color:#f92672">)</span> started, sleep 2s
+child<span style="color:#f92672">(</span>4194<span style="color:#f92672">)</span> started, sleep 3s
+child<span style="color:#f92672">(</span>4192<span style="color:#f92672">)</span> started, sleep 1s
+child<span style="color:#f92672">(</span>4192<span style="color:#f92672">)</span> reaped
+child<span style="color:#f92672">(</span>4193<span style="color:#f92672">)</span> reaped
+child<span style="color:#f92672">(</span>4194<span style="color:#f92672">)</span> reaped
+^C
+$
+</code></pre></div><h2 id="heading1">说明</h2>
+<p>因为标准信号没有队列，如果连续收到<code>SIGCHLD</code>，信号处理器只会调用一次，所以在<code>handle_sigchld</code>函数里循环调用非阻塞(<code>WNOHANG</code>)的<code>waitpid</code></p>
+
+</article>
+
+
+
+</html>

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<title>线程专用数据 | 我的博客</title>
+<meta charset="utf-8">
+<meta name="generator" content="Hugo 0.60.1" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="canonical" href="http://flyblog.tech/posts/thread-specific-data/">
+<link rel="alternate" type="application/rss+xml" href="" title="我的博客">
+<link rel="stylesheet" href="http://flyblog.tech/css/theme.css">
+<link rel="stylesheet" href="http://flyblog.tech/css/classes.css">
+
+<header class="dark">
+  <h2><a href="http://flyblog.tech/">我的博客</a></h2>
+  <nav>
+    
+  </nav>
+</header>
+
+<article>
+  <header>
+    <h1>线程专用数据</h1>
+    <p><time datetime="2011-12-23T13:05:31Z">December 23, 2011</time></p>
+  </header>
+  <h1 id="heading">线程专用数据</h1>
+<h2 id="heading1">函数原型</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;pthread.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">pthread_key_create</span>(pthread_key_t <span style="color:#f92672">*</span>key, <span style="color:#66d9ef">void</span> (<span style="color:#f92672">*</span>destructor)(<span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>));
+<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">pthread_key_delete</span>(pthread_key_t key);
+<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">pthread_setspecific</span>(pthread_key_t key, <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>pointer);
+<span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">pthread_getspecific</span>(pthread_key_t key);
+</code></pre></div><h2 id="heading2">示例</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">// log.c
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&#34;log.h&#34;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;pthread.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;stdarg.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;stdio.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;stdlib.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;string.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>
+<span style="color:#66d9ef">static</span> pthread_mutex_t mutex <span style="color:#f92672">=</span> PTHREAD_MUTEX_INITIALIZER;
+<span style="color:#66d9ef">static</span> pthread_key_t key;
+
+__attribute__((constructor))
+<span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span> init() {
+    pthread_key_create(<span style="color:#f92672">&amp;</span>key, free);
+}
+
+<span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span> output(<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>prefix, <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>format, va_list params) {
+    pthread_mutex_lock(<span style="color:#f92672">&amp;</span>mutex);
+    <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>tag <span style="color:#f92672">=</span> pthread_getspecific(key);
+    <span style="color:#66d9ef">if</span> (tag)
+        fputs(tag, stderr);
+    fputs(prefix, stderr);
+    vfprintf(stderr, format, params);
+    fputs(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, stderr);
+    pthread_mutex_unlock(<span style="color:#f92672">&amp;</span>mutex);
+}
+
+<span style="color:#66d9ef">void</span> set_thread_tag(<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>tag) {
+    <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>buf <span style="color:#f92672">=</span> strdup(tag);
+    pthread_setspecific(key, buf);
+}
+
+<span style="color:#66d9ef">void</span> debugf(<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>format, ...) {
+    va_list params;
+    va_start(params, format);
+    output(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">DEBUG: </span><span style="color:#e6db74">&#34;</span>, format, params);
+    va_end(params);
+}
+
+<span style="color:#66d9ef">void</span> infof(<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>format, ...) {
+    va_list params;
+    va_start(params, format);
+    output(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">INFO: </span><span style="color:#e6db74">&#34;</span>, format, params);
+    va_end(params);
+}
+
+<span style="color:#66d9ef">void</span> fatalf(<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>format, ...) {
+    va_list params;
+    va_start(params, format);
+    output(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">FATAL: </span><span style="color:#e6db74">&#34;</span>, format, params);
+    va_end(params);
+    exit(<span style="color:#ae81ff">1</span>);
+}
+</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">// log.h
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">ifndef LOG_H</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">define LOG_H</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>
+<span style="color:#66d9ef">extern</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">set_thread_tag</span>(<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>tag);
+
+<span style="color:#66d9ef">extern</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">debugf</span>(<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>format, ...);
+<span style="color:#66d9ef">extern</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">infof</span>(<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>format, ...);
+<span style="color:#66d9ef">extern</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">fatalf</span>(<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>format, ...);
+
+<span style="color:#75715e">#</span><span style="color:#75715e">endif </span><span style="color:#75715e">// LOG_H
+</span></code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">// main.c
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&#34;go.h&#34;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&#34;log.h&#34;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;unistd.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>
+<span style="color:#66d9ef">void</span> <span style="color:#a6e22e">foo</span>(<span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>arg) {
+    set_thread_tag(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">&lt;thread1&gt; </span><span style="color:#e6db74">&#34;</span>);
+    <span style="color:#66d9ef">for</span> (;;) {
+        debugf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">foo</span><span style="color:#e6db74">&#34;</span>);
+        sleep(<span style="color:#ae81ff">1</span>);
+    }
+}
+
+<span style="color:#66d9ef">void</span> <span style="color:#a6e22e">bar</span>(<span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>arg) {
+    set_thread_tag(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">&lt;thread2&gt; </span><span style="color:#e6db74">&#34;</span>);
+    <span style="color:#66d9ef">for</span> (;;) {
+        debugf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">bar</span><span style="color:#e6db74">&#34;</span>);
+        sleep(<span style="color:#ae81ff">1</span>);
+    }
+}
+
+<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>() {
+    go(foo, NULL);
+    go(bar, NULL);
+    pause();
+}
+</code></pre></div><p>这个例子是给不同线程的<code>log</code>加<code>tag</code>，在调试时可以使用<code>grep</code>过滤不同线程的<code>log</code><br>
+<code>go</code>函数参考<a href="http://www.flyblog.tech/cond">另一篇博客</a></p>
+<p>演示</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ cc -pthread go.c log.c main.c
+$ ./a.out
+&lt;thread2&gt; DEBUG: bar
+&lt;thread1&gt; DEBUG: foo
+&lt;thread1&gt; DEBUG: foo
+&lt;thread2&gt; DEBUG: bar
+&lt;thread1&gt; DEBUG: foo
+&lt;thread2&gt; DEBUG: bar
+^C
+$
+</code></pre></div>
+</article>
+
+
+
+</html>
