@@ -165,6 +165,17 @@ kafka的模型结合了这两种模型
     </item>
     
     <item>
+      <title>samba服务器搭建</title>
+      <link>http://flyblog.tech/posts/samba/</link>
+      <pubDate>Fri, 23 Dec 2011 13:05:31 +0000</pubDate>
+      
+      <guid>http://flyblog.tech/posts/samba/</guid>
+      <description>samba服务器搭建 安装 $ sudo apt install samba 添加用户 $ sudo smbpasswd -a username 其中username为系统用户名
+配置 $ sudo nano /etc/samba/smb.conf 找到 [homes] 下面的 read only = no 改为 read only = yes
+重启 $ sudo systemctl restart smbd.service </description>
+    </item>
+    
+    <item>
       <title>shell job control</title>
       <link>http://flyblog.tech/posts/shell-job-control/</link>
       <pubDate>Fri, 23 Dec 2011 13:05:31 +0000</pubDate>

@@ -78,6 +78,11 @@
   </url>
   
   <url>
+    <loc>http://flyblog.tech/posts/samba/</loc>
+    <lastmod>2011-12-23T13:05:31+00:00</lastmod>
+  </url>
+  
+  <url>
     <loc>http://flyblog.tech/posts/shell-job-control/</loc>
     <lastmod>2011-12-23T13:05:31+00:00</lastmod>
   </url>

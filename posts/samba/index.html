@@ -10,26 +10,30 @@
     <meta name="keywords" content="blog,developer,personal">
 
     <meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="go异常处理"/>
-<meta name="twitter:description" content="go异常处理 代码封装 // Do do try-catch-finally type Do struct { Try func() Catch func(e interface{}) Finally func() } // Call call try func (d Do) Call() { defer func() { if e := recover(); e != nil { d.Catch(e) } if d.Finally != nil { d.Finally() } }() d.Try() } // Go go try func (d Do) Go() { go d.Call() } 测试 func main() { Do{ Try: func() { a := [."/>
+<meta name="twitter:title" content="samba服务器搭建"/>
+<meta name="twitter:description" content="samba服务器搭建 安装 $ sudo apt install samba 添加用户 $ sudo smbpasswd -a username 其中username为系统用户名
+配置 $ sudo nano /etc/samba/smb.conf 找到 [homes] 下面的 read only = no 改为 read only = yes
+重启 $ sudo systemctl restart smbd.service "/>
 
-    <meta property="og:title" content="go异常处理" />
-<meta property="og:description" content="go异常处理 代码封装 // Do do try-catch-finally type Do struct { Try func() Catch func(e interface{}) Finally func() } // Call call try func (d Do) Call() { defer func() { if e := recover(); e != nil { d.Catch(e) } if d.Finally != nil { d.Finally() } }() d.Try() } // Go go try func (d Do) Go() { go d.Call() } 测试 func main() { Do{ Try: func() { a := [." />
+    <meta property="og:title" content="samba服务器搭建" />
+<meta property="og:description" content="samba服务器搭建 安装 $ sudo apt install samba 添加用户 $ sudo smbpasswd -a username 其中username为系统用户名
+配置 $ sudo nano /etc/samba/smb.conf 找到 [homes] 下面的 read only = no 改为 read only = yes
+重启 $ sudo systemctl restart smbd.service " />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="http://flyblog.tech/posts/golang-panic/" />
+<meta property="og:url" content="http://flyblog.tech/posts/samba/" />
 <meta property="article:published_time" content="2011-12-23T13:05:31+00:00" />
 <meta property="article:modified_time" content="2011-12-23T13:05:31+00:00" />
 
 
     
-      <base href="http://flyblog.tech/posts/golang-panic/">
+      <base href="http://flyblog.tech/posts/samba/">
     
     <title>
-  go异常处理 · fly
+  samba服务器搭建 · fly
 </title>
 
     
-      <link rel="canonical" href="http://flyblog.tech/posts/golang-panic/">
+      <link rel="canonical" href="http://flyblog.tech/posts/samba/">
     
 
     <link href="https://fonts.googleapis.com/css?family=Lato:400,700%7CMerriweather:300,700%7CSource+Code+Pro:400,700" rel="stylesheet">
@@ -93,7 +97,7 @@
     <article>
       <header>
         <div class="post-title">
-          <h1 class="title">go异常处理</h1>
+          <h1 class="title">samba服务器搭建</h1>
         </div>
         <div class="post-meta">
           <div class="date">
@@ -114,65 +118,18 @@
       </header>
 
       <div>
-        <h1 id="go">go异常处理</h1>
-<h2 id="heading">代码封装</h2>
-<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-style:italic">// Do do try-catch-finally
-</span><span style="font-style:italic"></span><span style="font-weight:bold">type</span> Do <span style="font-weight:bold">struct</span> {
-    Try     <span style="font-weight:bold">func</span>()
-    Catch   <span style="font-weight:bold">func</span>(e <span style="font-weight:bold">interface</span>{})
-    Finally <span style="font-weight:bold">func</span>()
-}
-
-<span style="font-style:italic">// Call call try
-</span><span style="font-style:italic"></span><span style="font-weight:bold">func</span> (d Do) Call() {
-    <span style="font-weight:bold">defer</span> <span style="font-weight:bold">func</span>() {
-        <span style="font-weight:bold">if</span> e := recover(); e != <span style="font-weight:bold">nil</span> {
-            d.Catch(e)
-        }
-        <span style="font-weight:bold">if</span> d.Finally != <span style="font-weight:bold">nil</span> {
-            d.Finally()
-        }
-    }()
-    d.Try()
-}
-
-<span style="font-style:italic">// Go go try
-</span><span style="font-style:italic"></span><span style="font-weight:bold">func</span> (d Do) Go() {
-    <span style="font-weight:bold">go</span> d.Call()
-}
-</code></pre></div><h2 id="heading1">测试</h2>
-<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> main() {
-    Do{
-        Try: <span style="font-weight:bold">func</span>() {
-            a := [...]<span style="">int</span>{1, 2, 3, 4, 5}
-            <span style="font-weight:bold">for</span> i := 0; ; i++ {
-                fmt.Println(a[i]) <span style="font-style:italic">// 这里会越界，导致panic
-</span><span style="font-style:italic"></span>            }
-        },
-        Catch: <span style="font-weight:bold">func</span>(e <span style="font-weight:bold">interface</span>{}) {
-            fmt.Println(e)
-        },
-        Finally: <span style="font-weight:bold">func</span>() {
-            fmt.Println(<span style="font-style:italic">&#34;finally&#34;</span>)
-        },
-    }.Call()
-}
-</code></pre></div><p>输出:</p>
-<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">1
-2
-3
-4
-5
-runtime error: index out of range
-finally
-</code></pre></div><h2 id="heading2">说明</h2>
-<p>按照golang的说法，<strong>panic被认为是程序bug</strong>，也就是可以避免的错误，相当于java中unchecked exception<br>
-这种错误最好就是让程序及早crash，以便修复bug，而不是去catch错误</p>
-<p>而正常的程序错误是用error来表示，通过函数返回值来报告错误，这样的错误也叫做expected error，相当于java中的checked exception<br>
-这种错误是程序员控制不了的，比如用户输入不合法，io错误等，要求必须检查</p>
-<h2 id="heading3">总结</h2>
-<p>对于server类的长期运行程序，有必要捕获由于请求的handler造成的panic，并记录日志，避免程序crash</p>
-
+        <h1 id="samba">samba服务器搭建</h1>
+<h2 id="heading">安装</h2>
+<pre><code>$ sudo apt install samba
+</code></pre><h2 id="heading1">添加用户</h2>
+<pre><code>$ sudo smbpasswd -a username
+</code></pre><p>其中<code>username</code>为系统用户名</p>
+<h2 id="heading2">配置</h2>
+<pre><code>$ sudo nano /etc/samba/smb.conf
+</code></pre><p>找到 <code>[homes]</code> 下面的 <code>read only = no</code> 改为 <code>read only = yes</code></p>
+<h2 id="heading3">重启</h2>
+<pre><code>$ sudo systemctl restart smbd.service
+</code></pre>
       </div>
 
       <footer>
