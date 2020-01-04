@@ -12,13 +12,13 @@
     <meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="samba服务器搭建"/>
 <meta name="twitter:description" content="samba服务器搭建 安装 $ sudo apt install samba 添加用户 $ sudo smbpasswd -a username 其中username为系统用户名
-配置 $ sudo nano /etc/samba/smb.conf 找到 [homes] 下面的 read only = no 改为 read only = yes
-重启 $ sudo systemctl restart smbd.service "/>
+配置 $ sudo nano /etc/samba/smb.conf 找到 [homes] 修改：
+read only = no create mask = 0644 # rw-r--r-- directory mask = 0755 # rwxr-xr-x 重启 $ sudo systemctl restart smbd.service "/>
 
     <meta property="og:title" content="samba服务器搭建" />
 <meta property="og:description" content="samba服务器搭建 安装 $ sudo apt install samba 添加用户 $ sudo smbpasswd -a username 其中username为系统用户名
-配置 $ sudo nano /etc/samba/smb.conf 找到 [homes] 下面的 read only = no 改为 read only = yes
-重启 $ sudo systemctl restart smbd.service " />
+配置 $ sudo nano /etc/samba/smb.conf 找到 [homes] 修改：
+read only = no create mask = 0644 # rw-r--r-- directory mask = 0755 # rwxr-xr-x 重启 $ sudo systemctl restart smbd.service " />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="http://flyblog.tech/posts/samba/" />
 <meta property="article:published_time" content="2011-12-23T13:05:31+00:00" />
@@ -126,8 +126,11 @@
 </code></pre><p>其中<code>username</code>为系统用户名</p>
 <h2 id="heading2">配置</h2>
 <pre><code>$ sudo nano /etc/samba/smb.conf
-</code></pre><p>找到 <code>[homes]</code> 下面的 <code>read only = no</code> 改为 <code>read only = yes</code></p>
-<h2 id="heading3">重启</h2>
+</code></pre><p>找到 <code>[homes]</code> 修改：</p>
+<pre><code>read only = no
+create mask = 0644      # rw-r--r--
+directory mask = 0755   # rwxr-xr-x
+</code></pre><h2 id="heading3">重启</h2>
 <pre><code>$ sudo systemctl restart smbd.service
 </code></pre>
       </div>
